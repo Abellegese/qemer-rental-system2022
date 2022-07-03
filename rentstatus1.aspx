@@ -493,7 +493,7 @@
                   <div class="row">
             <div class="col-xl-3 col-md-6 border-right">
                   <div class="card-header-pills text-center">
-                      <div class="text-center text-xs mt-2 font-weight-bolder badge badge-primary text-white text-uppercase"  title="Customers whose due date less or equal 15 days but not passed their due date!" data-toggle="tooltip" data-placement="bottom">Unpaid Rent<span id="notifcounter" runat="server" class="badge badge-danger badge-counter mx-2">#C-<span id="customerno" runat="server">0</span></span></div>
+                      <div class="text-center text-xs mt-2 font-weight-bolder badge text-primary text-uppercase"  title="Customers whose due date less or equal 15 days but not passed their due date!" data-toggle="tooltip" data-placement="bottom">Unpaid Rent<span id="notifcounter" runat="server" class="badge badge-danger badge-counter mx-2">#C-<span id="customerno" runat="server">0</span></span></div>
                      
                   </div> 
                 
@@ -517,7 +517,7 @@
                 </div>
                       <div class="col-xl-3 col-md-6 border-right">
                   <div class="card-header-pills text-center">
-                      <div class="text-center text-xs mt-2 font-weight-bolder badge badge-primary text-white text-uppercase">Due Date Passed Amount</div>
+                      <div class="text-center text-xs mt-2 font-weight-bolder badge  text-primary  text-uppercase">Due Date Passed Amount</div>
                      
                   </div> 
   
@@ -541,7 +541,7 @@
                 </div>
                       <div class="col-xl-3 col-md-6 border-right text-white text-white">
                   <div class="card-header-pills text-white text-center">
-                      <div class="text-center text-xs mt-2 font-weight-bolder text-white badge-primary badge text-uppercase">Action</div>
+                      <div class="text-center text-xs mt-2 font-weight-bolder text-primary  badge text-uppercase">Action</div>
                      
                   </div> 
       
@@ -580,7 +580,7 @@
                 </div>
                       <div class="col-xl-3 col-md-6 border-right text-center">
                   <div class="card-header-pills text-center">
-                      <div class="text-center text-xs mt-2 font-weight-bolder badge badge-primary text-white text-uppercase">Total Receivable</div>
+                      <div class="text-center text-xs mt-2 font-weight-bolder badge  text-primary  text-uppercase">Total Receivable</div>
                      
                   </div> 
   
