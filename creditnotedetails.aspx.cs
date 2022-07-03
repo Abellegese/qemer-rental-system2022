@@ -686,7 +686,8 @@ namespace advtech.Finance.Accounta
                     address = reader["BuissnessLocation"].ToString();
                     cont = reader["Contact"].ToString();
                     addressname.InnerText = "Address: " + address;
-
+                    oname.InnerText = company;
+                    WaterMarkOname.InnerText = company;
                     phone.InnerText = "Contact: " + cont;
 
                 }

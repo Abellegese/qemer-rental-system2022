@@ -88,7 +88,7 @@
 
                <div class="row " style="height:60px">
                 <div class="col-md-6 text-left">
-                    <span translate="no" class="h5 text-gray-900 font-weight-bold">RAKSYM TRADING PLC</span>
+                    <span translate="no" class="h5 text-gray-900 text-uppercase font-weight-bold" id="oname" runat="server"></span>
                     </div>
                <div class="col-md-6 text-right">
                    <span translate="no" class="small text-gray-900 font-weight-bold" id="datecurrent" runat="server"></span>
@@ -176,11 +176,26 @@
                                 <h5 class="font-italic text-gray-900 font-weight-bold">አስተዳደር ቢሮ</h5>
           
                             </div>
-                                                                                                                 <center>
-                                        <h1 class="water h1  font-weight-bolder" style="font-size: 60px">Raksym Trading PLC</h1>
-                                                         </center>   
-                        </div>    
 
+                                                                                                                 <center>
+                                        <h1 class="water h1  font-weight-bolder" style="font-size: 60px" id="WaterMarkOname" runat="server"></h1>
+                                                         </center>   
+                        </div>
+                                     <div class="row mt-lg-5">
+                                         <div class="col-12 border-top border-bottom">
+                                             <div class="row">
+                                                 <div class="col-6 text-left">
+                                                     <span class="fas fa-address-book text-gray-400 mr-2"></span><span class="mb-2 text-gray-900 small " id="addressname" runat="server"></span>
+
+                                                 </div>
+                                                 <div class="col-6 text-right">
+                                                     <span class="fas fa-phone text-gray-400 mr-2"></span><span class="mb-2 text-gray-900 small " id="phone" runat="server"></span>
+
+
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
                            </div>
 
                                 </div>

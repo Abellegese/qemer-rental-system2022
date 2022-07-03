@@ -60,6 +60,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl CompAddress;
 
         /// <summary>
+        /// Month control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Month;
+
+        /// <summary>
         /// Name control.
         /// </summary>
         /// <remarks>
@@ -130,5 +139,14 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl period;
+
+        /// <summary>
+        /// WaterMarkOname control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl WaterMarkOname;
     }
 }

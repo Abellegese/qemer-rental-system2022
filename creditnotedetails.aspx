@@ -395,7 +395,7 @@
                         </div>
                         <div class="row ">
                             <div class="col-md-6 text-left">
-                                <span translate="no" class="h5 text-gray-900 font-weight-bold">RAKSYM TRADING PLC</span>
+                                <span translate="no" class="h5 text-gray-900 text-uppercase border-bottom font-weight-bold" id="oname" runat="server"></span>
                             </div>
                             <div class="col-md-6 text-right">
                                 <span translate="no" class="small text-gray-900 font-weight-bold" id="datecurrent" runat="server"></span>
@@ -432,7 +432,7 @@
                             </div>
                         </div>
                         <center>
-                            <h1 class="water h1  font-weight-bolder" style="font-size: 60px">Raksym Trading PLC</h1>
+                            <h1 class="water h1  font-weight-bolder" style="font-size: 60px" id="WaterMarkOname" runat="server"></h1>
                         </center>
                     </div>
 

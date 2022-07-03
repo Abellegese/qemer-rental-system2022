@@ -29,6 +29,7 @@ namespace advtech.Finance.Accounta
                 {
                     BindBrandsRptr2(); BindBrandsRptr4();
                     BindShopNo(); BindArea(); bindcompany();
+                    Month.InnerText = DateTime.Now.ToString("MMM dd, yyyy");
                 }
             }
             else
@@ -51,7 +52,7 @@ namespace advtech.Finance.Accounta
                     company = reader["Oname"].ToString();
                     bl = reader["OAdress"].ToString();
                     contact1 = reader["Contact"].ToString();
-
+                    WaterMarkOname.InnerText = company;
                     campName.InnerText = company;
                     CompAddress.InnerText = bl;
                     Contact.InnerText = contact1;

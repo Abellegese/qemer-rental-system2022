@@ -23,12 +23,35 @@ namespace advtech.Finance.Accounta
                 if (!IsPostBack)
                 {
                     BindBrandsRptr2(); BindBrandsRptr4();
-                    BindShopNo();
+                    BindShopNo(); bindcompany();
                 }
             }
             else
             {
                 Response.Redirect("~/Login/LogIn1.aspx");
+            }
+        }
+        private void bindcompany()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("select Oname,BuissnessLocation,Contact from tblOrganization", con);
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    string company; string address; string cont;
+                    company = reader["Oname"].ToString();
+                    address = reader["BuissnessLocation"].ToString();
+                    cont = reader["Contact"].ToString();
+                    addressname.InnerText = "Address: " + address;
+                    oname.InnerText = company;
+                    WaterMarkOname.InnerText = company;
+                    phone.InnerText = "Contact: " + cont;
+
+                }
             }
         }
         private void BindBrandsRptr2()

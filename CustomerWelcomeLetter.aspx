@@ -87,7 +87,7 @@
                                     </div>
                                     <div class="row " style="height: 60px">
                                         <div class="col-md-6 text-left"> 
-                                            <span translate="no" class="h5 text-gray-900 font-weight-bold" id="campName" runat="server">RAKSYM TRADING PLC</span>
+                                            <span translate="no" class="h5 text-gray-900 font-weight-bold text-uppercase" id="campName" runat="server"></span>
                                             <hr />
                                             <span class="fas fa-phone text-gray-500 text-left mr-1 mt-2"></span><span class="h6 small text-left font-weight-bold text-gray-900 mt-1" id="Contact" runat="server"></span>
                                             <br />
@@ -95,7 +95,7 @@
                                         
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            <span translate="no" class="small text-gray-900 font-weight-bold">February 13, 2022</span>
+                                            <span translate="no" class="small text-gray-900 font-weight-bold" id="Month" runat="server"></span>
                                         </div>
                                     </div>
                                          <br />
@@ -124,7 +124,7 @@
                                             <h5 class="font-italic mb-2 text-gray-900 font-weight-bold">Sincerely</h5>
                                             <h5 class="font-italic text-gray-900 font-weight-bold">Adminstration Office</h5>
                                             <center>
-                                                <h1 class="water h1  font-weight-bolder" style="font-size: 75px">Raksym Trading PLC</h1>
+                                                <h1 class="water h1  font-weight-bolder" style="font-size: 75px" id="WaterMarkOname" runat="server"></h1>
                                             </center>
                                         </div>
                                     </div>
