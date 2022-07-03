@@ -1,0 +1,13 @@
+{
+  "folders": [
+	{
+		"path": "."
+	},
+	{
+		"path": "..\\..\\asset\\js"
+	}
+],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "feather"
+  }
+}

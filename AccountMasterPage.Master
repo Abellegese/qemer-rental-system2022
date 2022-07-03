@@ -1,0 +1,1081 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AccountMasterPage.master.cs" Inherits="advtech.Finance.Accounta.AccountMasterPage" %>
+
+
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="../../asset/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="http://cdn.jsdelivr.net/json2/0.1/json2.js"></script>
+
+    <link rel="icon" href="../../asset/Brand/Capture.PNG" type="image/x-icon" />
+
+    <link href="../../asset/css/sb-admin-2.css" rel="stylesheet" />
+
+    <script src="../../asset/js/demo/ChartJS.js"></script>
+    <script src="../../asset/js/jquery-3.2.1.min.js"></script>
+    <script src="../../Scripts/jquery.signalR-2.2.2.js"></script>
+    <script src="/signalR/hubs"></script>
+    <script src="../../asset/js/jquery-3.2.1.min.js"></script>
+    <link href="../../asset/js/jquery-ui.css" rel="stylesheet" />
+    <script src="../../asset/js/jquery-ui.min.js"></script>
+    <script type="text/javascript">  
+        $(document).ready(function () {
+            SearchText();
+        });
+        function SearchText() {
+            $("#txtCustomer").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        url: "WebForm1.aspx/GetEmployeeName",
+                        data: "{'empName':'" + document.getElementById('txtCustomer').value + "'}",
+                        dataType: "json",
+                        success: function (data) {
+                            response(data.d);
+                        },
+                        error: function (result) {
+                            alert("No Match");
+                        }
+                    });
+                },
+                 autoFocus: true
+            });
+        }
+    </script>
+    <script>  
+        function funfordefautenterkey1(btn, event) {
+            if (document.all) {
+                if (event.keyCode == 13) {
+                    event.returnValue = false;
+                    event.cancel = true;
+                    btn.click();
+                }
+            }
+    </script>
+    <script type="text/javascript">
+                window.addEventListener('load', (event) => {
+                    var x = document.getElementById("myDIV");
+                    x.style.display = "none";
+                });
+    </script>
+    <script type="text/javascript">
+                window.addEventListener('load', (event) => {
+                    var x = document.getElementById("myDIV2");
+                    x.style.display = "none";
+                });
+    </script>
+
+    <style>
+        .buttonInside {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .main {
+            width: 50%;
+            margin: 50px auto;
+        }
+
+        /* Bootstrap 4 text input with search icon */
+
+        .has-search .form-control {
+            padding-left: 2.375rem;
+        }
+
+        .has-search .form-control-feedback {
+            position: absolute;
+            z-index: 2;
+            display: block;
+            width: 2.375rem;
+            height: 2.375rem;
+            line-height: 2.375rem;
+            text-align: center;
+            pointer-events: none;
+            color: #aaa;
+        }
+
+        .bc {
+            border-color: white;
+        }
+    </style>
+    <style>
+        .bc {
+            border-color: #ff6a00
+        }
+
+        .class4 {
+            border-radius: 20px;
+        }
+
+        .scrollarea {
+            overflow-y: auto;
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            max-height: 800px;
+            overflow-y: scroll
+        }
+
+        .dropdown-list-image {
+            position: relative;
+            height: 2.5rem;
+            width: 2.5rem;
+        }
+
+            .dropdown-list-image img {
+                height: 2.5rem;
+                width: 2.5rem;
+            }
+
+            .dropdown-list-image .status-indicator {
+                background-color: #eaecf4;
+                height: 0.75rem;
+                width: 0.75rem;
+                border-radius: 100%;
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                border: 0.125rem solid #fff;
+            }
+
+        .modalBackground {
+            opacity: 0.7;
+        }
+    </style>
+    <style>
+        @media (max-width: 1026px) {
+            #test {
+                display: none;
+            }
+        }
+
+        @media (max-width: 1026px) {
+            #bookmark {
+                display: none;
+            }
+        }
+
+        @media (max-width: 1026px) {
+            #createbar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 1026px) {
+            #Customerbar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 1026px) {
+            #storeproductsearch {
+                display: none;
+            }
+        }
+    </style>
+
+    <style>
+        /* width */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        /* Track */
+        ::-webkit-scrollbar-track {
+            background: #ffffff;
+        }
+
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+            background: #ad9e9e;
+        }
+
+            /* Handle on hover */
+            ::-webkit-scrollbar-thumb:hover {
+                background: #ad9e9e;
+            }
+    </style>
+
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+
+    <form id="form1" runat="server">
+
+        <div>
+            <body id="page-top">
+
+                <!-- Page Wrapper -->
+                <div id="wrapper">
+
+                    <!-- Sidebar -->
+                    <div id="attr" runat="server">
+                        <ul class="navbar-nav  sidebar text-white toggled sidebar-dark bg-dark accordion h-100" id="accordionSidebar" translate="no">
+
+                            <!-- Sidebar - Brand -->
+                            <li class="nav-item dropdown">
+                                <a class="sidebar-brand d-flex align-items-center justify-content-center">
+                                    <div class="sidebar-brand-icon">
+                                        <center>
+                                            <img src="../../asset/rak_logo.jpg" class="img img-profile my-2" height="60" width="85" />
+                                        </center>
+
+
+                                    </div>
+
+                                </a>
+                            </li>
+                            <!-- Divider -->
+
+
+                            <!-- Nav Item - Dashboard -->
+                            <li class="nav-item dropdown" id="dashboard3" runat="server">
+                                <a class="nav-link " href="Home.aspx" data-toggle="tooltip" data-placement="right" title="  Dashboard">
+                                    <img src="../../asset/dashbordicon/home.svg" />
+
+
+
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown" id="Li1" runat="server">
+                                <a class="nav-link " href="Home_store.aspx">
+                                    <i class="fas fa-tachometer-alt text-white"></i>
+
+
+
+                                    <span class="font-weight-bold text-white ">Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown" id="TCsidebar" visible="false" runat="server">
+                                <a class="nav-link " href="Home_TC.aspx">
+
+                                    <i class="fas fa-tachometer-alt text-warning"></i>
+
+
+
+                                    <span class="font-weight-bold text-warning ">Home</span>
+                                </a>
+                            </li>
+
+                            <!-- Nav Item - Charts -->
+                            <li class="nav-item " id="inventory" runat="server">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#inv" aria-expanded="true" aria-controls="inv">
+                                    <i class="fas fa-fw fa-cart-arrow-down text-white"></i>
+                                    <span class="font-weight-bold text-white">Inventory</span>
+                                </a>
+                                <div id="inv" class="collapse " aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+
+                                        <h6 class="collapse-header">Items</h6>
+                                        <a class="collapse-item " href="SalesProduct2324.aspx">Item Lists</a>
+
+                                        <a class="collapse-item " href="warehouses.aspx">Warehouses</a>
+                                        <a class="collapse-item " href="stockcard2.aspx">Stock Card</a>
+
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="nav-item " id="rentservice" runat="server" data-toggle="tooltip" data-placement="right" title="  Rent Services">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#Div6" aria-expanded="true" aria-controls="Div6">
+                                    <img src="../../asset/dashbordicon/dollar-sign.svg" />
+
+                                </a>
+                                <div id="Div6" class="collapse " aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+                                        <h6 class="collapse-header">Main:</h6>
+                                        <a class="collapse-item text-gray-700" href="rentstatus1.aspx">
+                                            <img src="../../asset/feather/home.svg" class="mr-2" />Manage Rent</a>
+                                        <a class="collapse-item text-gray-700 " href="rentinvoicereport.aspx">
+                                            <img src="../../asset/feather/dollar-sign.svg" class="mr-2" />Invoice</a>
+
+                                        <a class="collapse-item text-gray-700" href="creditnote.aspx">
+                                            <img src="../../asset/feather/file-plus.svg" class="mr-2" />Credit Note</a>
+                                        <a class="collapse-item text-gray-700 " href="rentreport.aspx">
+                                            <img src="../../asset/feather/activity.svg" class="mr-2" />Rent Report</a>
+                                        <a class="collapse-item text-gray-700" href="addshop.aspx">
+                                            <img src="../../asset/feather/tool.svg" class="mr-2" />Manage Shops</a>
+
+
+                                        <a class="collapse-item text-gray-700" href="Customer.aspx">
+                                            <img src="../../asset/feather/user-check.svg" class="mr-2" />CRM</a>
+                                        <a class="collapse-item text-gray-700 text-danger" href="OtherInvoices.aspx">
+                                            <img src="../../asset/feather/bar-chart-2.svg" class="mr-2" />Other Invoices</a>
+                                        <a class="collapse-item text-gray-700" href="NoticeLetter.aspx">
+                                            <img src="../../asset/feather/columns.svg" class="mr-2" />Notice Letter</a>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="nav-item " id="purchase" runat="server" data-toggle="tooltip" data-placement="right" title="  Purchases">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#Div7" aria-expanded="true" aria-controls="Div7">
+                                    <img src="../../asset/dashbordicon/shopping-cart.svg" />
+
+                                </a>
+                                <div id="Div7" class="collapse " aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+                                        <h6 class="collapse-header">status</h6>
+                                        <a class="collapse-item" href="BillList.aspx">Bills</a>
+                                        <a class="collapse-item" href="bills.aspx" visible="false" id="createbills" runat="server">Create Bills</a>
+
+                                        <a class="collapse-item " href="PurchaseOrderStatus.aspx">Purchase Order</a>
+                                        <a class="collapse-item " href="vendor.aspx">Vendor</a>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="nav-item " id="ledger" runat="server" data-toggle="tooltip" data-placement="right" title="General Ledger">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                    <img src="../../asset/dashbordicon/pie-chart.svg" />
+                                </a>
+                                <div id="collapseTwo" class="collapse " aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+
+                                        <h6 class="collapse-header">General Ledger</h6>
+                                        <a class="collapse-item " href="Ledger.aspx">
+                                            <img src="../../asset/feather/airplay.svg" class="mr-2" />General Ledger</a>
+                                        <a class="collapse-item " href="Account.aspx">
+                                            <img src="../../asset/feather/tag.svg" class="mr-2" />Chart of accounts</a>
+                                        <a class="collapse-item" href="Journal.aspx">
+                                            <img src="../../asset/feather/percent.svg" class="mr-2" />General Journal</a>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="nav-item" id="bankmodule" runat="server" data-toggle="tooltip" data-placement="right" title="Bank Module">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#Div4" aria-expanded="true" aria-controls="Div4">
+                                    <img src="../../asset/dashbordicon/database.svg" />
+
+                                </a>
+                                <div id="Div4" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+                                        <h6 class="collapse-header">Main:</h6>
+                                        <a class="collapse-item" href="AddAcounting.aspx">
+                                            <img src="../../asset/feather/folder.svg" class="mr-2" />Manage Account</a>
+                                        <a class="collapse-item" href="BankStatement.aspx">
+                                            <img src="../../asset/feather/trending-up.svg" class="mr-2" />Bank Transaction</a>
+
+
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="nav-item" id="payroll" runat="server" data-toggle="tooltip" data-placement="right" title="Employees & Payroll">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#Div1" aria-expanded="true" aria-controls="Div1">
+                                    <img src="../../asset/dashbordicon/users.svg" />
+                                </a>
+                                <div id="Div1" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+                                        <h6 class="collapse-header">Main:</h6>
+                                        <a class="collapse-item" id="employee" runat="server" href="employeelist.aspx">Employees</a>
+                                        <a class="collapse-item" href="Addpygfrtbbcdgggggroll.aspx">Regular Payroll</a>
+                                        <a class="collapse-item" href="createpayroll.aspx">Create Payroll</a>
+                                        <a class="collapse-item" href="timesheet.aspx">Timesheet</a>
+                                        <h6 class="collapse-header">Earning&Deduction:</h6>
+                                        <a class="collapse-item" href="addearning.aspx">Manage Earning</a>
+                                        <a class="collapse-item" href="adddeduction.aspx">Manage Deduction</a>
+                                        <a class="collapse-item" href="payrollreport.aspx">Payroll Report</a>
+                                        <a class="collapse-item text-danger" href="Pensionreport.aspx">Emp Pension Report</a>
+                                        <a class="collapse-item text-danger" href="CompPension.aspx">CMP Pension Report</a>
+                                        <a class="collapse-item" href="EmployeesInformation.aspx">Add Employee</a>
+
+
+                                    </div>
+                                </div>
+                            </li>
+
+
+                            <li class="nav-item" id="Li2" visible="true" runat="server" data-toggle="tooltip" data-placement="right" title="  Expenses">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#Div751" aria-expanded="true" aria-controls="Div751">
+                                    <img src="../../asset/dashbordicon/trending-down.svg" />
+                                </a>
+                                <div id="Div751" runat="server" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+                                        <h6 class="collapse-header">Main:</h6>
+
+                                        <a class="collapse-item" href="Expenses.aspx">
+                                            <img src="../../asset/feather/trending-down.svg" class="mr-2" />Expenses</a>
+                                        <a class="collapse-item" href="Manage_Expense.aspx">
+                                            <img src="../../asset/feather/anchor.svg" class="mr-2" />Manage Expense</a>
+                                        <a class="collapse-item" href="vendor.aspx">
+                                            <img src="../../asset/feather/users.svg" class="mr-2" />Vendor</a>
+                                    </div>
+                                </div>
+                            </li>
+
+
+                            <li class="nav-item" id="assetmanagement" runat="server" data-toggle="tooltip" data-placement="right" title="  Asset Management">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#Div75" aria-expanded="true" aria-controls="Div75">
+                                    <img src="../../asset/dashbordicon/pocket.svg" />
+                                </a>
+                                <div id="Div75" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+                                        <h6 class="collapse-header">Main:</h6>
+
+                                        <a class="collapse-item" href="fixedasset.aspx">Fixed Asset</a>
+                                        <a class="collapse-item" href="manageasset.aspx">Manage Asset</a>
+                                        <a class="collapse-item" href="depreciationreport.aspx">Depriciation Report</a>
+                                        <a class="collapse-item" id="assetbyemp" runat="server" visible="false" href="assetbyemployee.aspx">Asset by Employee</a>
+                                        <a class="collapse-item" href="AssetPurchaseOrderStatus.aspx" id="procurement" runat="server">Procurement</a>
+                                        <a class="collapse-item" href="disposedreport.aspx">Disposal Report</a>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="nav-item " id="reports" runat="server" data-toggle="tooltip" data-placement="right" title="  Reports">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#Div2" aria-expanded="true" aria-controls="Div2">
+                                    <img src="../../asset/dashbordicon/flag.svg" />
+                                </a>
+                                <div id="Div2" class="collapse " aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+                                        <h6 class="collapse-header">Financial Report</h6>
+                                        <a class="collapse-item" href="TrialBalanceReport.aspx">
+                                            <img src="../../asset/feather/columns.svg" class="mr-2" />Tral Balance</a>
+                                        <a class="collapse-item " href="IncomeStatementReport.aspx">
+                                            <img src="../../asset/feather/columns.svg" class="mr-2" />Income Statement</a>
+                                        <a class="collapse-item " href="BalanceSheetReport.aspx">
+                                            <img src="../../asset/feather/columns.svg" class="mr-2" />Balance Sheet</a>
+                                        <h6 class="collapse-header">
+                                            <img src="../../asset/feather/columns.svg" class="mr-2" />General Report</h6>
+                                        <a class="collapse-item" id="ActivityLink" runat="server" visible="false" href="ActivityReport.aspx">
+                                            <img src="../../asset/feather/columns.svg" class="mr-2" />Activity Logs</a>
+                                        <a class="collapse-item " href="journalreport.aspx">
+                                            <img src="../../asset/feather/columns.svg" class="mr-2" />Journal</a>
+         
+
+
+                                    </div>
+                                </div>
+                            </li>
+
+
+
+
+                            <li class="nav-item" id="activity" runat="server" visible="false" data-toggle="tooltip" data-placement="right" title="Activity">
+                                <a class="nav-link" href="ActivityReport.aspx">
+                                    <img src="../../asset/dashbordicon/activity.svg" /></a>
+                            </li>
+
+                            <!-- Divider -->
+                            <li class="nav-item" id="setting" runat="server" data-toggle="tooltip" data-placement="right" title="  Settings">
+                                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#Div5" aria-expanded="true" aria-controls="Div5">
+                                    <img src="../../asset/dashbordicon/settings.svg" /></a>
+                                <div id="Div5" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+                                        <h6 class="collapse-header">Main:</h6>
+                                        <a class="collapse-item" id="A1" runat="server" href="employeelist.aspx">
+                                            <img src="../../asset/feather/users.svg" class="mr-2" />Manage Employees</a>
+  
+   
+                                        <a class="collapse-item" href="orgprofileview.aspx">
+                                            <img src="../../asset/feather/sidebar.svg" class="mr-2" />View your company</a>
+
+                                        <a class="collapse-item" href="CustomerVendorPreferences.aspx">
+                                            <img src="../../asset/feather/tool.svg" class="mr-2" />Preferences</a>
+
+
+                                    </div>
+                                </div>
+                            </li>
+                            <hr class="sidebar-divider d-none d-md-block">
+
+                            <!-- Sidebar Toggler (Sidebar) -->
+                            <div class="text-center d-none d-md-inline">
+
+                                <button runat="server" clientidmode="Static" type="button" class="rounded-circle border-0" id="sidebarToggle"></button>
+                            </div>
+
+                        </ul>
+                    </div>
+                    <!-- End of Sidebar -->
+
+                    <!-- Content Wrapper -->
+                    <div id="content-wrapper" class="d-flex flex-column" style="position: relative">
+
+                        <!-- Main Content -->
+                        <div id="content" style="position: relative">
+
+                            <!-- Topbar -->
+
+                            <nav class="navbar navbar-expand  bg-white topbar w-100 mb-2 static-top" translate="no">
+
+
+
+                                <!-- Sidebar Toggle (Topbar) -->
+                                <button id="sidebarToggleTop" runat="server" clientidmode="Static" type="button" class="btn btn-link d-md-none rounded-circle mr-3">
+                                    <i class="fa fa-bars"></i>
+                                </button>
+                                <div class="input-group w-100" id="storeproductsearch" runat="server" visible="false">
+                                    <div id="myDIV2" class="spinner-border spinner-border-sm  mr-4 mt-2" role="status">
+                                        <span class="sr-only">Loading.ffrfyyrg..</span>
+                                    </div>
+                                    <asp:TextBox ID="txtProductSearch" Visible="true" Style="border-radius: 20px 0px 0px 20px;" class="class4 form-control form-control-sm  " type="search" aria-label="Search" runat="server" placeholder=" search product..." aria-describedby="search-addon"></asp:TextBox>
+
+                                    <asp:Button ID="Button4" runat="server" Visible="true" Style="border-radius: 0px 0px 0px 0px" class="btn btn-outline-danger btn-sm " Text="Search" OnClick="Button2_Click1" OnClientClick="myFunction1()" />
+
+                                </div>
+                                <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                                    <div class="input-group">
+
+                                        <div class="input-group-append">
+                                            <div class="nav-item dropdown no-arrow mx-1">
+                                            </div>
+
+
+
+                                            <div class="nav-item dropdown no-arrow mx-1" id="bookmark" runat="server">
+                                                <a class="nav-link btn dropdown-toggle" href="#" id="userDropdown345"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Quick links for reports">
+
+                                                    <img src="../../asset/feather/bookmark.svg" />
+
+
+                                                </a>
+
+                                                <!-- Dropdown - User Information -->
+                                                <div class="dropdown-menu dropdown-menu-left shadow animated--grow-in"
+                                                    aria-labelledby="userDropdown345">
+                                                    <h6 class="dropdown-header">General Reports
+                                                    </h6>
+                                                    <a class="dropdown-item" href="ActivityReport.aspx">
+
+                                                        <span class="fas fa-chart-pie mr-2 text-gray-500"></span>Activity Logs
+                                                    </a>
+
+                                                    <a class="dropdown-item" href="journalreport.aspx">
+
+                                                        <span class="fas  fa-chart-pie mr-2 text-gray-500"></span>Journal report
+                                                    </a>
+                                                    <a class="dropdown-item" href="TAXreport.aspx">
+
+                                                        <span class="fas  fa-chart-pie mr-2 text-gray-500"></span>VAT Report
+                                                    </a>
+                      
+
+                                                    <h6 class="dropdown-header">Rent Reports
+                                                    </h6>
+                                                    <a class="dropdown-item" href="rentreport.aspx">
+
+                                                        <span class="fas  fa-chart-pie mr-2 text-gray-500"></span>Rent Report
+                                                    </a>
+                                                    <a class="dropdown-item" href="agedreceivable.aspx">
+
+                                                        <span class="fas  fa-chart-pie mr-2 text-gray-500"></span>Receivable Report
+                                                    </a>
+                                                    <a class="dropdown-item" href="uncollectedEarning.aspx">
+
+                                                        <span class="fas  fa-chart-pie mr-2 text-gray-500"></span>Credit Report
+                                                    </a>
+                                                    <a class="dropdown-item" href="EarnedRevenue.aspx">
+
+                                                        <span class="fas fa-chart-pie mr-2 text-gray-500"></span>Revenue Report
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="topbar-divider d-none d-sm-block"></div>
+                                            <div class="nav-item dropdown no-arrow mx-1" id="Div8" visible="true" runat="server">
+                                                <a href="#" class="  nav-link"><span class="text-danger small">Welcome, <span id="UserNameWelcome" runat="server"></span>! </span><span class="fas fa-calendar text-white btn-circle btn-sm mx-2 " style="background-color: #ff6a00"></span><span id="SystemDate" runat="server" class="small text-gray-900 mx-1"></span></a>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                </form>
+                                <div class="input-group w-25">
+                                    <span id="sub" runat="server"></span>
+                                    <div id="myDIV" class="spinner-grow spinner-grow-sm text-warning mr-4 mt-2" role="status">
+                                        <span class="sr-only">Loading.ffrfyyrg..</span>
+                                    </div>
+                                </div>
+                                <asp:Panel ID="LoginPanel" Width="700px" runat="server" DefaultButton="Button2">
+                                    <div class="input-group" id="test" runat="server">
+                                        <a class="text-gray-900 text-xs mt-2 mr-1" tabindex="0" role="button" data-toggle="popover" data-trigger="focus" title="Search helps" data-content="type customer name to search customer--2) Type c-customer name to create invoice quickly--3) Type l-ledger account to find ledger account details--4) Type s-shop to find shop details --5) Type i-invoice number/reference to find invoice details --6) Type m-customer name to make customer as paid"><span class="fas fa-info-circle text-gray-300"></span></a>
+                                        <asp:TextBox ID="txtCustomer" Visible="true" ClientIDMode="Static" Style="border-radius: 20px 0px 0px 20px; border-right-color: white;" class=" form-control form-control-sm" Width="210px" type="search" aria-label="Search" runat="server" placeholder=" search customer & do command" aria-describedby="search-addon"></asp:TextBox>
+
+                                        <asp:LinkButton ID="Button2" Visible="true" runat="server" Style="border-radius: 0px 20px 20px 0px; border-left-color: white; border-right-color: #adb5bd; border-top-color: #adb5bd; border-bottom-color: #adb5bd" class="btn btn-white btn-sm " Text="Search" OnClick="Button2_Click" OnClientClick="myFunction()" CausesValidation="false"><span class="fas fa-search"></span></asp:LinkButton>
+
+
+                                    </div>
+                                </asp:Panel>
+                                <ul class="navbar-nav ml-auto" style="position: relative">
+                                    <li class="nav-item dropdown no-arrow d-sm-none" id="hiddensearch" runat="server" visible="false">
+                                        <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-search fa-fw"></i>
+                                        </a>
+                                        <!-- Dropdown - Messages -->
+                                        <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                                            aria-labelledby="searchDropdown">
+
+                                            <div class="input-group">
+                                                <asp:TextBox ID="txtHidenSearch" Visible="true" Style="border-radius: 20px 0px 0px 20px;" class="bc form-control form-control-sm st" type="search" aria-label="Search" runat="server" placeholder=" search customer..." aria-describedby="search-addon"></asp:TextBox>
+                                                <asp:LinkButton ID="LinkButton1" runat="server" Style="border-radius: 0px 0px 0px 0px" class="btn btn-outline-danger btn-sm " Text="Search" OnClick="Button5_Click" OnClientClick="myFunction1()" CausesValidation="false"><span class="fas fa-search"></span></asp:LinkButton>
+
+                                            </div>
+
+                                        </div>
+                                    </li>
+                                    <div class="nav-item dropdown no-arrow mx-1" id="Div3" runat="server">
+                                        <div id="status"></div>
+                                    </div>
+                                    <li class="nav-item dropdown no-arrow mx-1" id="Customerbar" runat="server">
+                                        <a class="nav-link" href="rentstatus1.aspx" data-toggle="tooltip" data-placement="top" title="Number of customer(s) whose due date less or equals to 15 Days">
+                                            <img src="../../asset/feather/info.svg" />
+                                            <span id="Span1" runat="server" class=" badge-counter badge-pill badge badge-danger ">0</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item dropdown no-arrow mx-1" id="Settingbar" runat="server">
+                                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown3" role="button"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <img src="../../asset/feather/settings.svg" />
+                                        </a>
+                                        <!-- Dropdown - User Information -->
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                            aria-labelledby="userDropdown3">
+                                            <a class="dropdown-item" href="CustomerVendorPreferences.aspx">
+                                                <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Preferences
+                                            </a>
+                                            <a class="dropdown-item" href="orgprofileview.aspx">
+                                                <i class="fas fa-home fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                View company
+                                            </a>
+                                            <a class="dropdown-item" href="ActivityReport.aspx">
+                                                <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Activity Log
+                                            </a>
+                                            <a class="dropdown-item" href="backupdatabase.aspx">
+                                                <i class="fas fa-database fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Backup database
+                                            </a>
+                                            <asp:LinkButton ID="LinkButton2" class="dropdown-item" runat="server" OnClick="LinkButton2_Click">
+                                              <i class="fas fa-download fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Download backup database
+                                            </asp:LinkButton>
+                   
+                                            <a class="dropdown-item" href="app/jspm4-4.0.22.512-win.exe">
+                                                <i class="fas fa-print fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Download POS print app
+                                            </a>
+                                            <a class="dropdown-item" href="help.aspx">
+                                                <i class="fas fa-sm fa-fw mr-2 fa-lightbulb"></i>
+                                                help
+                                            </a>
+
+                                        </div>
+                                    </li>
+
+
+                                    <li class="nav-item dropdown no-arrow ">
+
+
+                                        <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <img src="../../asset/Brand/bell.svg" />
+                                            <!-- Counter - Alerts -->
+                                            <span id="counter" runat="server" class=" badge-counter badge-pill badge badge-danger "></span>
+                                        </a>
+
+                                        <!-- Dropdown - Alerts -->
+                                        <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                            aria-labelledby="alertsDropdown">
+                                            <h6 class="dropdown-header">Alerts Center
+                                            </h6>
+                                            <br />
+                                            <div id="tbl" class="scrollarea" style="max-height: 500px; max-width: 600px">
+                                                <asp:Repeater ID="Repeater1" runat="server">
+                                                    <ItemTemplate>
+
+                                                        <a class="dropdown-item  d-flex align-items-center" href="<%#Eval("query")%>">
+                                                            <div class="mr-3">
+                                                                <div class="<%#Eval("bg")%>">
+                                                                    <i class="<%#Eval("Icon")%>"></i>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <div class="small text-gray-500"><%#Eval("Date", "{0: MMM/dd/y}")%></div>
+                                                                <span class="small text-gray-900 font-weight-bold"><%#Eval("Descr")%></span>
+
+                                                                <div><span class="font-weight-normal">by <%#Eval("Who")%></span></div>
+
+                                                            </div>
+                                                        </a>
+                                                    </ItemTemplate>
+                                                </asp:Repeater>
+                                                <center>
+
+                                                    <main role="main" id="mainb" runat="server" visible="false">
+
+                                                        <div class="starter-template">
+                                                            <center>
+
+
+                                                                <p class="lead">
+
+                                                                    <i class="fas fa-bell-slash text-gray-300  fa-2x"></i>
+
+                                                                </p>
+                                                                <h6 class="text-gray-700 small font-italic">No Notification</h6>
+                                                            </center>
+                                                        </div>
+
+
+
+                                                    </main>
+                                                </center>
+
+
+
+                                            </div>
+
+                                            <center>
+                                                <a class="dropdown-item text-center small text-danger" id="unread_tab" runat="server" href="marknotifasread.aspx?markas=true">Mark as Read</a>
+                                                <a class="dropdown-item text-center small " id="delete_tab" runat="server" href="marknotifasread.aspx?r=true"><span class="fas fa-trash mr-2 text-gray-300"></span><span class="text-primary">Delete All Notification</span></a>
+                                            </center>
+
+                                        </div>
+                                    </li>
+                                    <div class="topbar-divider d-none d-sm-block"></div>
+                                    <li class="nav-item dropdown no-arrow">
+                                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <div id="profilediv" runat="server">
+                                                <asp:Repeater ID="Repeater4" runat="server">
+                                                    <ItemTemplate>
+
+                                                        <div class="dropdown-list-image mr-1">
+                                                            <img class="rounded-circle" src="../../asset/userprofile/<%#Eval("FileName")%><%#Eval("Extension")%>" height="25" width="25" />
+                                                            <div class="status-indicator bg-success"></div>
+                                                        </div>
+
+                                                    </ItemTemplate>
+                                                </asp:Repeater>
+                                            </div>
+
+                                            <img src="../../asset/person.svg" id="defaultprofile" runat="server" />
+                                        </a>
+                                        <!-- Dropdown - User Information -->
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                            aria-labelledby="userDropdown">
+                                            <a class="dropdown-item" href="users.aspx">
+                                                <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Profile
+                                            </a>
+
+
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="leaveform.aspx">
+                                                <i class="fas fa-id-card fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Leave Form
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="leavedeprtment.aspx" id="leavereuest" runat="server">
+                                                <i class="fas fa-id-card fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Leave Request
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Logout
+                                            </a>
+                                        </div>
+                                    </li>
+
+                                </ul>
+
+                            </nav>
+
+                            <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                            </asp:ContentPlaceHolder>
+
+                        </div>
+                        <!-- End of Main Content -->
+
+
+                        <!-- Footer -->
+                        <footer class="sticky-footer bg-light">
+                            <div class="container my-auto">
+                                <div class="copyright text-center text-gray-400 my-auto">
+                                    <span>Copyright &copy; 2021-2025 Qemer Book</span>
+                                </div>
+                            </div>
+                        </footer>
+                        <!-- End of Footer -->
+
+                    </div>
+                    <!-- End of Content Wrapper -->
+
+                </div>
+                <!-- End of Page Wrapper -->
+
+                <!-- Scroll to Top Button-->
+                <a class="scroll-to-top rounded" href="#page-top">
+                    <i class="fas fa-angle-up"></i>
+                </a>
+                <div class="modal fade bd-example-modal-lg" id="Stockout" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <span class="modal-title text-gray-900 small text-center" id="myLargeModalLabel">Check The Requested Item</span>
+                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <asp:Repeater ID="Repeater3" runat="server">
+
+
+                                    <HeaderTemplate>
+
+                                        <table class="table align-items-center table-sm table-bordered ">
+
+                                            <thead class=" thead-white">
+                                                <tr>
+
+                                                    <th scope="col" class="text-left text-gray-900 ">Item</th>
+                                                    <th scope="col" class="text-left text-gray-900">Qty</th>
+                                                    <th scope="col" class="text-right text-gray-900">Remark</th>
+                                                    <th scope="col" class="text-right text-gray-900">For</th>
+
+
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                    </HeaderTemplate>
+                                    <ItemTemplate>
+                                        <tr>
+
+                                            <td class="text-left text-gray-900">
+                                                <%# Eval("item")%>
+                                            </td>
+                                            <td class="text-left text-gray-900">
+                                                <%# Eval("qty")%>
+                                            </td>
+                                            <td class="text-right text-gray-900">
+                                                <%# Eval("remark")%>
+                                            </td>
+                                            <td class="text-right text-gray-900">
+                                                <%# Eval("issuedby")%>
+                                            </td>
+
+                                        </tr>
+                                    </ItemTemplate>
+                                    <FooterTemplate>
+                                        </tbody>
+              </table>
+              <hr class="text-gray-700 font-weight-bold" />
+                                    </FooterTemplate>
+
+                                </asp:Repeater>
+                            </div>
+                            <div class="modal-footer">
+                                <asp:Button ID="btnApprove" runat="server" class="btn btn-success btn-sm" CausesValidation="false" Text="Approve" OnClick="btnApprove_Click" />
+                                <button class="btn btn-danger btn-sm" type="button" data-toggle="modal" data-target="#logoutModal2">Deny</button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade " id="logoutModal2" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+                    <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable" role="document" style="width: 240px">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <span class="modal-title text-gray-900 font-weight-bold small text-center" id="exampleModalLabel2">Put the reason you deny</span>
+                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <asp:TextBox ID="txtDenyReason" runat="server" class="form-control" Height="200px" TextMode="MultiLine"></asp:TextBox>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <asp:Button ID="Button3" runat="server" class="btn w-100 btn-warning btn-sm" CausesValidation="false" Text="Deny" OnClick="btnDeny_Click" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+                <!-- Logout Modal-->
+                <div class="modal fade " id="logoutModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog " role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="text-gray-900">Select "Logout" below if you are ready to end your curreionnt session.</p>
+
+
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                <asp:Button ID="Button1" runat="server" OnClick="Button1_Click" class="btn btn-primary" CausesValidation="false" Text="Logout" />
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+    </form>
+
+</body>
+<script>
+                function myFunction() {
+                    var x = document.getElementById("myDIV");
+                    if (x.style.display === "none") {
+                        x.style.display = "block";
+                    } else {
+                        x.style.display = "none";
+                    }
+                }
+</script>
+<script>
+                function myFunction1() {
+                    var x = document.getElementById("myDIV2");
+                    if (x.style.display === "none") {
+                        x.style.display = "block";
+                    } else {
+                        x.style.display = "none";
+                    }
+                }
+</script>
+
+<script src="../../asset/js/bootstrap.bundle.min.js"></script>
+<script src="../../asset/js/jquery.easing.min.js"></script>
+<script src="../../asset/js/sb-admin-2.js"></script>
+<script type="text/javascript">
+                $(function () {
+                    $("#mssg [id*=chkHeader1]").click(function () {
+                        if ($(this).is(":checked")) {
+                            $("#mssg [id*=chkRow1]").attr("checked", "checked");
+                            $("#mssg [id*=customCheck1]").attr("checked", "checked");
+                        } else {
+                            $("#mssg [id*=chkRow1]").removeAttr("checked");
+                            $("#mssg [id*=customCheck1]").removeAttr("checked", "checked");
+                        }
+                    });
+                    $("#mssg [id*=chkRow1]").click(function () {
+                        if ($("#mssg [id*=chkRow1]").length == $("#mssg [id*=chkRow1]:checked").length) {
+                            $("#mssg [id*=chkHeader1]").attr("checked", "checked");
+                        } else {
+                            $("#mssg [id*=chkHeader1]").removeAttr("checked");
+                        }
+                    });
+                });
+</script>
+<script type="text/javascript">
+                $(function () {
+                    $("#tblCustomers [id*=chkHeader]").click(function () {
+                        if ($(this).is(":checked")) {
+                            $("#tblCustomers [id*=chkRow]").attr("checked", "checked");
+                            $("#tblCustomers [id*=customCheck1]").attr("checked", "checked");
+                        } else {
+                            $("#tblCustomers [id*=chkRow]").removeAttr("checked");
+                            $("#tblCustomers [id*=customCheck1]").removeAttr("checked", "checked");
+                        }
+                    });
+                    $("#tblCustomers [id*=chkRow]").click(function () {
+                        if ($("#tblCustomers [id*=chkRow]").length == $("#tblCustomers [id*=chkRow]:checked").length) {
+                            $("#tblCustomers [id*=chkHeader]").attr("checked", "checked");
+                        } else {
+                            $("#tblCustomers [id*=chkHeader]").removeAttr("checked");
+                        }
+                    });
+                });
+</script>
+<script type="text/javascript">
+                $(function () {
+                    $("#tblCustomerss [id*=chkHeader3]").click(function () {
+                        if ($(this).is(":checked")) {
+                            $("#tblCustomerss [id*=chkRow3]").attr("checked", "checked");
+                            $("#tblCustomerss [id*=customCheck1]").attr("checked", "checked");
+                        } else {
+                            $("#tblCustomerss [id*=chkRow3]").removeAttr("checked");
+                            $("#tblCustomerss [id*=customCheck1]").removeAttr("checked", "checked");
+                        }
+                    });
+                    $("#tblCustomerss [id*=chkRow3]").click(function () {
+                        if ($("#tblCustomerss [id*=chkRow3]").length == $("#tblCustomerss [id*=chkRow3]:checked").length) {
+                            $("#tblCustomerss [id*=chkHeader3]").attr("checked", "checked");
+                        } else {
+                            $("#tblCustomerss [id*=chkHeader3]").removeAttr("checked");
+                        }
+                    });
+                });
+</script>
+<script type="text/javascript">
+                $(function () {
+                    $("#shop [id*=chkHeaders]").click(function () {
+                        if ($(this).is(":checked")) {
+                            $("#shop [id*=chkRows]").attr("checked", "checked");
+                            $("#shop [id*=customCheck1]").attr("checked", "checked");
+                        } else {
+                            $("#shop [id*=chkRows]").removeAttr("checked");
+                            $("#shop [id*=customCheck1]").removeAttr("checked", "checked");
+                        }
+                    });
+                    $("#shop [id*=chkRows]").click(function () {
+                        if ($("#shop [id*=chkRows]").length == $("#shop [id*=chkRows]:checked").length) {
+                            $("#shop [id*=chkHeaders]").attr("checked", "checked");
+                        } else {
+                            $("#shop [id*=chkHeaders]").removeAttr("checked");
+                        }
+                    });
+                });
+</script>
+
+<script type="text/javascript">
+                function play() {
+                    var audio = new Audio("notification.mp3");
+                    audio.play();
+                }
+</script>
+<script>
+                $(document).ready(function () {
+                    $("#mytoast").toast({
+                        delay: 10000
+                    });
+                })
+</script>
+<script type="text/javascript">
+        $(document).ready(function () {
+
+            $('.toast').toast('show');
+
+
+        })
+</script>
+
+<script src="../../asset/js/tooltip.js"></script>
+
+</html>
+
