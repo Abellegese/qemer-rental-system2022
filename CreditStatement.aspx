@@ -177,9 +177,7 @@
           
                             </div>
 
-                                                                                                                 <center>
-                                        <h1 class="water h1  font-weight-bolder" style="font-size: 60px" id="WaterMarkOname" runat="server"></h1>
-                                                         </center>   
+
                         </div>
                                      <div class="row mt-lg-5">
                                          <div class="col-12 border-top border-bottom">
@@ -196,7 +194,10 @@
                                              </div>
                                          </div>
                                      </div>
-                           </div>
+                                     <center>
+                                         <h1 class="water h1  font-weight-bolder" style="font-size: 60px" id="WaterMarkOname" runat="server"></h1>
+                                     </center>
+                                 </div>
 
                                 </div>
      
