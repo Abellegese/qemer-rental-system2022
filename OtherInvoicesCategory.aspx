@@ -3,10 +3,10 @@
     <title>Invoice Category</title>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <div class="container-fluid">
+    <div class="container-fluid pl-3 pr-3">
         <div class="row">
            <div class="col">
-               <div class="card shadow-none">
+               <div class="bg-white rounded-lg">
              <div class="row">
                  
                 <div class="col-xl-5 col-md-6 border-right">
@@ -22,32 +22,32 @@
                 <div class="card-body">
                     <asp:Label ID="lblMsg" runat="server"></asp:Label>
                     <div class="form-group mb-2">
-             <label class=font-weight-bold>Invoice Name<span class=text-danger>*</span></label>
+             <label class="font-weight-bold text-gray-900 small text-uppercase">Invoice Name<span class=text-danger>*</span></label>
             <div class="input-group input-group-alternative">
-            <asp:TextBox ID="txtName" class="form-control " runat="server"></asp:TextBox>
+            <asp:TextBox ID="txtName" class="form-control " placeholder="Invoice Name" runat="server"></asp:TextBox>
               <div class="input-group-prepend">
-                <span class="input-group-text"></span>
+                <span class="input-group-text">IN</span>
               </div>
               
             </div>
           </div> 
 
                          <div class="form-group mb-2">
-             <label class=font-weight-bold>Rate<span class=text-danger>*</span></label>
+             <label class="font-weight-bold text-gray-900 small text-uppercase">Rate<span class=text-danger>*</span></label>
             <div class="input-group input-group-alternative">
             <asp:TextBox ID="txtRate" class="form-control " value="1" runat="server"></asp:TextBox>
               <div class="input-group-prepend">
-                <span class="input-group-text"></span>
+                <span class="input-group-text">Rate</span>
               </div>
               
             </div>
           </div> 
                                         <div class="form-group mb-2">
-             <label class=font-weight-bold>Unit<span class=text-danger>*</span></label>
+             <label class="font-weight-bold text-gray-900 small text-uppercase">Unit<span class=text-danger>*</span></label>
             <div class="input-group input-group-alternative">
             <asp:TextBox ID="txtUnit" class="form-control " value="-" runat="server"></asp:TextBox>
               <div class="input-group-prepend">
-                <span class="input-group-text"></span>
+                <span class="input-group-text">Unit</span>
               </div>
               
             </div>
@@ -55,9 +55,9 @@
 
 
                                                             <div class="form-group mb-2">
-             <label class=font-weight-bold>Income Account<span class=text-danger>*</span></label>
+             <label class="font-weight-bold text-gray-900 small text-uppercase">Income Account<span class=text-danger>*</span></label>
             <div class="input-group input-group-alternative">
-                <asp:DropDownList ID="ddlIncomeAccount" class="form-control " runat="server">
+                <asp:DropDownList ID="ddlIncomeAccount" class="form-control form-control-sm " runat="server">
 
                 </asp:DropDownList>
      
@@ -102,7 +102,7 @@
              <div class="row">
 
             <!-- Earnings (Monthly) Card Example -->
-            <div class="col-md-12 mb-1">
+            <div class="col-md-12 mb-1 small">
 
                <asp:Repeater ID="Repeater1" runat="server" >
                          
@@ -116,7 +116,7 @@
                                 <th scope="col">Rate</th>
                                     <th scope="col">Unit</th>
 
-                                  <th scope="col">Ledger Account</th>
+                                  <th scope="col" class="text-right">Ledger Account</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -133,7 +133,7 @@
                                 <%# Eval("unit")%>
                                 </td>
 
-                                 <td class="text-cneter">
+                                 <td class="text-right">
                                 <%# Eval("incomeaccount")%>
                                 </td>
                               </tr>
@@ -170,7 +170,7 @@
       <div class="modal-body">
                     <div class="row mb-3">
     <div class="col-md-12">
-        <label class="small" style="color:#ff00bb">Select Income type</label>
+        <label class="small" style="color:#ff00bb">Select Invoice type</label>
 <asp:DropDownList ID="ddlExpense" class="form-control form-control-sm" runat="server"></asp:DropDownList>
     </div>
               </div>
