@@ -180,17 +180,6 @@ namespace advtech.Finance.Accounta
         protected void Button5_Click(object sender, EventArgs e)
         {
 
-            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString2"].ConnectionString;
-            using (SqlConnection con = new SqlConnection(CS))
-            {
-                con.Open();
-
-                for (int j = 1; j < 5000000; j++)
-                {
-                    SqlCommand cmdre = new SqlCommand("insert into ta values('abellrgrserjfwk','abellrgrserjfwk','abellrgrserjfwk','abellrgrserjfwk','abellrgrserjfwk')", con);
-                    cmdre.ExecuteNonQuery();
-                }
-            }
         }
     }
 }
