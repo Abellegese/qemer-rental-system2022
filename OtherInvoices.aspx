@@ -12,6 +12,7 @@
             opacity: 0.25;
         }
     </style>
+
     <script type="text/javascript">
         $(document).ready(function () {
             //We are binding onchange event using jQuery built-in change event
@@ -110,22 +111,38 @@
         <div class="modal fade bd-example-modal-lg" tabindex="-1" id="exampleModal1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h5 class="modal-title text-gray-900 font-weight-bold" id="H1"><span class="mr-2 fas fa-hand-holding-usd" style="color: #ff00bb"></span>Create Invoice</h5>
+                    <div class=" modal-header">
+                        <h6 class="modal-title text-gray-900 font-weight-bold" id="H1">
+                            <span class="mr-2 fas fa-hand-holding-usd" style="color: #ff00bb"></span>Create Invoice                               
+                        </h6>
+
+
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body">
 
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="custom-control mb-1  custom-checkbox ">
+                                    <input type="checkbox" class="custom-control-input" id="Checkbox1" runat="server" clientidmode="Static" />
+                                    <label class="custom-control-label mt-1 small text-gray-900 " for="Checkbox1">Is Bulk</label>
+                                    <button type="button" id="AddButton" class="btn btn-sm btn-circle" style="background-color: #b868bb; display: none">
+                                        <span class="fas fa-plus text-white" data-toggle="tooltip" data-placement="top" title="Add to cart"></span>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label>Select Invoice type</label>
-                                <asp:DropDownList ID="ddlExpense" class="form-control  form-control-sm" runat="server"></asp:DropDownList>
+                                <label class="small text-gray-900">Select Invoice type</label>
+                                <asp:DropDownList ID="ddlExpense" ClientIDMode="Static" class="form-control  form-control-sm" runat="server"></asp:DropDownList>
                             </div>
 
                             <div class="col-md-6">
-                                <label>Select Customer</label>
+                                <label class="small text-gray-900">Select Customer</label>
                                 <asp:DropDownList ID="ddlVendor" ClientIDMode="Static" class="form-control form-control-sm" runat="server"></asp:DropDownList>
                             </div>
                         </div>
@@ -148,7 +165,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <p class="small text-danger mt-1 mb-2 "><span class="fas fa-arrow-alt-circle-right mr-1"></span>If amount is unit based, please enter the amount of the unit, eg. 5 hour. Else put vat included customer payment</p>
-                                <asp:TextBox ID="txtAmount" class="form-control form-control-sm" placeholder="Amount [VAT Included]" runat="server"></asp:TextBox>
+                                <asp:TextBox ID="txtAmount" ClientIDMode="Static" class="form-control form-control-sm" placeholder="Amount [VAT Included]" runat="server"></asp:TextBox>
                             </div>
                             <div class="col-md-6">
                                 <label class="mb-2 small font-weight-bold">Reference</label>
@@ -172,15 +189,33 @@
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label>Select Cash Account <span class="text-danger font-weight-bolder">OR</span></label>
-                                <asp:DropDownList ID="ddlCash" class="form-control form-control-sm" runat="server"></asp:DropDownList>
+                                <label class="small text-gray-900">Select Cash Account <span class="text-danger small font-weight-bolder">OR</span></label>
+                                <asp:DropDownList ID="ddlCash" ClientIDMode="Static" class="form-control form-control-sm" runat="server"></asp:DropDownList>
 
                             </div>
 
                             <div class="col-md-6">
-                                <label>Select Bank Account</label>
-                                <asp:DropDownList ID="ddlBank" class="form-control form-control-sm" runat="server"></asp:DropDownList>
+                                <label class="small text-gray-900">Select Bank Account</label>
+                                <asp:DropDownList ID="ddlBank" ClientIDMode="Static" class="form-control form-control-sm" runat="server"></asp:DropDownList>
                             </div>
+                        </div>
+                        <div class="row">
+                            <div class="card-body">
+                                <table id="myTableHeader" style="display: none" class="table table-sm table-bordered small text-gray-900">
+                                    <thead>
+                                        <th>Invoice Type</th>
+                                        <th>Amount</th>
+                                    </thead>
+                                    <tr>
+                                    </tr>
+                                </table>
+                                <table id="myTable" class="table table-sm table-bordered small text-gray-900">
+
+                                    <tr>
+                                    </tr>
+                                </table>
+                            </div>
+
                         </div>
 
                     </div>
@@ -214,15 +249,15 @@
                                 <div class="custom-control custom-radio custom-control-inline">
 
                                     <input type="radio" id="greater" name="customRadioInline1" class="custom-control-input" checked="true" runat="server" clientidmode="Static" />
-                                    <label class="custom-control-label text-gray-900  small" for="greater">></label>
+                                    <label class="custom-control-label text-gray-900  small" for="greater">Greater</label>
                                 </div>
                                 <div class="custom-control custom-radio custom-control-inline">
                                     <input type="radio" id="less" name="customRadioInline1" class="custom-control-input" runat="server" clientidmode="Static" />
-                                    <label class="custom-control-label font-weight-200  text-gray-900 " for="less"><</label>
+                                    <label class="custom-control-label font-weight-200  text-gray-900 " for="less">Less</label>
                                 </div>
                                 <div class="custom-control custom-radio custom-control-inline">
                                     <input type="radio" id="equal" name="customRadioInline1" class="custom-control-input" runat="server" clientidmode="Static" />
-                                    <label class="custom-control-label font-weight-200  text-gray-900 " for="equal">=</label>
+                                    <label class="custom-control-label font-weight-200  text-gray-900 " for="equal">Equals</label>
                                 </div>
 
                             </div>
@@ -236,13 +271,14 @@
                         </div>
                         <div class="row">
                             <div class="col-md-5">
-                                <asp:Button ID="btnAmountCondition" runat="server" class="btn btn-sm w-100 btn-danger" Text="search.." OnClick="btnAmountCondition_Click" />
 
                             </div>
                         </div>
                     </div>
                     <center>
                         <div class="modal-footer">
+                            <asp:Button ID="btnAmountCondition" runat="server" class="btn btn-sm w-100 btn-danger" Text="search.." OnClick="btnAmountCondition_Click" />
+
                         </div>
 
                     </center>
@@ -253,7 +289,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h5 class="modal-title text-gray-900 font-weight-bold" id="H1">Filter Invoice</h5>
+                        <h5 class="modal-title text-gray-900 font-weight-bold" id="H1"><span class="fas fa-calendar mr-2" style="color:#b868bb"></span>Filter Invoice</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -271,10 +307,8 @@
                                     <br />
                                     <div class="form-group mb-0">
                                         <div class="input-group input-group-alternative">
-                                            <asp:TextBox ID="txtDateform" class="form-control " TextMode="Date" runat="server"></asp:TextBox>
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text"><i class=" fas fa-calendar"></i></span>
-                                            </div>
+                                            <asp:TextBox ID="txtDateform" class="form-control form-control-sm" TextMode="Date" runat="server"></asp:TextBox>
+                          
 
                                         </div>
                                     </div>
@@ -288,11 +322,8 @@
                                     <br />
                                     <div class="form-group mb-0">
                                         <div class="input-group input-group-alternative">
-                                            <asp:TextBox ID="txtDateto" class="form-control " TextMode="Date" runat="server"></asp:TextBox>
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text"><i class=" fas fa-calendar"></i></span>
-                                            </div>
-
+                                            <asp:TextBox ID="txtDateto" class="form-control form-control-sm " TextMode="Date" runat="server"></asp:TextBox>
+                
                                         </div>
                                     </div>
                                 </div>
@@ -302,8 +333,8 @@
                     </div>
                     <div class="modal-footer">
                         <center>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <asp:Button ID="Button3" class="btn btn-primary" runat="server"
+
+                            <asp:Button ID="Button3" class="btn btn-sm btn-danger" runat="server"
                                 Text="Search..." OnClick="Button3_Click" />
                     </div>
                     </center>
@@ -400,6 +431,9 @@
                                 </a>
                                 <span class="badge mr-2 text-white" id="InvoiceBadge" style="background-color: #9d469d" visible="false" runat="server"></span>
                                 <span class="fas fa-hashtag mr-2" style="color: #ff00bb" id="I1" runat="server"></span><span id="I2" runat="server" class="m-0 font-weight-bold h5 text-gray-900">Invoice</span>
+                                <span class="badge mr-2 text-white" id="editSpan" style="background-color: #adc728" visible="false" runat="server"></span>
+                                <span class="badge mr-2 text-white" id="editSpan2" style="background-color: #22e0ab" visible="false" runat="server">selected</span>
+                                <span class="badge mr-2 text-white" id="DateRangerSpan" style="background-color: #7472f3" visible="false" runat="server"></span>
 
                             </div>
 
@@ -421,7 +455,7 @@
                                             </div>
                                         </a>
                                     </button>
-                                    <button runat="server" id="modalMain" type="button" class="btn btn-circle mx-1  btn-sm text-xs btn-danger" data-toggle="modal" data-target="#exampleModalLongService">
+                                    <button runat="server" id="modalMain" visible="false" type="button" class="btn btn-circle mx-1  btn-sm text-xs btn-danger" data-toggle="modal" data-target="#exampleModalLongService">
                                         <a class="nav-link btn btn-sm" data-toggle="tooltip" data-placement="bottom" title="Export as Excel">
                                             <div>
                                                 <i class="fas fa-file-excel text-white"></i>
@@ -429,13 +463,13 @@
                                             </div>
                                         </a>
                                     </button>
-                                    <button name="b_print" onclick="printdiv('div_print');" type="button" title="Print" class="mx-1 btn btn-sm btn-danger btn-circle" data-toggle="modal" data-target="#exampleModalCenter">
+                                    <button name="b_print" visible="false" onclick="printdiv('div_print');" id="btnMainPrint" runat="server" type="button" title="Print" class="mx-1 btn btn-sm btn-danger btn-circle" data-toggle="modal" data-target="#exampleModalCenter">
                                         <div>
                                             <i class="fas fa-print text-white font-weight-bold"></i>
 
                                         </div>
                                     </button>
-                                    <button type="button" runat="server" id="Button5" visible="false" class=" mx-1 btn btn-sm btn-success btn-circle" data-toggle="modal" data-target="#exampleModalSMS">
+                                    <button type="button" runat="server" id="btnPOS" visible="false" class=" mx-1 btn btn-sm btn-success btn-circle" data-toggle="modal" data-target="#exampleModalSMS">
                                         <a class="nav-link" data-toggle="tooltip" data-placement="bottom" title="Print using POS">
                                             <div>
                                                 <i class="fas fa-print text-white font-weight-bold"></i>
@@ -493,13 +527,12 @@
                                             <table class="table align-items-center table-sm ">
                                                 <thead>
                                                     <tr>
-                                                        <th scope="col" class=" font-weight-bold small" style="color: #9d469d">INV#
+                                                        <th scope="col" class=" font-weight-bold small" style="color: #9d469d">FS#
                                                         </th>
                                                         <th scope="col" class=" font-weight-bold small" style="color: #9d469d">Customer
                                                         </th>
 
-                                                        <th scope="col" class=" font-weight-bold small" style="color: #9d469d">
-                                                            <asp:LinkButton ID="LinkButton1" runat="server" CommandName="incomename">Type</asp:LinkButton></th>
+
 
                                                         <th scope="col" class="text-right text-danger small" style="color: #9d469d">
                                                             <asp:LinkButton ID="LinkButton2" runat="server" CommandName="amount">Amount</asp:LinkButton></th>
@@ -517,16 +550,12 @@
 
                                             <tr>
                                                 <td>
-                                                    <a class=" text-primary small " href="OtherInvoices.aspx?ref2=<%# Eval("id")%>&&expname=<%# Eval("incomename")%>"><span><%# Eval("id")%></span></a>
+                                                    <a class=" text-primary small " href="OtherInvoices.aspx?fsno=<%# Eval("fsno")%>"><span><%# Eval("fsno")%></span></a>
                                                 </td>
                                                 <td>
-                                                    <a class=" text-primary small " href="OtherInvoices.aspx?ref2=<%# Eval("id")%>&&expname=<%# Eval("incomename")%>"><span><%# Eval("customer")%></span></a>
+                                                    <a class=" text-primary small " href="OtherInvoices.aspx?fsno=<%# Eval("fsno")%>"><span><%# Eval("customer")%></span></a>
                                                 </td>
-                                                <td>
-                                                    <a class=" text-primary small" href="OtherInvoices.aspx?ref2=<%# Eval("id")%>&&expname=<%# Eval("incomename")%>"><span><%# Eval("incomename")%></span></a>
 
-
-                                                </td>
                                                 <td class="text-right">
                                                     <span id="Span1" class="mx-1 small text-gray-900" runat="server"><%# Eval("amount","{0:N2}")%></span>
                                                 </td>
@@ -616,19 +645,17 @@
                                                             <span runat="server" class="mb-1 border-bottom border-dark h3 text-gray-900 font-weight-bold " id="InvoiceName"></span>
                                                             <br />
                                                             <div id="BodyFontSizeDiv1" runat="server">
-                                                                <span class="mb-1  text-uppercase text-gray-900 font-weight-bold " id="ExpenseType" runat="server"><span><sup id="Status2" class="mx-2" runat="server"></sup></span></span>
-                                                                <br />
+                                          
                                                                 <span class="mb-2   font-weight-bold ">Customer:</span><span class=" mx-1 mb-2 text-gray-900  text-right  " id="vendor1" runat="server"></span><span class="mb-2 text-primary  "></span>
                                                                 <br />
                                                                 <span><span class="fas fa-address-book  mr-2"></span><span id="Address" class="text-gray-900" contenteditable="true" runat="server"></span></span>
                                                                 <br />
                                                                 <span width="200px" class="">TIN<span class="fas fa-hashtag text-gray-300 ml-1"></span><span id="TINNUMBER" width="200px" contenteditable="true" runat="server" class="ml-1 text-gray-900"></span></span>
                                                                 <br />
-                                                                <span><span class="mb-2   font-weight-bold ">Invoice Date:</span><span class=" mx-1 mb-2 text-gray-900  text-right  " id="BillDate1" runat="server"></span> </span>
-                                                                <br />
+
                                                                 <span class="   font-weight-bold mr-2">Ref#</span><span class=" text-gray-900  font-weight-bold " id="RefNum" runat="server"></span>
                                                                 <br />
-                                                                <span id="PayMode" contenteditable="true" visible="false" runat="server" class="mt-2 "><i class=" fas fa-dollar-sign text-dark "></i><span class="mx-1"><span class="font-weight-bold  text-gray-400">Payment Mode:</span> <span id="PaymentMode" runat="server"></span></span></span>
+                                                                <span id="PayMode" contenteditable="true" visible="false" runat="server" class=" mt-3 border-top border-dark"><i class=" fas fa-dollar-sign text-dark "></i><span class="mx-1"><span class="font-weight-bold  text-gray-400">Payment Mode:</span> <span id="PaymentMode" runat="server"></span></span></span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -636,7 +663,7 @@
                                                     <div class="col-md-6">
                                                         <div class="card-header text-uppercase text-right text-black bg-white font-weight-bold">
                                                             <img class="" src="../../asset/Brand/gh.jpg" alt="" id="logoElement" runat="server" width="110" height="80">
-                                    
+
                                                             <br />
                                                             <span class="mb-1 h3 border-top border-dark  text-uppercase text-gray-900 font-weight-bold " id="oname" runat="server"></span>
                                                             <br />
@@ -645,9 +672,11 @@
                                                                 <br />
                                                                 <span class="fas fa-address-book text-gray-400 mr-2"></span><span class="mb-2 text-gray-900  " id="addressname" runat="server"></span>
                                                                 <br />
-                                                                <span><span class=" text-uppercase text-gray-900 font-weight-bold" id="INVNO" runat="server"></span><span id="Span4" runat="server"></span></span>
+                                             
+                                                                <span><span class=" text-uppercase border-bottom text-gray-900 font-weight-bold" contenteditable="true" id="FSno" runat="server"></span><span id="Span3" runat="server"></span></span>
                                                                 <br />
-                                                                <span><span class=" text-uppercase text-gray-900 font-weight-bold" contenteditable="true" id="FSno" runat="server"></span><span id="Span3" runat="server"></span></span>
+                                                                <span><span class="mb-2   font-weight-bold ">Date:</span><span class=" mx-1 mb-2 text-gray-900  text-right  " id="BillDate1" runat="server"></span> </span>
+
                                                             </div>
                                                         </div>
 
@@ -656,59 +685,77 @@
 
                                                 <div class="card-body">
                                                     <div id="BodyFontSize3" runat="server">
-                                                        <table class="table align-items-center table-sm table-bordered ">
 
-                                                            <thead class=" thead-dark ">
+                                                        <asp:Repeater ID="rptBindDetails" runat="server" OnItemDataBound="rptBindDetails_ItemDataBound">
+
+                                                            <HeaderTemplate>
+
+                                                                <table class="table align-items-center table-bordered table-sm text-gray-900 ">
+                                                                    <thead class=" thead-dark">
+                                                                        <tr>
+                                                                          
+                                                                            <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item1 %>>INV#</th>
+                                                                            <th scope="col" class="text-left text-white" >Item</th>
+                                                                            <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item2 %>>Unit</th>
+                                                                            <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item3 %>>Rate</th>
+                                                                            <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item4 %>>Qty.</th>
+                                                                            <th scope="col" class="text-right text-white">Amount</th>
+                                                                            <th scope="col" class="text-right text-white">VAT(15%)</th>
+                                                                            <th scope="col" class="text-right text-white">Total</th>
+
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                            </HeaderTemplate>
+                                                            <ItemTemplate>
+
                                                                 <tr>
+                                                                    <td <%#ColumnvistoRepeater().Item1 %>>
+                                                                        <a class=" text-primary small " data-toggle="tooltip" title="Edit the Line" href="OtherInvoices.aspx?fsno=<%# Eval("fsno")%>&&id=<%# Eval("id")%>&&invtype=<%# Eval("incomename")%>&&edit=true&&customer=<%# Eval("customer")%>"><span><%# Eval("id")%></span></a>
+                                                                    
+                                                                    </td>
+                                                                    <td>
+                                                                        <%# Eval("incomename") %>
+                                                                    </td>
+                                                                    <td <%#ColumnvistoRepeater().Item2 %>>
+                                                                        <asp:Label ID="lblUnit" runat="server" Text='<%# Eval("unit")%>'></asp:Label>
+                                                                    </td>
+                                                                    <td <%#ColumnvistoRepeater().Item3 %>>
+                                                                        <asp:Label ID="lblRate" runat="server" Text='<%# Eval("rate")%>'></asp:Label>
+                                                                    </td>
+                                                                    <td <%#ColumnvistoRepeater().Item4 %>>
 
-
-                                                                    <th scope="col" class="text-left text-white" id="Col_number_header" runat="server">#</th>
-                                                                    <th scope="col" class="text-left text-white" id="Col_unitbase_header" runat="server">Unit</th>
-                                                                    <th scope="col" class="text-left text-white" id="Col_ratebase_header" runat="server">Rate</th>
-                                                                    <th scope="col" class="text-left text-white" id="Col_Qtybase_header" runat="server">Qty.</th>
-                                                                    <th scope="col" class="text-left text-white">Amount</th>
-                                                                    <th scope="col" class="text-left text-white">VAT(15%)</th>
-                                                                    <th scope="col" class="text-right text-white">Total</th>
-                                                                </tr>
-                                                            </thead>
-
-                                                            <tbody>
-
-                                                                <itemtemplate>
-                                                                <tr>
-
-                                                                    <td class="text-left text-gray-900" id="Col_number_body" contenteditable="true" runat="server">
-                                                                        <span id="id" runat="server"></span>
+                                                                        <asp:Label ID="lblQty" runat="server" Text='<%# Eval("qty")%>'></asp:Label>
                                                                     </td>
-                                                                    <td class="text-left text-gray-900" id="Col_unitbase_body" contenteditable="true" runat="server">
-                                                                        <span id="Unit2" runat="server"></span>
-                                                                    </td>
-                                                                    <td class="text-left text-gray-900" id="Col_ratebase_body" contenteditable="true" runat="server">
-                                                                        <span id="Rate" runat="server"></span>
-                                                                    </td>
-                                                                    <td class="text-left text-gray-900" id="Col_Qtybase_body" runat="server" contenteditable="true">
-                                                                        <span id="Qty" runat="server">1</span>
-                                                                    </td>
-                                                                    <td class="text-left text-gray-900" contenteditable="true">
-                                                                        <span id="amount1" runat="server"></span>
-                                                                    </td>
-                                                                    <td class="text-left text-gray-900" contenteditable="true">
-                                                                        <span id="VAT15" runat="server"></span>
-                                                                    </td>
-                                                                    <td class="text-right text-gray-900" contenteditable="true">ETB <span id="TotalAmount" runat="server"></span>
+                                                                    <td class="text-right">
+                                                                        <%# (Convert.ToDouble(Eval("amount"))/1.15).ToString("#,##0.00") %>
+                                                                        
                                                                     </td>
 
-
-
+                                                                    <td class="text-right">
+                                                                        <%# (Convert.ToDouble(Eval("amount"))-Convert.ToDouble(Eval("amount"))/1.15).ToString("#,##0.00") %>
+                                                                    </td>
+                                                                    <td class="text-right">
+                                                                        <%# (Convert.ToDouble(Eval("amount"))).ToString("#,##0.00")%>
+                                                                  
+                                                                    </td>
                                                                 </tr>
 
+                                                            </ItemTemplate>
+                                                            <FooterTemplate>
+                                                                </tbody>
+              </table>
+                                                                 
+                                                            </FooterTemplate>
 
-                                                            </tbody>
-                                                        </table>
+                                                        </asp:Repeater>
+
                                                     </div>
                                                     <div class="row" id="Div1" runat="server">
                                                         <div class="col-md-8 text-left">
                                                             <p class="small text-danger">* If you have any disagreement with the invoice please contact us</p>
+                               
+                                                            <p class="small text-gray-900 font-weight-bold border-top">* Invalid without Fiscal or Refund Receipt</p>
                                                             <span class="fas fa-phone text-gray-400 mr-2"></span><span class="mb-2 text-gray-900 small " id="phone" runat="server"></span>
                                                             <center>
                                                                 <h5 id="RaksTDiv" runat="server" class="water   font-weight-bolder mx-lg-5" style="padding-right: 0px; padding-left: 300px; font-size: 70px;">ATTACHMENT</h5>
@@ -762,16 +809,16 @@
                                         </div>
 
                                     </div>
-                            </div>
-                            <br />
-                            <br />
-                            <br />
-                            <div class="mt-lg-5" id="leaveempt" runat="server">
-                                <center>
-                                    <span class="fas fa-hand-holding-usd fa-9x text-gray-400"></span>
-                                    <h6 class="text-gray-300 mt-4 font-weight-bold small">Select Invoice to Show</h6>
-                                </center>
-                            </div>
+                                </div>
+                                <br />
+                                <br />
+                                <br />
+                                <div class="mt-lg-5" id="leaveempt" runat="server">
+                                    <center>
+                                        <span class="fas fa-hand-holding-usd fa-9x text-gray-400"></span>
+                                        <h6 class="text-gray-300 mt-4 font-weight-bold small">Select Invoice to Show</h6>
+                                    </center>
+                                </div>
 
 
                             </div>
@@ -832,11 +879,11 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="card-body border-left border-danger">
 
                             <div class="row">
-                                <div class="col-4">                            
+                                <div class="col-4">
                                     <h6 class="text-gray-900 small mb-3">Logo Visibility</h6>
                                     <div class="custom-control mb-2 custom-checkbox font-weight-300">
                                         <input type="checkbox" class="custom-control-input" id="logoCheck" runat="server" clientidmode="Static" />
@@ -867,14 +914,14 @@
 
                             </div>
                         </div>
-                        
+
                         <div class="card-body border-left border-secondary">
                             <h6 class="text-gray-900 small font-weight-light text-uppercase">Column visibility</h6>
                             <div class="row">
                                 <div class="col-12">
                                     <table class="table-bordered table-sm table">
                                         <thead>
-                  
+
                                             <th class="text-gray-900 small text-center">#</th>
                                             <th class="text-gray-900 small text-center">Unit</th>
                                             <th class="text-gray-900 small text-center">Rate</th>
@@ -882,7 +929,7 @@
                                         </thead>
                                         <tbody>
                                             <tr>
-               
+
                                                 <td class="text-center">
                                                     <div class="custom-control mb-2 custom-checkbox font-weight-300">
                                                         <input type="checkbox" class="custom-control-input" id="NumbCheck" runat="server" clientidmode="Static" />
@@ -930,6 +977,17 @@
                 </div>
             </div>
         </div>
+        <script>
+            $('#Checkbox1').click(function () {
+
+                $("#myTableHeader").toggle(this.checked);
+                $("#AddButton").toggle(this.checked);
+            });
+        </script>
+        <script>
+
+
+</script>
         <script type="text/javascript">
             function HideORshowDiv() {
                 var div = document.getElementById('rightDiv');
@@ -951,10 +1009,7 @@
                     div2.style.display = "none";
                     div3.className = "fas fa-compress  text-danger";
                 }
-
-
             }
-
         </script>
         <style type="text/css">
             .chat-online {
@@ -1021,6 +1076,8 @@
                 }
             }
         </script>
+        <script type="text/javascript" src="http://cdn.jsdelivr.net/json2/0.1/json2.js"></script>
+
         <div class="modal fade" id="exampleModalSMS" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel8shopSMS" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content rounded-4 shadow">
@@ -1043,49 +1100,101 @@
             </div>
 
         </div>
-
-
         <script src="../../asset/js/JSPrintManager.js"></script>
         <script src="../../asset/js/bluebird.min.js"></script>
-        <script src="../../asset/js/jquery-3.2.1.slim.min.js"></script>
+        <script>
+
+</script>
+        <script type="text/javascript">
+            var invType, amount;
+            function AddTable(invType, amount) {
+                var table = document.getElementById("myTable");
+
+                // Create an empty <tr> element and add it to the 1st position of the table:
+                var row = table.insertRow(0);
+
+                // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+
+                // Add some text to the new cells:
+                cell1.innerHTML = invType;
+                cell2.innerHTML = amount;
+            }
+
+            $(function () {
+                $("[id*=AddButton]").bind("click", function () {
+
+                    var infoJson = {};
+                    infoJson.invoiceType = $("#ddlExpense option:selected").text();
+                    infoJson.PermanentCustomer = $("#ddlVendor option:selected").text();
+                    infoJson.Customer = $("[id*=txtCustomer]").val();
+                    infoJson.Address = $("[id*=txtAddress]").val();
+                    infoJson.Amount = $("[id*=txtAmount]").val();
+                    infoJson.Reference = $("[id*=txtReference]").val();
+                    infoJson.FS = $("[id*=txtFSNo]").val();
+                    infoJson.TIN = $("[id*=txtTIN]").val();
+                    infoJson.ddlCash = $("#ddlCash option:selected").text();
+                    infoJson.ddlBank = $("#ddlBank option:selected").text();
+                    if (infoJson.invoiceType == "-Select-" || infoJson.Amount == "" || infoJson.FS == "") {
+                        alert("Please fill all the required inputs.");
+                    }
+                    else {
+                        $.ajax({
+                            type: "POST",
+                            url: "OtherInvoices.aspx/SaveInvoice",
+                            data: '{infoJson: ' + JSON.stringify(infoJson) + '}',
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: function (response) {
+
+
+                            }
+                        });
+                        AddTable(infoJson.invoiceType, infoJson.Amount);
+                    }
+                    return false;
+                });
+            });
+        </script>
         <script>
 
             //WebSocket settings
-            // JSPM.JSPrintManager.auto_reconnect = true;
-            // JSPM.JSPrintManager.start();
-            // JSPM.JSPrintManager.WS.onStatusChanged = function () {
-            // if (jspmWSStatus()) {
-            //get client installed printers
-            // JSPM.JSPrintManager.getPrinters().then(function (myPrinters) {
-            //      var options = '';
-            //     for (var i = 0; i < myPrinters.length; i++) {
-            //        options += '<option>' + myPrinters[i] + '</option>';
-            //  }
-            //  $('#installedPrinterName').html(options);
-            // });
-            //  }
-            //};
+            JSPM.JSPrintManager.auto_reconnect = true;
+            JSPM.JSPrintManager.start();
+            JSPM.JSPrintManager.WS.onStatusChanged = function () {
+                if (jspmWSStatus()) {
+                    //get client installed printers
+                    JSPM.JSPrintManager.getPrinters().then(function (myPrinters) {
+                        var options = '';
+                        for (var i = 0; i < myPrinters.length; i++) {
+                            options += '<option>' + myPrinters[i] + '</option>';
+                        }
+                        $('#installedPrinterName').html(options);
+                    });
+                }
+            };
 
             //Check JSPM WebSocket status
-            // function jspmWSStatus() {
-            //    if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Open)
-            //      return true;
-            //  else if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Closed) {
-            //     alert('JSPrintManager (JSPM) is not installed or not running! Download JSPM Client App from http://192.168.1.254:9300/Finance/Accounta/app/jspm4-4.0.22.512-win.exe');
-            //     return false;
-            // }
-            // else if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Blocked) {
-            //    alert('JSPM has blocked this website!');
-            //     return false;
-            // }
-            // }
+            function jspmWSStatus() {
+                if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Open)
+                    return true;
+                else if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Closed) {
+                    alert('JSPrintManager (JSPM) is not installed or not running! Download JSPM Client App from http://192.168.1.254:9300/Finance/Accounta/app/jspm4-4.0.22.512-win.exe');
+                    return false;
+                }
+                else if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Blocked) {
+                    alert('JSPM has blocked this website!');
+                    return false;
+                }
+            }
 
             //Do printing...
             function print2(o) {
                 var tot = document.getElementById("<%=DupGrandTotal.ClientID %>");
                 var pre = document.getElementById("<%=DupVatFree.ClientID %>");
                 var Vat = document.getElementById("<%=DupVAT.ClientID %>");
-                var inv = document.getElementById("<%=INVNO.ClientID %>");
+   
                 var date = document.getElementById("<%=BillDate1.ClientID %>");
                 var contact = document.getElementById("<%=phone.ClientID %>");
                 var Tin = document.getElementById("<%=VendorTIN.ClientID %>");
@@ -1126,8 +1235,6 @@
                     cmds += ref.innerHTML;
                     cmds += newLine;
                     cmds += '**Cash Sales Invoice**';
-                    cmds += newLine;
-                    cmds += inv.innerHTML;
                     cmds += newLine;
                     cmds += esc + '##############' + '\x00'; //Character font A selected (ESC ! 0)
                     cmds += newLine;

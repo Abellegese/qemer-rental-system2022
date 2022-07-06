@@ -8,6 +8,7 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.Services;
 
 namespace advtech.Finance.Accounta
 {
@@ -26,19 +27,396 @@ namespace advtech.Finance.Accounta
             {
                 if (!IsPostBack)
                 {
-                    ViewState["Column"] = "incomename";
-                    ViewState["Column1"] = "amount";
-                    ViewState["Column2"] = "date";
-                    ViewState["Sortorder"] = "ASC";
+
+                    ViewState["Column2"] = "amount";
+                    ViewState["Column1"] = "date";
+                    ViewState["Sortorder"] = "DESC";
                     BindBrandsRptr2(); bindfixedaccount1(); bindbankaccount();
                     bindcompany(); bindfixedaccount(); bindcashaccount(); bindotherinvoice();
                     binddetails(); bindINFO(); bindIncomeINFO(); bindFSnumber(); bindPaymentmode();
                     GetColumnVisibilityValues(); GetFontSizeAndHeadingName(); GetOtherVisiblityValues();
+                    bindDetails(); bindTotals(); GetEditContent();
                 }
             }
             else
             {
                 Response.Redirect("~/Login/LogIn1.aspx");
+            }
+        }
+        private void GetEditContent()
+        {
+            if (Request.QueryString["edit"] !=null)
+            {
+                String PID = Convert.ToString(Request.QueryString["fsno"]);
+                String PID2 = Convert.ToString(Request.QueryString["invtype"]);
+                String PID3 = Convert.ToString(Request.QueryString["id"]);
+                editSpan.InnerText = PID2 + "[INV#" + PID3 + "] Selected";
+                editTab.Visible = true;
+                deleteTab.Visible = true;
+                editSpan.Visible = true;
+            }
+        }
+        private void bindDetails()
+        {
+            if (Request.QueryString["fsno"] != null)
+            {
+                String PID = Convert.ToString(Request.QueryString["fsno"]);
+
+                SqlConnection con = new SqlConnection(strConnString);
+                con.Open();
+                str = "select * from tblIncome where fsno='" + PID + "'";
+                com = new SqlCommand(str, con);
+                sqlda = new SqlDataAdapter(com);
+                DataTable dt = new DataTable();
+                sqlda.Fill(dt);
+                DataView dvData = new DataView(dt);
+                rptBindDetails.DataSource = dt;
+                rptBindDetails.DataBind();
+            }
+        }
+        public class InfoJson
+        {
+            public string invoiceType { get; set; }
+            public string PermanentCustomer { get; set; }
+            public string Customer { get; set; }
+            public string Address { get; set; }
+            public string Amount { get; set; }
+            public string Reference { get; set; }
+            public string FS { get; set; }
+            public string TIN { get; set; }
+            public string ddlCash { get; set; }
+            public string ddlBank { get; set; }
+        }
+        [WebMethod]
+        public static void SaveInvoice(InfoJson infoJson)
+        {
+            UserUtility getUserName = new UserUtility();
+            String userName = getUserName.BindUser();
+            string customer = "";
+            string paymode = "";
+            string invoiceType = infoJson.invoiceType;
+            string permanentCustomer = infoJson.PermanentCustomer;
+            string Customer = infoJson.Customer;
+            string Address = infoJson.Address;
+            string Amount = infoJson.Amount;
+            string Reference = infoJson.Reference;
+            string FS = infoJson.FS;
+            string TIN = infoJson.TIN;
+            string ddlCash = infoJson.ddlCash;
+            string ddlBank = infoJson.ddlBank;
+            if (permanentCustomer=="-Select-") { customer = Customer; }
+            else { customer = permanentCustomer; }
+            //
+            if (ddlCash == "-Select-") { paymode = "Bank"; }
+            else { paymode="Cash"; }
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd2AC = new SqlCommand("select * from tblIncomeBrand where incomename='" + invoiceType + "'", con);
+                SqlDataReader readerAC = cmd2AC.ExecuteReader();
+
+                if (readerAC.Read())
+                {
+                    String account = readerAC["incomeaccount"].ToString();
+                    String rate = readerAC["rate"].ToString();
+                    String unit = readerAC["unit"].ToString();
+
+                    readerAC.Close();
+                    //Inserting to income Table
+                    Double NetIncome1 = 0; Double VatFree = 0; Double Vat = 0;
+                    if (rate == "1")
+                    {
+                        NetIncome1 = Convert.ToDouble(Amount);
+                        VatFree = NetIncome1 / 1.15;
+                        Vat = NetIncome1 - VatFree;
+                        SqlCommand cmdin = new SqlCommand("insert into tblIncome values('" + invoiceType + "','" + customer + "','" + rate + "','" + unit + "','" + NetIncome1 + "','" + Reference + "','" + DateTime.Now.Date + "','1','" + FS+ "','" + TIN + "','" + Address + "','" + paymode + "')", con);
+                        cmdin.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        NetIncome1 = Convert.ToDouble(Amount) * Convert.ToDouble(rate) * 0.15 + Convert.ToDouble(Amount) * Convert.ToDouble(rate);
+                        VatFree = Convert.ToDouble(Amount) * Convert.ToDouble(rate);
+                        Vat = NetIncome1 - VatFree;
+                        SqlCommand cmdin = new SqlCommand("insert into tblIncome values('" + invoiceType + "','" + customer + "','" + rate + "','" + unit + "','" + NetIncome1 + "','" + Reference + "','" + DateTime.Now.Date + "','" + Amount + "','" + FS + "','" + TIN + "','" + Address + "','" + paymode + "')", con);
+                        cmdin.ExecuteNonQuery();
+                    }
+                    //END Inserting
+
+                    CustomerUtil callStatementUpdate = new CustomerUtil();
+                    callStatementUpdate.BindcustomerStatement(permanentCustomer, NetIncome1, invoiceType, Reference);
+ 
+                    if (ddlCash != "-Select-")
+                    {
+
+                        SqlCommand cmd166c3 = new SqlCommand("select * from tblLedgAccTyp where Name='" + ddlCash + "'", con);
+                        SqlDataReader reader66c3 = cmd166c3.ExecuteReader();
+
+                        if (reader66c3.Read())
+                        {
+                            string ah11c;
+                            string ah1258c;
+                            ah11c = reader66c3["No"].ToString();
+                            ah1258c = reader66c3["AccountType"].ToString();
+                            reader66c3.Close();
+                            con.Close();
+                            con.Open();
+                            SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCash + "'", con);
+
+                            SqlDataReader reader66790c = cmd190cc.ExecuteReader();
+
+                            if (reader66790c.Read())
+                            {
+                                string ah1289c;
+                                ah1289c = reader66790c["Balance"].ToString();
+                                reader66790c.Close();
+                                con.Close();
+                                con.Open();
+                                Double M1c = Convert.ToDouble(ah1289c);
+                                Double bl1c = M1c + NetIncome1;
+                                string total = "Cash Debited for " + invoiceType + " Income";
+                                SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='" + ddlCash + "'", con);
+                                cmd45c.ExecuteNonQuery();
+                                SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total + "','','" + NetIncome1 + "','0','" + bl1c + "','" + DateTime.Now.Date + "','" + ddlCash + "','" + ah11c + "','" + ah1258c + "')", con);
+                                cmd1964c.ExecuteNonQuery();
+                            }
+                        }
+                        SqlCommand cmd = new SqlCommand("select * from tblLedgAccTyp where Name='" + account + "'", con);
+                        SqlDataReader reader = cmd.ExecuteReader();
+
+                        if (reader.Read())
+                        {
+                            string ah11c;
+                            string ah1258c;
+                            ah11c = reader["No"].ToString();
+                            ah1258c = reader["AccountType"].ToString();
+                            reader.Close();
+                            con.Close();
+                            con.Open();
+                            SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='" + account + "'", con);
+
+                            SqlDataReader reader66790c = cmd190cc.ExecuteReader();
+
+                            if (reader66790c.Read())
+                            {
+                                string ah1289c;
+                                ah1289c = reader66790c["Balance"].ToString();
+                                reader66790c.Close();
+                                con.Close();
+                                con.Open();
+                                Double M1c = Convert.ToDouble(ah1289c);
+                                Double bl1c = M1c + VatFree;
+                                string total = "Income Credited for " + invoiceType + " from customer " + customer;
+                                SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='" + account + "'", con);
+                                cmd45c.ExecuteNonQuery();
+                                SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total + "','','0','" + VatFree + "','" + bl1c + "','" + DateTime.Now.Date + "','" + account + "','" + ah11c + "','" + ah1258c + "')", con);
+                                cmd1964c.ExecuteNonQuery();
+                            }
+                        }
+                        SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
+                        using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
+                        {
+                            DataTable dtBrandss = new DataTable();
+                            sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+
+                            SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+                            using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
+                            {
+                                DataTable dttax = new DataTable();
+                                sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                                //
+                                if (iss2 != 0)
+                                {
+                                    SqlDataReader readers = cmdintax.ExecuteReader();
+                                    if (readers.Read())
+                                    {
+                                        string ah1289;
+                                        ah1289 = readers["Balance"].ToString();
+                                        readers.Close();
+                                        con.Close();
+                                        con.Open();
+                                        SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+
+                                        SqlDataReader reader66 = cmdintax.ExecuteReader();
+
+                                        if (reader66.Read())
+                                        {
+                                            string ah11;
+                                            string ah1258;
+                                            ah11 = reader66["No"].ToString();
+                                            ah1258 = reader66["AccountType"].ToString();
+                                            reader66.Close();
+                                            con.Close();
+                                            con.Open();
+                                            string total = "Income VAT Credited for " + invoiceType + " from customer " + customer;
+                                            Double M1 = Convert.ToDouble(ah1289);
+                                            Double bl1 = M1 + Vat;
+                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+                                            cmd45.ExecuteNonQuery();
+                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + total + "','','0','" + Vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
+                                            cmd1974.ExecuteNonQuery();
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        SqlCommand cmddf = new SqlCommand("select * from tblIncome Order by id DESC", con);
+                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                        DataTable dtdf = new DataTable();
+                        sdadf.Fill(dtdf); Int64 nb = Convert.ToInt64(dtdf.Rows[0][9].ToString());
+                        string url = "OtherInvoices.aspx?fsno=" + nb;
+                        string money = "ETB";
+                        string text = money + NetIncome1.ToString("#,##0.00") + " invoiced for " + invoiceType;
+                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + text + "','"+ userName + "','"+ userName + "','Unseen','fas fa-hand-holding-usd text-white','icon-circle bg bg-primary','" + url + "','MN')", con);
+                        cmd197h.ExecuteNonQuery();
+ 
+                    }
+                    else
+                    {
+                        SqlCommand cmdbank = new SqlCommand("select * from tblbanktrans1 where account='" + ddlBank + "'", con);
+                        using (SqlDataAdapter sda22 = new SqlDataAdapter(cmdbank))
+                        {
+                            DataTable dt = new DataTable();
+                            sda22.Fill(dt); int j = dt.Rows.Count;
+                            //
+                            if (j != 0)
+                            {
+                                string total = "Expense Debited for " + invoiceType + " Expense";
+                                double t = Convert.ToDouble(dt.Rows[0][5].ToString()) + NetIncome1;
+                                SqlCommand cmd45 = new SqlCommand("Update tblbanktrans1 set balance='" + t + "' where Account='" + ddlBank + "'", con);
+                                cmd45.ExecuteNonQuery();
+                                SqlCommand cvb = new SqlCommand("insert into tblbanktrans values('','" + Reference + "','" + NetIncome1 + "','','" + t + "','" + ddlBank + "','','" + Reference + "','" + DateTime.Now.Date + "')", con);
+                                cvb.ExecuteNonQuery();
+
+                                ///Recording Cash
+                                SqlCommand cmd166c3 = new SqlCommand("select * from tblLedgAccTyp where Name='Cash at Bank'", con);
+                                SqlDataReader reader66c3 = cmd166c3.ExecuteReader();
+
+                                if (reader66c3.Read())
+                                {
+                                    string ah11c;
+                                    string ah1258c;
+                                    ah11c = reader66c3["No"].ToString();
+                                    ah1258c = reader66c3["AccountType"].ToString();
+                                    reader66c3.Close();
+                                    con.Close();
+                                    con.Open();
+                                    SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='Cash at Bank'", con);
+
+                                    SqlDataReader reader66790c = cmd190cc.ExecuteReader();
+
+                                    if (reader66790c.Read())
+                                    {
+                                        string ah1289c;
+                                        ah1289c = reader66790c["Balance"].ToString();
+                                        reader66790c.Close();
+                                        con.Close();
+                                        con.Open();
+                                        Double M1c = Convert.ToDouble(ah1289c);
+                                        Double bl1c = M1c + NetIncome1;
+                                        string total1 = "Cash at Bank Debited for " + invoiceType + " for customer " + customer;
+                                        SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='Cash at Bank'", con);
+                                        cmd45c.ExecuteNonQuery();
+                                        SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total1 + "','','" + NetIncome1 + "','0','" + bl1c + "','" + DateTime.Now.Date + "','Cash at Bank','" + ah11c + "','" + ah1258c + "')", con);
+                                        cmd1964c.ExecuteNonQuery();
+                                    }
+                                }
+                                SqlCommand cmd = new SqlCommand("select * from tblLedgAccTyp where Name='" + account + "'", con);
+                                SqlDataReader reader = cmd.ExecuteReader();
+
+                                if (reader.Read())
+                                {
+                                    string ah11c;
+                                    string ah1258c;
+                                    ah11c = reader["No"].ToString();
+                                    ah1258c = reader["AccountType"].ToString();
+                                    reader.Close();
+                                    con.Close();
+                                    con.Open();
+                                    SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='" + account + "'", con);
+
+                                    SqlDataReader reader66790c = cmd190cc.ExecuteReader();
+
+                                    if (reader66790c.Read())
+                                    {
+                                        string ah1289c;
+                                        ah1289c = reader66790c["Balance"].ToString();
+                                        reader66790c.Close();
+                                        con.Close();
+                                        con.Open();
+                                        Double M1c = Convert.ToDouble(ah1289c);
+                                        Double bl1c = M1c + VatFree;
+                                        string total2 = "Income Credited for " + invoiceType + " from customer " + customer;
+                                        SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='" + account + "'", con);
+                                        cmd45c.ExecuteNonQuery();
+                                        SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total2 + "','','0','" + VatFree + "','" + bl1c + "','" + DateTime.Now.Date + "','" + account + "','" + ah11c + "','" + ah1258c + "')", con);
+                                        cmd1964c.ExecuteNonQuery();
+                                    }
+                                }
+                                SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
+                                using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
+                                {
+                                    DataTable dtBrandss = new DataTable();
+                                    sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+
+                                    SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+                                    using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
+                                    {
+                                        DataTable dttax = new DataTable();
+                                        sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                                        //
+                                        if (iss2 != 0)
+                                        {
+                                            SqlDataReader readers = cmdintax.ExecuteReader();
+                                            if (readers.Read())
+                                            {
+                                                string ah1289;
+                                                ah1289 = readers["Balance"].ToString();
+                                                readers.Close();
+                                                con.Close();
+                                                con.Open();
+                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+
+                                                SqlDataReader reader66 = cmdintax.ExecuteReader();
+
+                                                if (reader66.Read())
+                                                {
+                                                    string ah11;
+                                                    string ah1258;
+                                                    ah11 = reader66["No"].ToString();
+                                                    ah1258 = reader66["AccountType"].ToString();
+                                                    reader66.Close();
+                                                    con.Close();
+                                                    con.Open();
+                                                    string total1 = "Income VAT Credited for " + invoiceType + " from customer " + customer;
+                                                    Double M1 = Convert.ToDouble(ah1289);
+                                                    Double bl1 = M1 + Vat;
+                                                    SqlCommand cmd451 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+                                                    cmd451.ExecuteNonQuery();
+                                                    SqlCommand cmd19741 = new SqlCommand("insert into tblGeneralLedger values('" + total1 + "','','0','" + Vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
+                                                    cmd19741.ExecuteNonQuery();
+
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        SqlCommand cmddf = new SqlCommand("select * from tblIncome Order by id DESC", con);
+                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                        DataTable dtdf = new DataTable();
+                        sdadf.Fill(dtdf); Int64 nb = Convert.ToInt64(dtdf.Rows[0][9].ToString());
+                        string url = "OtherInvoices.aspx?fsno=" + nb;
+                        string money = "ETB";
+                        string text = money + NetIncome1.ToString("#,##0.00") + " invoiced for " + invoiceType;
+                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + text + "','" + userName + "','" + userName + "','Unseen','fas fa-hand-holding-usd text-white','icon-circle bg bg-primary','" + url + "','MN')", con);
+                        cmd197h.ExecuteNonQuery();
+
+                    }
+                }
+
             }
         }
         private string bindAddress(string customer)
@@ -49,9 +427,9 @@ namespace advtech.Finance.Accounta
             {
                 con.Open();
                 String PID = Convert.ToString(Request.QueryString["cust"]);
-                String PID2 = Convert.ToString(Request.QueryString["ref2"]);
+                String PID2 = Convert.ToString(Request.QueryString["fsno"]);
 
-                INVNO.InnerText = "INV# -" + PID2;
+       
                 SqlCommand cmdcrd = new SqlCommand("select * from tblCustomers where FllName='" + customer + "'", con);
                 SqlDataReader readercrd = cmdcrd.ExecuteReader();
                 if (readercrd.Read())
@@ -75,10 +453,10 @@ namespace advtech.Finance.Accounta
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                String PID = Convert.ToString(Request.QueryString["ref2"]);
+                String PID = Convert.ToString(Request.QueryString["fsno"]);
                 String PayMode = Convert.ToString(Request.QueryString["paymentmode"]);
                 PaymentMode.InnerText = PayMode;
-                SqlCommand cmdcrd = new SqlCommand("select * from tblIncome where id='" + PID + "'", con);
+                SqlCommand cmdcrd = new SqlCommand("select * from tblIncome where fsno='" + PID + "'", con);
                 SqlDataReader readercrd = cmdcrd.ExecuteReader();
                 if (readercrd.Read())
                 {
@@ -102,9 +480,9 @@ namespace advtech.Finance.Accounta
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                String PID = Convert.ToString(Request.QueryString["expname"]);
-                String PID2 = Convert.ToString(Request.QueryString["ref2"]);
-                SqlCommand cmdcrd1 = new SqlCommand("select* from tblIncome where id='" + PID2 + "' and incomename='" + PID + "'", con);
+
+                String PID2 = Convert.ToString(Request.QueryString["fsno"]);
+                SqlCommand cmdcrd1 = new SqlCommand("select* from tblIncome where fsno='" + PID2 + "'", con);
                 SqlDataReader readercrd1 = cmdcrd1.ExecuteReader();
                 if (readercrd1.Read())
                 {
@@ -130,7 +508,7 @@ namespace advtech.Finance.Accounta
             {
                 con.Open();
                 String PID = Convert.ToString(Request.QueryString["cust"]);
-                String PID2 = Convert.ToString(Request.QueryString["ref2"]);
+                String PID2 = Convert.ToString(Request.QueryString["fsno"]);
                 SqlCommand cmdcrd1 = new SqlCommand("select TOP 1* from tblIncome order by id desc", con);
                 SqlDataReader readercrd1 = cmdcrd1.ExecuteReader();
                 if (readercrd1.Read())
@@ -157,9 +535,8 @@ namespace advtech.Finance.Accounta
             {
                 con.Open();
                 String PID = Convert.ToString(Request.QueryString["cust"]);
-                String PID2 = Convert.ToString(Request.QueryString["ref2"]);
+                String PID2 = Convert.ToString(Request.QueryString["fsno"]);
 
-                INVNO.InnerText = "INV# " + PID2;
                 SqlCommand cmdcrd = new SqlCommand("select * from tblCustomers where FllName='" + vendor1.InnerText + "'", con);
                 SqlDataReader readercrd = cmdcrd.ExecuteReader();
                 if (readercrd.Read())
@@ -169,7 +546,7 @@ namespace advtech.Finance.Accounta
 
                 }
                 readercrd.Close();
-                SqlCommand cmdcrd1 = new SqlCommand("select * from tblIncome where id='" + PID2 + "'", con);
+                SqlCommand cmdcrd1 = new SqlCommand("select * from tblIncome where fsno='" + PID2 + "'", con);
                 SqlDataReader readercrd1 = cmdcrd1.ExecuteReader();
                 if (readercrd1.Read())
                 {
@@ -247,24 +624,55 @@ namespace advtech.Finance.Accounta
             passwordBuilder.Append(RandomString(4));
             return passwordBuilder.ToString();
         }
-        private void binddetails()
+        private void bindTotals()
         {
-            String PID = Convert.ToString(Request.QueryString["ref2"]);
-            String PID2 = Convert.ToString(Request.QueryString["expname"]);
-            ExpenseType.InnerText = "**" + PID2 + "**";
-            if (Request.QueryString["ref2"] != null)
+            String PID = Convert.ToString(Request.QueryString["fsno"]);
+
+
+            if (Request.QueryString["fsno"] != null)
             {
-                deleteTab.Visible = true;
-                editTab.Visible = true;
-                PayMode.Visible = true;
-                I1.Visible = false; I2.Visible = false;
-                buttonback.Visible = true; InvoiceBadge.Visible = true;
-                InvoiceBadge.InnerText = "INV#-" + PID;
                 String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
                 using (SqlConnection con = new SqlConnection(CS))
                 {
                     con.Open();
-                    SqlCommand cmd2AC = new SqlCommand("select * from tblIncome where incomename='" + PID2 + "' and id='" + PID + "'", con);
+                    SqlCommand cmd2AC = new SqlCommand("select sum(amount) as amount from tblIncome where fsno='" + PID + "'", con);
+                    SqlDataReader readerAC = cmd2AC.ExecuteReader();
+
+                    if (readerAC.Read())
+                    {
+ 
+                        String amount = readerAC["amount"].ToString();
+                        double VATFREE = Convert.ToDouble(amount) / 1.15;
+                        double vat = Convert.ToDouble(amount) - VATFREE;
+
+                        DupVatFree.InnerText = Convert.ToDouble(VATFREE).ToString("#,##0.00");
+                        DupVAT.InnerText = Convert.ToDouble(vat).ToString("#,##0.00");
+                        DupGrandTotal.InnerText = Convert.ToDouble(amount).ToString("#,##0.00");
+
+                    }
+                }
+            }
+        }
+        private void binddetails()
+        {
+            String PID = Convert.ToString(Request.QueryString["fsno"]);
+
+
+            if (Request.QueryString["fsno"] != null)
+            {
+           
+     
+                PayMode.Visible = true;
+                I1.Visible = false; I2.Visible = false;
+                buttonback.Visible = true; InvoiceBadge.Visible = true;
+                InvoiceBadge.InnerText = "FS#-" + PID;
+                btnPOS.Visible = true;
+                btnMainPrint.Visible = true;
+                String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+                using (SqlConnection con = new SqlConnection(CS))
+                {
+                    con.Open();
+                    SqlCommand cmd2AC = new SqlCommand("select * from tblIncome where fsno='" + PID + "'", con);
                     SqlDataReader readerAC = cmd2AC.ExecuteReader();
 
                     if (readerAC.Read())
@@ -276,30 +684,9 @@ namespace advtech.Finance.Accounta
                         String unit1 = readerAC["unit"].ToString();
                         String ref1 = readerAC["refernces"].ToString();
                         String Qty1 = readerAC["qty"].ToString();
-                        if (rate1 == "1.0000")
-                        {
-                            Qty.InnerText = "-";
-                            Unit2.InnerText = "-";
-                            Rate.InnerText = "-";
-                        }
-                        else
-                        {
-                            Qty.InnerText = Convert.ToDouble(Qty1).ToString("#,##0.00");
-                            Rate.InnerText = "ETB " + Convert.ToDouble(rate1).ToString("#,##0.00") + "/" + unit1;
-                            Unit2.InnerText = unit1;
-                        }
                         RefNum.InnerText = ref1;
 
-                        id.InnerText = PID;
-                        double VATFREE = Convert.ToDouble(amount) / 1.15;
-                        double vat = Convert.ToDouble(amount) - VATFREE;
-
-                        amount1.InnerText = Convert.ToDouble(VATFREE).ToString("#,##0.00");
-                        TotalAmount.InnerText = Convert.ToDouble(amount).ToString("#,##0.00");
-                        VAT15.InnerText = Convert.ToDouble(vat).ToString("#,##0.00");
-                        DupVatFree.InnerText = Convert.ToDouble(VATFREE).ToString("#,##0.00");
-                        DupVAT.InnerText = Convert.ToDouble(vat).ToString("#,##0.00");
-                        DupGrandTotal.InnerText = Convert.ToDouble(amount).ToString("#,##0.00");
+                     
                         BillDate1.InnerText = Convert.ToDateTime(date).ToString("MMMM dd, yyyy");
 
                         readerAC.Close();
@@ -466,353 +853,360 @@ namespace advtech.Finance.Accounta
         }
         protected void btnUpdate_Click(object sender, EventArgs e)
         {
-            string customer = ""; string address = ""; string paymode = "";
-            if (ddlCash.SelectedItem.Text != "-Select-")
+            if (Checkbox1.Checked == true)
             {
-                paymode += "Cash";
+                string fsno = Convert.ToString(txtFSNo.Text);
+                Response.Redirect("OtherInvoices.aspx?fsno=" + fsno);
             }
-            else
-            {
-                paymode += "Bank";
-            }
-            if (ddlVendor.SelectedItem.Text != "-Select-")
-            {
-                customer += ddlVendor.SelectedItem.Text;
-                address = bindAddress(customer);
-                if (address == "" || address == null)
+            else {
+                string customer = ""; string address = ""; string paymode = "";
+                if (ddlCash.SelectedItem.Text != "-Select-")
                 {
-                    if (txtAddress.Text != "")
-                    {
-                        address += txtAddress.Text;
-                    }
-                }
-            }
-            if (ddlVendor.SelectedItem.Text == "-Select-")
-            {
-                customer += txtCustomer.Text;
-                address += txtAddress.Text;
-            }
-            if (ddlExpense.Items.Count == 0)
-            {
-                lblMsg.Text = "No Invoice Type was added."; lblMsg.ForeColor = Color.Red;
-            }
-            else
-            {
-                if (ddlExpense.SelectedItem.Text == "-Select-" || txtAmount.Text == "" || txtReference.Text == "" || ddlCash.SelectedItem.Text == "-Select-" && ddlBank.SelectedItem.Text == "-Select-" || ddlCash.SelectedItem.Text != "-Select-" && ddlBank.SelectedItem.Text != "-Select-")
-                {
-                    lblMsg.Text = "Please fill all the required input ( Or you selected both bank and cash account"; lblMsg.ForeColor = Color.Red;
+                    paymode += "Cash";
                 }
                 else
                 {
-
-                    String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-                    using (SqlConnection con = new SqlConnection(CS))
+                    paymode += "Bank";
+                }
+                if (ddlVendor.SelectedItem.Text != "-Select-")
+                {
+                    customer += ddlVendor.SelectedItem.Text;
+                    address = bindAddress(customer);
+                    if (address == "" || address == null)
                     {
-                        con.Open();
-                        SqlCommand cmd2AC = new SqlCommand("select * from tblIncomeBrand where incomename='" + ddlExpense.SelectedItem.Text + "'", con);
-                        SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                        if (readerAC.Read())
+                        if (txtAddress.Text != "")
                         {
-                            String account = readerAC["incomeaccount"].ToString();
-                            String rate = readerAC["rate"].ToString();
-                            String unit = readerAC["unit"].ToString();
+                            address += txtAddress.Text;
+                        }
+                    }
+                }
+                if (ddlVendor.SelectedItem.Text == "-Select-")
+                {
+                    customer += txtCustomer.Text;
+                    address += txtAddress.Text;
+                }
+                if (ddlExpense.Items.Count == 0)
+                {
+                    lblMsg.Text = "No Invoice Type was added."; lblMsg.ForeColor = Color.Red;
+                }
+                else
+                {
+                    if (ddlExpense.SelectedItem.Text == "-Select-" || txtAmount.Text == "" || txtReference.Text == "" || ddlCash.SelectedItem.Text == "-Select-" && ddlBank.SelectedItem.Text == "-Select-" || ddlCash.SelectedItem.Text != "-Select-" && ddlBank.SelectedItem.Text != "-Select-")
+                    {
+                        lblMsg.Text = "Please fill all the required input ( Or you selected both bank and cash account"; lblMsg.ForeColor = Color.Red;
+                    }
+                    else
+                    {
 
-                            readerAC.Close();
-                            //Inserting to income Table
-                            Double NetIncome1 = 0; Double VatFree = 0; Double Vat = 0;
-                            if (rate == "1")
+                        String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+                        using (SqlConnection con = new SqlConnection(CS))
+                        {
+                            con.Open();
+                            SqlCommand cmd2AC = new SqlCommand("select * from tblIncomeBrand where incomename='" + ddlExpense.SelectedItem.Text + "'", con);
+                            SqlDataReader readerAC = cmd2AC.ExecuteReader();
+
+                            if (readerAC.Read())
                             {
-                                NetIncome1 = Convert.ToDouble(txtAmount.Text);
-                                VatFree = NetIncome1 / 1.15;
-                                Vat = NetIncome1 - VatFree;
-                                SqlCommand cmdin = new SqlCommand("insert into tblIncome values('" + ddlExpense.SelectedItem.Text + "','" + customer + "','" + rate + "','" + unit + "','" + NetIncome1 + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','1','" + txtFSNo.Text + "','" + txtTIN.Text + "','" + address + "','" + paymode + "')", con);
-                                cmdin.ExecuteNonQuery();
-                            }
-                            else
-                            {
-                                NetIncome1 = Convert.ToDouble(txtAmount.Text) * Convert.ToDouble(rate) * 0.15 + Convert.ToDouble(txtAmount.Text) * Convert.ToDouble(rate);
-                                VatFree = Convert.ToDouble(txtAmount.Text) * Convert.ToDouble(rate);
-                                Vat = NetIncome1 - VatFree;
-                                SqlCommand cmdin = new SqlCommand("insert into tblIncome values('" + ddlExpense.SelectedItem.Text + "','" + customer + "','" + rate + "','" + unit + "','" + NetIncome1 + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','" + txtAmount.Text + "','" + txtFSNo.Text + "','" + txtTIN.Text + "','" + address + "','" + paymode + "')", con);
-                                cmdin.ExecuteNonQuery();
-                            }
-                            //END Inserting
+                                String account = readerAC["incomeaccount"].ToString();
+                                String rate = readerAC["rate"].ToString();
+                                String unit = readerAC["unit"].ToString();
 
-                            BindcustomerStatement(ddlVendor.SelectedItem.Text, NetIncome1, ddlExpense.SelectedItem.Text, txtReference.Text);
-                            if (ddlCash.SelectedItem.Text != "-Select-")
-                            {
-
-                                SqlCommand cmd166c3 = new SqlCommand("select * from tblLedgAccTyp where Name='" + ddlCash.SelectedItem.Text + "'", con);
-                                SqlDataReader reader66c3 = cmd166c3.ExecuteReader();
-
-                                if (reader66c3.Read())
+                                readerAC.Close();
+                                //Inserting to income Table
+                                Double NetIncome1 = 0; Double VatFree = 0; Double Vat = 0;
+                                if (rate == "1")
                                 {
-                                    string ah11c;
-                                    string ah1258c;
-                                    ah11c = reader66c3["No"].ToString();
-                                    ah1258c = reader66c3["AccountType"].ToString();
-                                    reader66c3.Close();
-                                    con.Close();
-                                    con.Open();
-                                    SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCash.SelectedItem.Text + "'", con);
+                                    NetIncome1 = Convert.ToDouble(txtAmount.Text);
+                                    VatFree = NetIncome1 / 1.15;
+                                    Vat = NetIncome1 - VatFree;
+                                    SqlCommand cmdin = new SqlCommand("insert into tblIncome values('" + ddlExpense.SelectedItem.Text + "','" + customer + "','" + rate + "','" + unit + "','" + NetIncome1 + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','1','" + txtFSNo.Text + "','" + txtTIN.Text + "','" + address + "','" + paymode + "')", con);
+                                    cmdin.ExecuteNonQuery();
+                                }
+                                else
+                                {
+                                    NetIncome1 = Convert.ToDouble(txtAmount.Text) * Convert.ToDouble(rate) * 0.15 + Convert.ToDouble(txtAmount.Text) * Convert.ToDouble(rate);
+                                    VatFree = Convert.ToDouble(txtAmount.Text) * Convert.ToDouble(rate);
+                                    Vat = NetIncome1 - VatFree;
+                                    SqlCommand cmdin = new SqlCommand("insert into tblIncome values('" + ddlExpense.SelectedItem.Text + "','" + customer + "','" + rate + "','" + unit + "','" + NetIncome1 + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','" + txtAmount.Text + "','" + txtFSNo.Text + "','" + txtTIN.Text + "','" + address + "','" + paymode + "')", con);
+                                    cmdin.ExecuteNonQuery();
+                                }
+                                //END Inserting
 
-                                    SqlDataReader reader66790c = cmd190cc.ExecuteReader();
+                                BindcustomerStatement(ddlVendor.SelectedItem.Text, NetIncome1, ddlExpense.SelectedItem.Text, txtReference.Text);
+                                if (ddlCash.SelectedItem.Text != "-Select-")
+                                {
 
-                                    if (reader66790c.Read())
+                                    SqlCommand cmd166c3 = new SqlCommand("select * from tblLedgAccTyp where Name='" + ddlCash.SelectedItem.Text + "'", con);
+                                    SqlDataReader reader66c3 = cmd166c3.ExecuteReader();
+
+                                    if (reader66c3.Read())
                                     {
-                                        string ah1289c;
-                                        ah1289c = reader66790c["Balance"].ToString();
-                                        reader66790c.Close();
+                                        string ah11c;
+                                        string ah1258c;
+                                        ah11c = reader66c3["No"].ToString();
+                                        ah1258c = reader66c3["AccountType"].ToString();
+                                        reader66c3.Close();
                                         con.Close();
                                         con.Open();
-                                        Double M1c = Convert.ToDouble(ah1289c);
-                                        Double bl1c = M1c + NetIncome1;
-                                        string total = "Cash Debited for " + ddlExpense.SelectedItem.Text + " Income";
-                                        SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='" + ddlCash.SelectedItem.Text + "'", con);
-                                        cmd45c.ExecuteNonQuery();
-                                        SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total + "','','" + NetIncome1 + "','0','" + bl1c + "','" + DateTime.Now.Date + "','" + ddlCash.SelectedItem.Text + "','" + ah11c + "','" + ah1258c + "')", con);
-                                        cmd1964c.ExecuteNonQuery();
-                                    }
-                                }
-                                SqlCommand cmd = new SqlCommand("select * from tblLedgAccTyp where Name='" + account + "'", con);
-                                SqlDataReader reader = cmd.ExecuteReader();
+                                        SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCash.SelectedItem.Text + "'", con);
 
-                                if (reader.Read())
-                                {
-                                    string ah11c;
-                                    string ah1258c;
-                                    ah11c = reader["No"].ToString();
-                                    ah1258c = reader["AccountType"].ToString();
-                                    reader.Close();
-                                    con.Close();
-                                    con.Open();
-                                    SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='" + account + "'", con);
+                                        SqlDataReader reader66790c = cmd190cc.ExecuteReader();
 
-                                    SqlDataReader reader66790c = cmd190cc.ExecuteReader();
-
-                                    if (reader66790c.Read())
-                                    {
-                                        string ah1289c;
-                                        ah1289c = reader66790c["Balance"].ToString();
-                                        reader66790c.Close();
-                                        con.Close();
-                                        con.Open();
-                                        Double M1c = Convert.ToDouble(ah1289c);
-                                        Double bl1c = M1c + VatFree;
-                                        string total = "Income Credited for " + ddlExpense.SelectedItem.Text + " from customer " + customer;
-                                        SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='" + account + "'", con);
-                                        cmd45c.ExecuteNonQuery();
-                                        SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total + "','','0','" + VatFree + "','" + bl1c + "','" + DateTime.Now.Date + "','" + account + "','" + ah11c + "','" + ah1258c + "')", con);
-                                        cmd1964c.ExecuteNonQuery();
-                                    }
-                                }
-                                SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                {
-                                    DataTable dtBrandss = new DataTable();
-                                    sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
-
-                                    SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                    using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                    {
-                                        DataTable dttax = new DataTable();
-                                        sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
-                                        //
-                                        if (iss2 != 0)
+                                        if (reader66790c.Read())
                                         {
-                                            SqlDataReader readers = cmdintax.ExecuteReader();
-                                            if (readers.Read())
+                                            string ah1289c;
+                                            ah1289c = reader66790c["Balance"].ToString();
+                                            reader66790c.Close();
+                                            con.Close();
+                                            con.Open();
+                                            Double M1c = Convert.ToDouble(ah1289c);
+                                            Double bl1c = M1c + NetIncome1;
+                                            string total = "Cash Debited for " + ddlExpense.SelectedItem.Text + " Income";
+                                            SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='" + ddlCash.SelectedItem.Text + "'", con);
+                                            cmd45c.ExecuteNonQuery();
+                                            SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total + "','','" + NetIncome1 + "','0','" + bl1c + "','" + DateTime.Now.Date + "','" + ddlCash.SelectedItem.Text + "','" + ah11c + "','" + ah1258c + "')", con);
+                                            cmd1964c.ExecuteNonQuery();
+                                        }
+                                    }
+                                    SqlCommand cmd = new SqlCommand("select * from tblLedgAccTyp where Name='" + account + "'", con);
+                                    SqlDataReader reader = cmd.ExecuteReader();
+
+                                    if (reader.Read())
+                                    {
+                                        string ah11c;
+                                        string ah1258c;
+                                        ah11c = reader["No"].ToString();
+                                        ah1258c = reader["AccountType"].ToString();
+                                        reader.Close();
+                                        con.Close();
+                                        con.Open();
+                                        SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='" + account + "'", con);
+
+                                        SqlDataReader reader66790c = cmd190cc.ExecuteReader();
+
+                                        if (reader66790c.Read())
+                                        {
+                                            string ah1289c;
+                                            ah1289c = reader66790c["Balance"].ToString();
+                                            reader66790c.Close();
+                                            con.Close();
+                                            con.Open();
+                                            Double M1c = Convert.ToDouble(ah1289c);
+                                            Double bl1c = M1c + VatFree;
+                                            string total = "Income Credited for " + ddlExpense.SelectedItem.Text + " from customer " + customer;
+                                            SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='" + account + "'", con);
+                                            cmd45c.ExecuteNonQuery();
+                                            SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total + "','','0','" + VatFree + "','" + bl1c + "','" + DateTime.Now.Date + "','" + account + "','" + ah11c + "','" + ah1258c + "')", con);
+                                            cmd1964c.ExecuteNonQuery();
+                                        }
+                                    }
+                                    SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
+                                    using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
+                                    {
+                                        DataTable dtBrandss = new DataTable();
+                                        sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+
+                                        SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+                                        using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
+                                        {
+                                            DataTable dttax = new DataTable();
+                                            sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                                            //
+                                            if (iss2 != 0)
                                             {
-                                                string ah1289;
-                                                ah1289 = readers["Balance"].ToString();
-                                                readers.Close();
-                                                con.Close();
-                                                con.Open();
-                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                if (reader66.Read())
+                                                SqlDataReader readers = cmdintax.ExecuteReader();
+                                                if (readers.Read())
                                                 {
-                                                    string ah11;
-                                                    string ah1258;
-                                                    ah11 = reader66["No"].ToString();
-                                                    ah1258 = reader66["AccountType"].ToString();
-                                                    reader66.Close();
+                                                    string ah1289;
+                                                    ah1289 = readers["Balance"].ToString();
+                                                    readers.Close();
                                                     con.Close();
                                                     con.Open();
-                                                    string total = "Income VAT Credited for " + ddlExpense.SelectedItem.Text + " from customer " + customer;
-                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                    Double bl1 = M1 + Vat;
-                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                    cmd45.ExecuteNonQuery();
-                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + total + "','','0','" + Vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                    cmd1974.ExecuteNonQuery();
+                                                    SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
 
+                                                    SqlDataReader reader66 = cmdintax.ExecuteReader();
+
+                                                    if (reader66.Read())
+                                                    {
+                                                        string ah11;
+                                                        string ah1258;
+                                                        ah11 = reader66["No"].ToString();
+                                                        ah1258 = reader66["AccountType"].ToString();
+                                                        reader66.Close();
+                                                        con.Close();
+                                                        con.Open();
+                                                        string total = "Income VAT Credited for " + ddlExpense.SelectedItem.Text + " from customer " + customer;
+                                                        Double M1 = Convert.ToDouble(ah1289);
+                                                        Double bl1 = M1 + Vat;
+                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+                                                        cmd45.ExecuteNonQuery();
+                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + total + "','','0','" + Vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
+                                                        cmd1974.ExecuteNonQuery();
+
+                                                    }
                                                 }
                                             }
                                         }
                                     }
+                                    SqlCommand cmddf = new SqlCommand("select * from tblIncome Order by id DESC", con);
+                                    SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                    DataTable dtdf = new DataTable();
+                                    sdadf.Fill(dtdf); Int64 nb = Convert.ToInt64(dtdf.Rows[0][9].ToString());
+                                    string url = "OtherInvoices.aspx?fsno=" + nb;
+                                    string money = "ETB";
+                                    string text = money + NetIncome1.ToString("#,##0.00") + " invoiced for " + ddlExpense.SelectedItem.Text;
+                                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + text + "','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-hand-holding-usd text-white','icon-circle bg bg-primary','" + url + "','MN')", con);
+                                    cmd197h.ExecuteNonQuery();
+                                    Response.Redirect("OtherInvoices.aspx?fsno=" + nb);
                                 }
-                                SqlCommand cmddf = new SqlCommand("select * from tblIncome Order by id DESC", con);
-                                SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                DataTable dtdf = new DataTable();
-                                sdadf.Fill(dtdf); Int64 nb = Convert.ToInt64(dtdf.Rows[0][0].ToString());
-                                string url = "OtherInvoices.aspx?ref2=" + nb + "&&expname=" + ddlExpense.SelectedItem.Text + "&&paymentmode=Bank";
-                                string money = "ETB";
-                                string text = money + NetIncome1.ToString("#,##0.00") + " invoiced for " + ddlExpense.SelectedItem.Text;
-                                SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + text + "','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-hand-holding-usd text-white','icon-circle bg bg-primary','" + url + "','MN')", con);
-                                cmd197h.ExecuteNonQuery();
-                                Response.Redirect("OtherInvoices.aspx?ref2=" + nb + "&&expname=" + ddlExpense.SelectedItem.Text + "&&paymentmode=Cash");
-                            }
-                            else
-                            {
-                                SqlCommand cmdbank = new SqlCommand("select * from tblbanktrans1 where account='" + ddlBank.SelectedItem.Text + "'", con);
-                                using (SqlDataAdapter sda22 = new SqlDataAdapter(cmdbank))
+                                else
                                 {
-                                    DataTable dt = new DataTable();
-                                    sda22.Fill(dt); int j = dt.Rows.Count;
-                                    //
-                                    if (j != 0)
+                                    SqlCommand cmdbank = new SqlCommand("select * from tblbanktrans1 where account='" + ddlBank.SelectedItem.Text + "'", con);
+                                    using (SqlDataAdapter sda22 = new SqlDataAdapter(cmdbank))
                                     {
-                                        string total = "Expense Debited for " + ddlExpense.SelectedItem.Text + " Expense";
-                                        double t = Convert.ToDouble(dt.Rows[0][5].ToString()) + NetIncome1;
-                                        SqlCommand cmd45 = new SqlCommand("Update tblbanktrans1 set balance='" + t + "' where Account='" + ddlBank.SelectedItem.Text + "'", con);
-                                        cmd45.ExecuteNonQuery();
-                                        SqlCommand cvb = new SqlCommand("insert into tblbanktrans values('','" + txtReference.Text + "','" + NetIncome1 + "','','" + t + "','" + ddlBank.SelectedItem.Text + "','','" + txtReference.Text + "','" + DateTime.Now.Date + "')", con);
-                                        cvb.ExecuteNonQuery();
-
-                                        ///Recording Cash
-                                        SqlCommand cmd166c3 = new SqlCommand("select * from tblLedgAccTyp where Name='Cash at Bank'", con);
-                                        SqlDataReader reader66c3 = cmd166c3.ExecuteReader();
-
-                                        if (reader66c3.Read())
+                                        DataTable dt = new DataTable();
+                                        sda22.Fill(dt); int j = dt.Rows.Count;
+                                        //
+                                        if (j != 0)
                                         {
-                                            string ah11c;
-                                            string ah1258c;
-                                            ah11c = reader66c3["No"].ToString();
-                                            ah1258c = reader66c3["AccountType"].ToString();
-                                            reader66c3.Close();
-                                            con.Close();
-                                            con.Open();
-                                            SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='Cash at Bank'", con);
+                                            string total = "Expense Debited for " + ddlExpense.SelectedItem.Text + " Expense";
+                                            double t = Convert.ToDouble(dt.Rows[0][5].ToString()) + NetIncome1;
+                                            SqlCommand cmd45 = new SqlCommand("Update tblbanktrans1 set balance='" + t + "' where Account='" + ddlBank.SelectedItem.Text + "'", con);
+                                            cmd45.ExecuteNonQuery();
+                                            SqlCommand cvb = new SqlCommand("insert into tblbanktrans values('','" + txtReference.Text + "','" + NetIncome1 + "','','" + t + "','" + ddlBank.SelectedItem.Text + "','','" + txtReference.Text + "','" + DateTime.Now.Date + "')", con);
+                                            cvb.ExecuteNonQuery();
 
-                                            SqlDataReader reader66790c = cmd190cc.ExecuteReader();
+                                            ///Recording Cash
+                                            SqlCommand cmd166c3 = new SqlCommand("select * from tblLedgAccTyp where Name='Cash at Bank'", con);
+                                            SqlDataReader reader66c3 = cmd166c3.ExecuteReader();
 
-                                            if (reader66790c.Read())
+                                            if (reader66c3.Read())
                                             {
-                                                string ah1289c;
-                                                ah1289c = reader66790c["Balance"].ToString();
-                                                reader66790c.Close();
+                                                string ah11c;
+                                                string ah1258c;
+                                                ah11c = reader66c3["No"].ToString();
+                                                ah1258c = reader66c3["AccountType"].ToString();
+                                                reader66c3.Close();
                                                 con.Close();
                                                 con.Open();
-                                                Double M1c = Convert.ToDouble(ah1289c);
-                                                Double bl1c = M1c + NetIncome1;
-                                                string total1 = "Cash at Bank Debited for " + ddlExpense.SelectedItem.Text + " for customer " + customer;
-                                                SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='Cash at Bank'", con);
-                                                cmd45c.ExecuteNonQuery();
-                                                SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total1 + "','','" + NetIncome1 + "','0','" + bl1c + "','" + DateTime.Now.Date + "','Cash at Bank','" + ah11c + "','" + ah1258c + "')", con);
-                                                cmd1964c.ExecuteNonQuery();
-                                            }
-                                        }
-                                        SqlCommand cmd = new SqlCommand("select * from tblLedgAccTyp where Name='" + account + "'", con);
-                                        SqlDataReader reader = cmd.ExecuteReader();
+                                                SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='Cash at Bank'", con);
 
-                                        if (reader.Read())
-                                        {
-                                            string ah11c;
-                                            string ah1258c;
-                                            ah11c = reader["No"].ToString();
-                                            ah1258c = reader["AccountType"].ToString();
-                                            reader.Close();
-                                            con.Close();
-                                            con.Open();
-                                            SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='" + account + "'", con);
+                                                SqlDataReader reader66790c = cmd190cc.ExecuteReader();
 
-                                            SqlDataReader reader66790c = cmd190cc.ExecuteReader();
-
-                                            if (reader66790c.Read())
-                                            {
-                                                string ah1289c;
-                                                ah1289c = reader66790c["Balance"].ToString();
-                                                reader66790c.Close();
-                                                con.Close();
-                                                con.Open();
-                                                Double M1c = Convert.ToDouble(ah1289c);
-                                                Double bl1c = M1c + VatFree;
-                                                string total2 = "Income Credited for " + ddlExpense.SelectedItem.Text + " from customer " + customer;
-                                                SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='" + account + "'", con);
-                                                cmd45c.ExecuteNonQuery();
-                                                SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total2 + "','','0','" + VatFree + "','" + bl1c + "','" + DateTime.Now.Date + "','" + account + "','" + ah11c + "','" + ah1258c + "')", con);
-                                                cmd1964c.ExecuteNonQuery();
-                                            }
-                                        }
-                                        SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                        using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                        {
-                                            DataTable dtBrandss = new DataTable();
-                                            sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
-
-                                            SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                            using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                            {
-                                                DataTable dttax = new DataTable();
-                                                sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
-                                                //
-                                                if (iss2 != 0)
+                                                if (reader66790c.Read())
                                                 {
-                                                    SqlDataReader readers = cmdintax.ExecuteReader();
-                                                    if (readers.Read())
+                                                    string ah1289c;
+                                                    ah1289c = reader66790c["Balance"].ToString();
+                                                    reader66790c.Close();
+                                                    con.Close();
+                                                    con.Open();
+                                                    Double M1c = Convert.ToDouble(ah1289c);
+                                                    Double bl1c = M1c + NetIncome1;
+                                                    string total1 = "Cash at Bank Debited for " + ddlExpense.SelectedItem.Text + " for customer " + customer;
+                                                    SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='Cash at Bank'", con);
+                                                    cmd45c.ExecuteNonQuery();
+                                                    SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total1 + "','','" + NetIncome1 + "','0','" + bl1c + "','" + DateTime.Now.Date + "','Cash at Bank','" + ah11c + "','" + ah1258c + "')", con);
+                                                    cmd1964c.ExecuteNonQuery();
+                                                }
+                                            }
+                                            SqlCommand cmd = new SqlCommand("select * from tblLedgAccTyp where Name='" + account + "'", con);
+                                            SqlDataReader reader = cmd.ExecuteReader();
+
+                                            if (reader.Read())
+                                            {
+                                                string ah11c;
+                                                string ah1258c;
+                                                ah11c = reader["No"].ToString();
+                                                ah1258c = reader["AccountType"].ToString();
+                                                reader.Close();
+                                                con.Close();
+                                                con.Open();
+                                                SqlCommand cmd190cc = new SqlCommand("select * from tblGeneralLedger2 where Account='" + account + "'", con);
+
+                                                SqlDataReader reader66790c = cmd190cc.ExecuteReader();
+
+                                                if (reader66790c.Read())
+                                                {
+                                                    string ah1289c;
+                                                    ah1289c = reader66790c["Balance"].ToString();
+                                                    reader66790c.Close();
+                                                    con.Close();
+                                                    con.Open();
+                                                    Double M1c = Convert.ToDouble(ah1289c);
+                                                    Double bl1c = M1c + VatFree;
+                                                    string total2 = "Income Credited for " + ddlExpense.SelectedItem.Text + " from customer " + customer;
+                                                    SqlCommand cmd45c = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1c + "' where Account='" + account + "'", con);
+                                                    cmd45c.ExecuteNonQuery();
+                                                    SqlCommand cmd1964c = new SqlCommand("insert into tblGeneralLedger values('" + total2 + "','','0','" + VatFree + "','" + bl1c + "','" + DateTime.Now.Date + "','" + account + "','" + ah11c + "','" + ah1258c + "')", con);
+                                                    cmd1964c.ExecuteNonQuery();
+                                                }
+                                            }
+                                            SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
+                                            using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
+                                            {
+                                                DataTable dtBrandss = new DataTable();
+                                                sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+
+                                                SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+                                                using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
+                                                {
+                                                    DataTable dttax = new DataTable();
+                                                    sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                                                    //
+                                                    if (iss2 != 0)
                                                     {
-                                                        string ah1289;
-                                                        ah1289 = readers["Balance"].ToString();
-                                                        readers.Close();
-                                                        con.Close();
-                                                        con.Open();
-                                                        SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                        SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                        if (reader66.Read())
+                                                        SqlDataReader readers = cmdintax.ExecuteReader();
+                                                        if (readers.Read())
                                                         {
-                                                            string ah11;
-                                                            string ah1258;
-                                                            ah11 = reader66["No"].ToString();
-                                                            ah1258 = reader66["AccountType"].ToString();
-                                                            reader66.Close();
+                                                            string ah1289;
+                                                            ah1289 = readers["Balance"].ToString();
+                                                            readers.Close();
                                                             con.Close();
                                                             con.Open();
-                                                            string total1 = "Income VAT Credited for " + ddlExpense.SelectedItem.Text + " from customer " + customer;
-                                                            Double M1 = Convert.ToDouble(ah1289);
-                                                            Double bl1 = M1 + Vat;
-                                                            SqlCommand cmd451 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                            cmd451.ExecuteNonQuery();
-                                                            SqlCommand cmd19741 = new SqlCommand("insert into tblGeneralLedger values('" + total1 + "','','0','" + Vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                            cmd19741.ExecuteNonQuery();
+                                                            SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
 
+                                                            SqlDataReader reader66 = cmdintax.ExecuteReader();
+
+                                                            if (reader66.Read())
+                                                            {
+                                                                string ah11;
+                                                                string ah1258;
+                                                                ah11 = reader66["No"].ToString();
+                                                                ah1258 = reader66["AccountType"].ToString();
+                                                                reader66.Close();
+                                                                con.Close();
+                                                                con.Open();
+                                                                string total1 = "Income VAT Credited for " + ddlExpense.SelectedItem.Text + " from customer " + customer;
+                                                                Double M1 = Convert.ToDouble(ah1289);
+                                                                Double bl1 = M1 + Vat;
+                                                                SqlCommand cmd451 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
+                                                                cmd451.ExecuteNonQuery();
+                                                                SqlCommand cmd19741 = new SqlCommand("insert into tblGeneralLedger values('" + total1 + "','','0','" + Vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
+                                                                cmd19741.ExecuteNonQuery();
+
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }
                                         }
                                     }
+                                    SqlCommand cmddf = new SqlCommand("select * from tblIncome Order by id DESC", con);
+                                    SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                    DataTable dtdf = new DataTable();
+                                    sdadf.Fill(dtdf); Int64 nb = Convert.ToInt64(dtdf.Rows[0][9].ToString());
+                                    string url = "OtherInvoices.aspx?fsno=" + nb;
+                                    string money = "ETB";
+                                    string text = money + NetIncome1.ToString("#,##0.00") + " invoiced for " + ddlExpense.SelectedItem.Text;
+                                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + text + "','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-hand-holding-usd text-white','icon-circle bg bg-primary','" + url + "','MN')", con);
+                                    cmd197h.ExecuteNonQuery();
+                                    Response.Redirect("OtherInvoices.aspx?fsno=" + nb);
                                 }
-                                SqlCommand cmddf = new SqlCommand("select * from tblIncome Order by id DESC", con);
-                                SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                DataTable dtdf = new DataTable();
-                                sdadf.Fill(dtdf); Int64 nb = Convert.ToInt64(dtdf.Rows[0][0].ToString());
-                                string url = "OtherInvoices.aspx?ref2=" + nb + "&&expname=" + ddlExpense.SelectedItem.Text + "&&paymentmode=Bank";
-                                string money = "ETB";
-                                string text = money + NetIncome1.ToString("#,##0.00") + " invoiced for " + ddlExpense.SelectedItem.Text;
-                                SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + text + "','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-hand-holding-usd text-white','icon-circle bg bg-primary','" + url + "','MN')", con);
-                                cmd197h.ExecuteNonQuery();
-                                Response.Redirect("OtherInvoices.aspx?ref2=" + nb + "&&expname=" + ddlExpense.SelectedItem.Text + "&&paymentmode=Bank");
                             }
+
                         }
 
                     }
-
                 }
             }
         }
@@ -854,7 +1248,9 @@ namespace advtech.Finance.Accounta
             con.Open();
             if (greater.Checked == true)
             {
-                str = "select * from tblIncome where amount > '" + txtFilteredAmount.Text + "'";
+                DateRangerSpan.InnerText = "Condition: Amount Greater Than " + Convert.ToDouble(txtFilteredAmount.Text).ToString("#,##0.00");
+                DateRangerSpan.Visible = true;
+                str = "select  sum(amount) as amount,date,customer,fsno  from tblIncome where amount > '" + txtFilteredAmount.Text + "' group by fsno,customer,date";
                 com = new SqlCommand(str, con);
                 sqlda = new SqlDataAdapter(com);
                 DataTable dt = new DataTable();
@@ -865,7 +1261,9 @@ namespace advtech.Finance.Accounta
             }
             else if (less.Checked == true)
             {
-                str = "select * from tblIncome where amount < '" + txtFilteredAmount.Text + "'";
+                DateRangerSpan.InnerText = "Condition: Amount Less Than " + Convert.ToDouble(txtFilteredAmount.Text).ToString("#,##0.00");
+                DateRangerSpan.Visible = true;
+                str = "select   sum(amount) as amount,date,customer,fsnofrom tblIncome where amount < '" + txtFilteredAmount.Text + "' group by fsno,customer,date";
                 com = new SqlCommand(str, con);
                 sqlda = new SqlDataAdapter(com);
                 DataTable dt = new DataTable();
@@ -876,7 +1274,9 @@ namespace advtech.Finance.Accounta
             }
             else
             {
-                str = "select * from tblIncome where amount = '" + txtFilteredAmount.Text + "'";
+                DateRangerSpan.InnerText = "Condition: Amount Equals Than " + Convert.ToDouble(txtFilteredAmount.Text).ToString("#,##0.00");
+                DateRangerSpan.Visible = true;
+                str = "select   sum(amount) as amount,date,customer,fsno from tblIncome where amount = '" + txtFilteredAmount.Text + "' group by fsno,customer,date";
                 com = new SqlCommand(str, con);
                 sqlda = new SqlDataAdapter(com);
                 DataTable dt = new DataTable();
@@ -889,36 +1289,46 @@ namespace advtech.Finance.Accounta
         }
         protected void Button3_Click(object sender, EventArgs e)
         {
-            SqlConnection con = new SqlConnection(strConnString);
-            con.Open();
-            str = "select * from tblIncome where date between '" + txtDateform.Text + "' and '" + txtDateto.Text + "'";
-            com = new SqlCommand(str, con);
-            sqlda = new SqlDataAdapter(com);
-            DataTable dt = new DataTable();
-            sqlda.Fill(dt);
-            DataView dvData = new DataView(dt);
-            Repeater1.DataSource = dt;
-            Repeater1.DataBind();
+            if (txtDateform.Text == "" || txtDateto.Text == "")
+            {
+                string message = "Please select date range to bind the summary!!";
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
+            }
+            else
+            {
+                DateRangerSpan.InnerText = "From " + Convert.ToDateTime(txtDateform.Text).ToString("MMM dd, yyyy") + " To " + Convert.ToDateTime(txtDateto.Text).ToString("MMM dd, yyyy");
+                DateRangerSpan.Visible = true;
+                SqlConnection con = new SqlConnection(strConnString);
+                con.Open();
+                str = "select sum(amount) as amount,date,customer,fsno from tblIncome where date between '" + txtDateform.Text + "' and '" + txtDateto.Text + "' group by fsno,customer,date";
+                com = new SqlCommand(str, con);
+                sqlda = new SqlDataAdapter(com);
+                DataTable dt = new DataTable();
+                sqlda.Fill(dt);
+                DataView dvData = new DataView(dt);
+                Repeater1.DataSource = dt;
+                Repeater1.DataBind();
+            }
         }
         private void BindBrandsRptr2()
         {
-            String PID = Convert.ToString(Request.QueryString["ref2"]);
-            String PID2 = Convert.ToString(Request.QueryString["expname"]);
+            String PID = Convert.ToString(Request.QueryString["fsno"]);
+        
             txtReference.Text = "RAKS-" + RandomPassword();
-            if (Request.QueryString["ref2"] != null)
+            if (Request.QueryString["fsno"] != null)
             {
                 leaveempt.Visible = false;
                 showdetail.Visible = true;
                 SqlConnection con = new SqlConnection(strConnString);
                 con.Open();
 
-                str = "select * from tblIncome";
+                str = "select sum(amount) as amount,date,customer,fsno from tblIncome group by fsno,customer,date order by date desc";
                 com = new SqlCommand(str, con);
                 sqlda = new SqlDataAdapter(com);
                 DataTable dt = new DataTable();
                 sqlda.Fill(dt);
                 DataView dvData = new DataView(dt);
-                dvData.Sort = ViewState["Column"] + " " + ViewState["Sortorder"];
+                dvData.Sort = ViewState["Column1"] + " " + ViewState["Sortorder"];
 
                 Repeater1.DataSource = dvData;
                 Repeater1.DataBind();
@@ -929,13 +1339,13 @@ namespace advtech.Finance.Accounta
                 SqlConnection con = new SqlConnection(strConnString);
                 con.Open();
 
-                str = "select * from tblIncome";
+                str = "select sum(amount) as amount,date,customer,fsno from tblIncome group by fsno,customer,date";
                 com = new SqlCommand(str, con);
                 sqlda = new SqlDataAdapter(com);
                 DataTable dt = new DataTable();
                 sqlda.Fill(dt);
                 DataView dvData = new DataView(dt);
-                dvData.Sort = ViewState["Column"] + " " + ViewState["Sortorder"];
+                dvData.Sort = ViewState["Column1"] + " " + ViewState["Sortorder"];
                 Repeater1.DataSource = dvData;
                 Repeater1.DataBind();
                 leaveempt.Visible = true;
@@ -945,7 +1355,7 @@ namespace advtech.Finance.Accounta
         }
         protected void Repeater1_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            if (e.CommandName == ViewState["Column"].ToString())
+            if (e.CommandName == ViewState["Column1"].ToString())
             {
                 if (ViewState["Sortorder"].ToString() == "ASC")
                     ViewState["Sortorder"] = "DESC";
@@ -954,14 +1364,14 @@ namespace advtech.Finance.Accounta
             }
             else
             {
-                ViewState["Column"] = e.CommandName;
+                ViewState["Column1"] = e.CommandName;
                 ViewState["Sortorder"] = "ASC";
             }
             BindBrandsRptr2();
         }
         private string bindIncomeaccount()
         {
-            String PID = Convert.ToString(Request.QueryString["expname"]);
+            String PID = Convert.ToString(Request.QueryString["invtype"]);
             string income = "";
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
@@ -979,12 +1389,12 @@ namespace advtech.Finance.Accounta
         }
         private void adjustLedger_debit()
         {
-            String PID2 = Convert.ToString(Request.QueryString["ref2"]);
-            String PID = Convert.ToString(Request.QueryString["expname"]);
+            String PID2 = Convert.ToString(Request.QueryString["fsno"]);
+  
             string CashorBank = "";
             if (PaymentMode.InnerText == "Cash") { CashorBank += "Cash on Hand"; }
             else { CashorBank += "Cash at Bank"; }
-            string explanation = "Account adjustment for " + PID + " invoice number " + PID2;
+            string explanation = "Account adjustment for FS number " + PID2;
             double diff = -bindDifferenece();
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
@@ -1115,12 +1525,12 @@ namespace advtech.Finance.Accounta
 
         private void adjustLedger_credit_delete()
         {
-            String PID2 = Convert.ToString(Request.QueryString["ref2"]);
-            String PID = Convert.ToString(Request.QueryString["expname"]);
+            String PID2 = Convert.ToString(Request.QueryString["fsno"]);
+
             string CashorBank;
             if (PaymentMode.InnerText == "Cash") { CashorBank = "Cash on Hand"; }
             else { CashorBank = "Cash at Bank"; }
-            string explanation = "Account adjustment for " + PID + " invoice number " + PID2 + " deletion";
+            string explanation = "Account adjustment for FS number " + PID2 + " deletion";
             double diff = Convert.ToDouble(DupGrandTotal.InnerText);
 
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -1262,9 +1672,9 @@ namespace advtech.Finance.Accounta
 
         private void bind_customer_statement_adjustment()
         {
-            String PID = Convert.ToString(Request.QueryString["expname"]);
-            String PID2 = Convert.ToString(Request.QueryString["ref2"]);
-            string explanation = "Account adjustment for " + PID2 + " invoice number " + PID;
+            String PID = Convert.ToString(Request.QueryString["customer"]);
+            String PID2 = Convert.ToString(Request.QueryString["fsno"]);
+            string explanation = "Account adjustment for FS number " + PID2;
             string reftag = Convert.ToString(RefNum.InnerText).Substring(5);
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
@@ -1293,13 +1703,13 @@ namespace advtech.Finance.Accounta
         }
         private void adjustLedger_credit()
         {
-            String PID = Convert.ToString(Request.QueryString["ref2"]);
+            String PID = Convert.ToString(Request.QueryString["fsno"]);
 
-            String PID2 = Convert.ToString(Request.QueryString["expname"]);
+            String PID2 = Convert.ToString(Request.QueryString["invtype"]);
             string CashorBank;
             if (PaymentMode.InnerText == "Cash") { CashorBank = "Cash on Hand"; }
             else { CashorBank = "Cash at Bank"; }
-            string explanation = "Account adjustment for " + PID2 + " invoice number " + PID;
+            string explanation = "Account adjustment for " + PID2 + " FS number " + PID;
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
             {
@@ -1432,7 +1842,8 @@ namespace advtech.Finance.Accounta
         }
         private void calculateTotal()
         {
-            String PID2 = Convert.ToString(Request.QueryString["expname"]);
+            String PID = Convert.ToString(Request.QueryString["id"]);
+            String PID2 = Convert.ToString(Request.QueryString["invtype"]);
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
             {
@@ -1454,23 +1865,43 @@ namespace advtech.Finance.Accounta
                         NetIncome1 = Convert.ToDouble(txtAmountEdited.Text);
                         VatFree = NetIncome1 / 1.15;
                         Vat = NetIncome1 - VatFree;
-                        SqlCommand cmdin = new SqlCommand("update tblIncome set amount='" + NetIncome1 + "', qty='" + txtAmountEdited.Text + "'", con);
+                        SqlCommand cmdin = new SqlCommand("update tblIncome set amount='" + NetIncome1 + "', qty='" + txtAmountEdited.Text + "' where id='"+PID+"'", con);
                         cmdin.ExecuteNonQuery();
                     }
                     else
                     {
                         NetIncome1 = Convert.ToDouble(txtAmountEdited.Text) * Convert.ToDouble(rate) * 0.15 + Convert.ToDouble(txtAmountEdited.Text) * Convert.ToDouble(rate);
-                        SqlCommand cmdin = new SqlCommand("update tblIncome set amount='" + NetIncome1 + "', qty='" + txtAmountEdited.Text + "'", con);
+                        SqlCommand cmdin = new SqlCommand("update tblIncome set amount='" + NetIncome1 + "', qty='" + txtAmountEdited.Text + "' where id='" + PID + "'", con);
                         cmdin.ExecuteNonQuery();
                     }
                     txtEditAmount.Text = NetIncome1.ToString();
                 }
             }
         }
+        private double CalcCurrentTotal(string id)
+        {
+            double balance = 0;
+            String PID = Convert.ToString(Request.QueryString["id"]);
+
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd2AC = new SqlCommand("select * from tblIncome where id='" + PID + "'", con);
+                SqlDataReader readerAC = cmd2AC.ExecuteReader();
+
+                if (readerAC.Read())
+                {
+                    balance = Convert.ToDouble(readerAC["amount"].ToString());
+                }
+            }
+            return balance;
+        }
         protected void btnEditInsert_Click(object sender, EventArgs e)
         {
-            String PID = Convert.ToString(Request.QueryString["ref2"]);
-            String PID2 = Convert.ToString(Request.QueryString["expname"]);
+            String PID = Convert.ToString(Request.QueryString["fsno"]);
+            String PID2 = Convert.ToString(Request.QueryString["invtype"]);
+            String PID3 = Convert.ToString(Request.QueryString["id"]);
             if (txtAmountEdited.Text == "")
             {
                 string message = "Please assign the total amount!!";
@@ -1478,15 +1909,18 @@ namespace advtech.Finance.Accounta
             }
             else
             {
-                calculateTotal();
+            
                 String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
                 using (SqlConnection con = new SqlConnection(CS))
                 {
                     con.Open();
-                    double total = Convert.ToDouble(txtEditAmount.Text);
+                 
 
-                    string url = "OtherInvoices.aspx?id=" + PID + "&&expname=" + PID2;
-                    string exlanation = PID2 + " Invoice# " + PID + " has been updated from ETB " + Convert.ToDouble(DupGrandTotal.InnerText).ToString("#,##0.00") + " to " + total.ToString("#,##0.00");
+                    string url = "OtherInvoices.aspx?fsno=" + PID;
+                    string exlanation = PID2 + " FS# " + PID + " has been updated from ETB " + CalcCurrentTotal(PID3);
+                    calculateTotal();
+                    double total = Convert.ToDouble(txtEditAmount.Text);    
+                     exlanation += " to " + total.ToString("#,##0.00");
                     if (Checkbox2.Checked == true)
                     {
                         bind_customer_statement_adjustment();
@@ -1507,17 +1941,17 @@ namespace advtech.Finance.Accounta
                     SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + exlanation + "','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-edit text-white','icon-circle bg bg-primary','" + url + "','MN')", con);
                     cmd197h.ExecuteNonQuery();
 
-                    Response.Redirect("OtherInvoices.aspx?ref2=" + PID + "&&expname=" + PID2);
+                    Response.Redirect("OtherInvoices.aspx?fsno=" + PID);
                 }
             }
         }
-
         protected void btnDelete1_Click(object sender, EventArgs e)
         {
             string reftag = Convert.ToString(RefNum.InnerText);
-            String PID = Convert.ToString(Request.QueryString["ref2"]);
+            String PID = Convert.ToString(Request.QueryString["id"]);
+            String PID4 = Convert.ToString(Request.QueryString["fsno"]);
             String PID2 = vendor1.InnerText;
-            String PID3 = Convert.ToString(Request.QueryString["expname"]);
+            String PID3 = Convert.ToString(Request.QueryString["invtype"]);
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
             {
@@ -1532,12 +1966,77 @@ namespace advtech.Finance.Accounta
                 SqlCommand cmdreb1 = new SqlCommand("delete tblIncome  where id='" + PID + "'", con);
                 cmdreb1.ExecuteNonQuery();
 
-                string exlanation = PID3 + " Invoice# " + PID + " has been deleted";
+                string exlanation = PID3 + " FS# " + PID4 + " has been deleted";
                 SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + exlanation + "','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-trash text-white','icon-circle bg bg-danger','OtherInvoices.aspx','MN')", con);
                 cmd197h.ExecuteNonQuery();
 
                 Response.Redirect("OtherInvoices.aspx");
             }
+        }
+        protected Tuple<string,string,string,string> ColumnvistoRepeater()
+        {
+            string style1 = "style=\""; string style2 = "style=\""; string style3 = "style=\""; string style4 = "style=\"";
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("select *from tblOtherInvoiceCustomizing", con);
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+
+                    string col_rate = reader["col_rate_visibility"].ToString();
+                    string col_qty = reader["col_qty_visibility"].ToString();
+                    string col_num = reader["col_number_visibility"].ToString();
+                    string col_unit = reader["col_unit_visibility"].ToString();
+                    if (col_num == "True")
+                    {
+                        style1 += "display:normal" + "\"";
+
+                    }
+                    else
+                    {
+                        style1 += "display:none" + "\"";
+
+                    }
+                    //Credit Div
+                    if (col_unit == "True")
+                    {
+                        style2 += "display:normal" + "\"";
+
+                    }
+                    else
+                    {
+                        style2 += "display:none" + "\"";
+
+                    }
+                    //WaterMark 
+                    if (col_rate == "True")
+                    {
+                        style3 += "display:normal" + "\"";
+
+                    }
+                    else
+                    {
+                        style3 += "display:none" + "\"";
+
+                    }
+                    //WaterMark Div
+                    if (col_qty == "True")
+                    {
+                        style4 += "display:normal" + "\"";
+
+                    }
+                    else
+                    {
+                        style4 += "display:none" + "\"";
+
+                    }
+
+                }
+            }
+            return Tuple.Create(style1,style2,style3,style4);
         }
         private void GetFontSizeAndHeadingName()
         {
@@ -1553,12 +2052,59 @@ namespace advtech.Finance.Accounta
                 {
                     heading_name = reader["invoice_name"].ToString();
                     fontsize = reader["font_size"].ToString();
+                    string col_rate = reader["col_rate_visibility"].ToString();
+                    string col_qty = reader["col_qty_visibility"].ToString();
+                    string col_num = reader["col_number_visibility"].ToString();
+                    string col_unit = reader["col_unit_visibility"].ToString();
                     txtFontsize.Text = fontsize;
                     txtInvoiceName.Text = heading_name.ToUpper();
                     InvoiceName.InnerText = heading_name;
                     BodyFontSizeDiv1.Style.Add("font-size", fontsize + "px");
                     BodyFontSizeDiv2.Style.Add("font-size", fontsize + "px");
                     BodyFontSize3.Style.Add("font-size", fontsize + "px");
+                    if (col_num == "True")
+                    {
+                        NumbCheck.Checked = true;
+    
+                    }
+                    else
+                    {
+                        NumbCheck.Checked = false;
+   
+                    }
+                    //Credit Div
+                    if (col_unit == "True")
+                    {
+                        UnitCheck.Checked = true;
+    
+                    }
+                    else
+                    {
+                        UnitCheck.Checked = false;
+           
+                    }
+                    //WaterMark 
+                    if (col_rate == "True")
+                    {
+                        RateCheck.Checked = true;
+              
+                    }
+                    else
+                    {
+                        RateCheck.Checked = false;
+
+                    }
+                    //WaterMark Div
+                    if (col_qty == "True")
+                    {
+                        QtyCheck.Checked = true;
+
+                    }
+                    else
+                    {
+                        QtyCheck.Checked = false;
+
+                    }
                 }
             }
         }
@@ -1579,57 +2125,6 @@ namespace advtech.Finance.Accounta
                     col_rate = reader["col_rate_visibility"].ToString();
                     col_qty = reader["col_qty_visibility"].ToString();
                     //Logo
-                    if (col_num == "True")
-                    {
-                        NumbCheck.Checked = true;
-                        Col_number_header.Visible = true;
-                        Col_number_body.Visible = true;
-                    }
-                    else
-                    {
-                        NumbCheck.Checked = false;
-                        Col_number_header.Visible = false;
-                        Col_number_body.Visible = false;
-                    }
-                    //Credit Div
-                    if (col_unit == "True")
-                    {
-                        UnitCheck.Checked = true;
-                        Col_unitbase_header.Visible = true;
-                        Col_unitbase_body.Visible = true;
-                    }
-                    else
-                    {
-                        UnitCheck.Checked = false;
-                        Col_unitbase_header.Visible = false;
-                        Col_unitbase_body.Visible = false;
-                    }
-                    //WaterMark 
-                    if (col_rate == "True")
-                    {
-                        RateCheck.Checked = true;
-                        Col_ratebase_header.Visible = true;
-                        Col_ratebase_body.Visible = true;
-                    }
-                    else
-                    {
-                        RateCheck.Checked = false;
-                        Col_ratebase_header.Visible = false;
-                        Col_ratebase_body.Visible = false;
-                    }
-                    //WaterMark Div
-                    if (col_qty == "True")
-                    {
-                        QtyCheck.Checked = true;
-                        Col_Qtybase_header.Visible = true;
-                        Col_Qtybase_body.Visible = true;
-                    }
-                    else
-                    {
-                        QtyCheck.Checked = false;
-                        Col_Qtybase_header.Visible = false;
-                        Col_Qtybase_body.Visible = false;
-                    }
                 }
             }
         }
@@ -1673,11 +2168,6 @@ namespace advtech.Finance.Accounta
                     {
                         invCheck.Checked = true;
                     }
-                    else
-                    {
-                        invCheck.Checked = false;
-                        ExpenseType.Visible = false;
-                    }
                 }
             }
         }
@@ -1693,6 +2183,31 @@ namespace advtech.Finance.Accounta
                     ",col_number_visibility='" + NumbCheck.Checked + "',col_unit_visibility='" + UnitCheck.Checked + "',col_rate_visibility='" + RateCheck.Checked + "',col_qty_visibility='" + QtyCheck.Checked + "'", con);
                 cmdin.ExecuteNonQuery();
                 Response.Redirect(Request.RawUrl);
+            }
+        }
+        protected void rptBindDetails_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            foreach (RepeaterItem item in rptBindDetails.Items)
+            {
+                if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
+                {
+                    Label lblQty = item.FindControl("lblQty") as Label;
+                    Label lblRate = item.FindControl("lblRate") as Label;
+                    Label lblUnit = item.FindControl("lblUnit") as Label;
+                    //
+                    if (lblRate.Text == "1.0000")
+                    {
+                        lblQty.Text = "-";
+                        lblUnit.Text = "-";
+                        lblRate.Text = "-";
+                    }
+                    else
+                    {
+                        lblQty.Text =Convert.ToDouble(lblQty.Text).ToString("#,##0.00");
+
+                        lblRate.Text = Convert.ToDouble(lblRate.Text).ToString("#,##0.00");
+                    }
+                }
             }
         }
     }
