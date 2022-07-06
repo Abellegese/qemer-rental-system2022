@@ -26,7 +26,7 @@ namespace advtech.Finance.Accounta
                 {
                     ViewState["Column"] = "date";
 
-                    ViewState["Sortorder"] = "ASC";
+                    ViewState["Sortorder"] = "DESC";
                     datTo.Visible = false; datFrom1.Visible = false; tomiddle.Visible = false;
                     String PID = Convert.ToString(Request.QueryString["ref2"]);
                     Span2.InnerText = PID;

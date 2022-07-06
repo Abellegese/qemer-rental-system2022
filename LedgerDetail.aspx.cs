@@ -26,7 +26,7 @@ namespace advtech.Finance.Accounta
                 {
                     ViewState["Column"] = "date";
 
-                    ViewState["Sortorder"] = "ASC";
+                    ViewState["Sortorder"] = "DESC";
                     BindBrandsRptr(); bindcompany(); mont.InnerText = DateTime.Now.ToString("MMMM dd, yyyy");
                     BindBalance(); bindledger();
                 }
