@@ -13,7 +13,10 @@ namespace advtech.Finance.Accounta
         public string CustomerName;
         public string  CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
         private string duedate { get; set; }
-
+        public CustomerUtil()
+        {
+  
+        }
         public CustomerUtil (string customerName)
         {
             this.CustomerName = customerName;
@@ -71,6 +74,30 @@ namespace advtech.Finance.Accounta
                     }
                 }
                 return duedate;
+            }
+        }
+        public void BindcustomerStatement(string customer, double NetIncome1, string expense_name, string references)
+        {
+            if (customer != "-Select")
+            {
+                String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+                using (SqlConnection con = new SqlConnection(CS))
+                {
+                    con.Open();
+                    SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + customer + "' ORDER BY CSID DESC", con);
+                    SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
+
+                    if (readerbcustb.Read())
+                    {
+                        string bala;
+
+                        bala = readerbcustb["Balance"].ToString();
+                        readerbcustb.Close();
+
+                        SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + references + "','','" + NetIncome1 + "','" + NetIncome1 + "','" + bala + "','" + customer + "')", con);
+                        custcmd.ExecuteNonQuery();
+                    }
+                }
             }
         }
         public string Name
