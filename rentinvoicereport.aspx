@@ -472,7 +472,7 @@
 
                                     <div class="col-md-6 text-right">
 
-                                        <span class=" text-uppercase text-gray-900 font-weight-bold" id="HeaderInv" runat="server">INVOICE</span><br />
+                                        <span class=" text-uppercase text-gray-900 font-weight-bold" id="HeaderInv" runat="server"></span><br />
                                         <span id="invocenumber" runat="server"></span>
                                         <div id="Body2" runat="server">
                                             <span id="BindShop" runat="server" visible="false">
@@ -560,6 +560,8 @@
                                         <div class="row" id="TotalRow" runat="server">
                                             <div class="col-md-8 text-left">
                                                 <p class="small text-danger">* If you have any disagreement with the invoice please contact us</p>
+                                                <p class="small text-gray-900 font-weight-bold border-top">* Invalid without Fiscal or Refund Receipt</p>
+
                                                 <div class="row">
                                                     <div class="col-md-12 text-left">
                                                         <span id="CreditDiv" runat="server" class="fas fa-arrow-circle-right text-gray-400 mr-2"></span><span id="CreditDiv2" runat="server">CREDIT BALANCE: [<span id="credittotal" class="font-weight-bold" runat="server"></span>]</span>

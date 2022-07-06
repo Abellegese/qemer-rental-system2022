@@ -32,7 +32,7 @@ namespace advtech.Finance.Accounta
                 {
                     bindsearch();
                     ViewState["Column"] = "date";
-                    ViewState["Sortorder"] = "ASC";
+                    ViewState["Sortorder"] = "DESC";
 
                     bindcompany(); bindstatus(); InvNoBinding.Visible = false;
 
@@ -486,7 +486,7 @@ namespace advtech.Finance.Accounta
             Pds1.CurrentPageIndex = CurrentPage;
 
 
-            string str2 = "select * from tblrentreceipt";
+            string str2 = "select * from tblrentreceipt order by date desc";
             com2 = new SqlCommand(str2, con);
             sqlda2 = new SqlDataAdapter(com2);
             DataTable dt = new DataTable(); sqlda2.Fill(dt); int i = dt.Rows.Count;
