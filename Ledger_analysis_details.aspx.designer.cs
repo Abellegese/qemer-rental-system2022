@@ -42,6 +42,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.TextBox txtRenameAccount;
 
         /// <summary>
+        /// txtAccountNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtAccountNumber;
+
+        /// <summary>
         /// btnRenameAccount control.
         /// </summary>
         /// <remarks>
@@ -166,6 +175,15 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl AccType;
+
+        /// <summary>
+        /// AccountNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl AccountNumber;
 
         /// <summary>
         /// Repeater2 control.

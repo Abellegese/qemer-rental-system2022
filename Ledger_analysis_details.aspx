@@ -219,10 +219,16 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="row">
+                        <div class="row mb-3">
                             <div class="col-md-12">
 
                                 <asp:TextBox ID="txtRenameAccount" class="form-control form-control-sm" Style="border-color: #ff00bb" placeholder="New Account Name" runat="server"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+
+                                <asp:TextBox ID="txtAccountNumber" class="form-control form-control-sm" Style="border-color: #ff00bb" placeholder="New Account #" runat="server"></asp:TextBox>
                             </div>
                         </div>
                         <div class="row">
@@ -438,7 +444,8 @@
                                     <div style="padding: 20px 0px 0px 0px">
                                         <span id="AccountName" runat="server" class="badge badge-light text-lg font-weight-bold text-gray-700"></span>
                                         <br />
-                                        <span class="fas fa-bezier-curve text-gray-400 mt-2 mr-2"></span><span class="text-gray-900 small" id="AccType" runat="server"></span>
+                                        <span class="fas fa-bezier-curve text-gray-400 mt-2 mr-2"></span><span class="text-gray-900 small mr-2" id="AccType" runat="server"></span>
+                                        <span class="text-danger small" id="AccountNumber" runat="server"></span>
                                     </div>
 
                                 </center>

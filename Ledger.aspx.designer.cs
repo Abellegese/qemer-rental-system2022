@@ -24,6 +24,42 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.ScriptManager ScriptManager1;
 
         /// <summary>
+        /// txtCsvDateFrom control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtCsvDateFrom;
+
+        /// <summary>
+        /// txtCsvDateTo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtCsvDateTo;
+
+        /// <summary>
+        /// InfoDiv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl InfoDiv;
+
+        /// <summary>
+        /// btnPeachtreeExport control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnPeachtreeExport;
+
+        /// <summary>
         /// btnUncollected control.
         /// </summary>
         /// <remarks>
@@ -310,6 +346,33 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl ExpenseCredit;
+
+        /// <summary>
+        /// CSVTable control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl CSVTable;
+
+        /// <summary>
+        /// counter control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl counter;
+
+        /// <summary>
+        /// Repeater2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater Repeater2;
 
         /// <summary>
         /// txtAccountName control.

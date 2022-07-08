@@ -24,6 +24,7 @@ namespace advtech.Finance.Accounta
                     BindRecentActivity(); BindBalanceDateRange();
                     BindDate(); BindAccountType(); ShowData(); ShowDataIncreaseMonthly();
                     ShowDataDecreaseMonthly(); bindReneameDelete();
+                    bindAccount();
 
                     InTrendDate.InnerText = "[" + DateTime.Now.ToString("yyyy") + "]";
                     Dec.InnerText = "[" + DateTime.Now.ToString("yyyy") + "]";
@@ -40,19 +41,22 @@ namespace advtech.Finance.Accounta
             {
                 String PID = Convert.ToString(Request.QueryString["led"]);
                 if (PID == "Cash at Bank")
-                {
-                    renameLink.Visible = false;
+                { 
                     deleteLink.Visible = false;
+                    txtRenameAccount.Visible = false;
+
                 }
                 if (PID == "Cash on Hand")
                 {
-                    renameLink.Visible = false;
+             
                     deleteLink.Visible = false;
+                    txtRenameAccount.Visible = false;
                 }
                 if (PID == "Accounts Receivable")
                 {
-                    renameLink.Visible = false;
+   
                     deleteLink.Visible = false;
+                    txtRenameAccount.Visible = false;
                 }
             }
         }
@@ -2142,6 +2146,26 @@ namespace advtech.Finance.Accounta
                 ShowDataYearly();
             }
         }
+        private void bindAccount()
+        {
+            String myConnection = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ToString();
+            SqlConnection con = new SqlConnection(myConnection);
+            con.Open();
+            String PID = Convert.ToString(Request.QueryString["led"]);
+            SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + PID + "'", con);
+
+            SqlDataReader reader66 = cmd166.ExecuteReader();
+
+            if (reader66.Read())
+            {
+                string no;
+                no = reader66["No"].ToString();
+                reader66.Close();
+                AccountNumber.InnerText = "["+no+"]";
+                txtRenameAccount.Text = PID;
+                txtAccountNumber.Text = no;
+            }
+        }
         protected void btnQuarterClick(object sender, EventArgs e)
         {
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -2252,7 +2276,7 @@ namespace advtech.Finance.Accounta
                     cmd2.ExecuteNonQuery();
                     SqlCommand cmd3 = new SqlCommand("update tblGeneralJournal set Account1='" + txtRenameAccount.Text + "',Account2='" + txtRenameAccount.Text + "' where Account2='" + PID + "' or  Account1='" + PID + "'", con);
                     cmd3.ExecuteNonQuery();
-                    SqlCommand cmd4 = new SqlCommand("update tblLedgAccTyp set Name='" + txtRenameAccount.Text + "' where Name='" + PID + "'", con);
+                    SqlCommand cmd4 = new SqlCommand("update tblLedgAccTyp set Name='" + txtRenameAccount.Text + "',No='"+txtAccountNumber.Text+"' where Name='" + PID + "'", con);
                     cmd4.ExecuteNonQuery();
                     //Updating account info
                     SqlCommand cmds1 = new SqlCommand("Update tblaccountinfo set  sales='" + txtRenameAccount.Text + "' where sales='" + PID + "'", con);

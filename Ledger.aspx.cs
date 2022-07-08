@@ -49,6 +49,25 @@ namespace advtech.Finance.Accounta
                 Response.Redirect("~/Login/LogIn1.aspx");
             }
         }
+        private string bindAccountNumber(string account)
+        {
+            string no = string.Empty;
+            String myConnection = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ToString();
+            SqlConnection con = new SqlConnection(myConnection);
+            con.Open();
+            SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + account + "'", con);
+
+            SqlDataReader reader66 = cmd166.ExecuteReader();
+
+            if (reader66.Read())
+            {
+                no = reader66["No"].ToString();
+                reader66.Close();
+
+            }
+            con.Close();
+            return no;
+        }
         private void bindCash()
         {
             String myConnection = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ToString();
@@ -530,6 +549,91 @@ namespace advtech.Finance.Accounta
             con1.RenderControl(htmltextwrtter);
             Response.Write(strwritter.ToString());
             Response.End();
+        }
+        private string GenerateCSV(string amount)
+        {
+            string csv = string.Empty;
+
+            csv += " Date,Reference,Date Clear in Bank Rec,Number of Distributions,G/L Account,Description,Amount,Job ID,Used for Reimbursable Expenses,Transaction Period,Transaction Number,Consolidated Transaction,Recur Number,Recur Frequency";
+            csv += "\r\n";
+            csv += amount;
+            return csv;
+        }
+        private void bindCsvData()
+        {
+            SqlConnection con = new SqlConnection(strConnString);
+            con.Open();
+            str = "select * from tblGeneralLedger where Date between '"+txtCsvDateFrom.Text+"' and '"+txtCsvDateTo.Text+"'";
+            com = new SqlCommand(str, con);
+            sqlda = new SqlDataAdapter(com);
+            DataTable dt = new DataTable();
+            sqlda.Fill(dt);
+
+            Repeater2.DataSource = dt;
+            Repeater2.DataBind();
+            con.Close();
+        }
+        private void DownLoadCSVFile()
+        {
+            Response.Clear();
+            Response.Buffer = true;
+            Response.AddHeader("content-disposition", "attachment;filename=GeneralJournal.csv");
+            Response.Charset = "";
+            Response.ContentType = "application/text";
+            Response.Output.Write(counter.InnerText);
+            Response.Flush();
+            Response.End();
+            InfoDiv.Visible = false;
+        }
+        protected void Button1_Click(object sender, EventArgs e)
+        {
+            bindCsvData();
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                string csvValues = "";
+                string amountCollector = string.Empty;
+                string dateCollector = string.Empty;
+                string descriptionCollector = string.Empty;
+                foreach (RepeaterItem item in Repeater2.Items)
+                {
+                    Label Account = item.FindControl("lblID") as Label;
+                    Label AccountName = item.FindControl("lblAccount") as Label;
+                    Label AccountNumber = item.FindControl("lblAccountNumber") as Label;
+                    if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
+                    {
+                        Label Amount = item.FindControl("lblAmount") as Label;
+                        SqlCommand cmdcrd = new SqlCommand("select * from tblGeneralLedger where LedID LIKE '%" + Account.Text + "%' order by LedID asc", con);
+                        SqlDataReader readercrd = cmdcrd.ExecuteReader();
+                        if (readercrd.Read())
+                        {
+                            string date = Convert.ToDateTime(readercrd["Date"].ToString()).ToString("MM/dd/yyyy");
+                            string description = readercrd["Explanation"].ToString();
+                            double debit = Convert.ToDouble(readercrd["Debit"].ToString());
+                            double credit = Convert.ToDouble(readercrd["Credit"].ToString());
+                            string accountType = readercrd["AccountType"].ToString();
+                            AccountNumber.Text = bindAccountNumber(AccountName.Text);
+                            if (debit != 0)
+                            {
+                                Amount.Text = debit.ToString();
+                                csvValues += date + ',' + "" + ',' + "" + ',' + "2" + ',' + AccountNumber.Text + ',' + description + ',' + Amount.Text + ',' + "" + ',' + "FALSE" + ',' + "" + ',' + "" + ',' + "FALSE" + ',' + "0" + ',' + "0" + "\r\n";
+                            }
+                            else
+                            {
+                                Amount.Text = (-credit).ToString();
+                                csvValues += date + ',' + "" + ',' + "" + ',' + "2" + ',' + AccountNumber.Text + ',' + description + ',' + Amount.Text + ',' + "" + ',' + "FALSE" + ',' + "" + ',' + "" + ',' + "FALSE" + ',' + "0" + ',' + "0" + "\r\n";
+
+                            }
+                        }
+                        readercrd.Close();
+                    }
+                }
+                con.Close();
+                counter.InnerText = GenerateCSV(csvValues);
+                DownLoadCSVFile();
+            }
+            
         }
     }
 }
