@@ -424,12 +424,12 @@
                         <div class="row">
 
                             <div class="col-5 text-left ">
-                                <a class="btn btn-light btn-circle mr-2" id="buttonback" href="OtherInvoices.aspx" visible="false" runat="server" data-toggle="tooltip" data-placement="bottom" title="Back to Invoice">
+                                <a class="btn btn-circle btn-sm text-white mr-2" id="buttonback" style="background-color: #34ce57" href="OtherInvoices.aspx" visible="false" runat="server" data-toggle="tooltip" data-placement="bottom" title="Back to Invoice">
 
-                                    <span class="fa fa-arrow-left text-danger"></span>
+                                    <span class="fa fa-arrow-left "></span>
 
                                 </a>
-                                <span class="badge mr-2 text-white" id="InvoiceBadge" style="background-color: #9d469d" visible="false" runat="server"></span>
+                                <span class="badge mr-2 text-white" id="InvoiceBadge" style="background-color: #34ce57" visible="false" runat="server"></span>
                                 <span class="fas fa-hashtag mr-2" style="color: #ff00bb" id="I1" runat="server"></span><span id="I2" runat="server" class="m-0 font-weight-bold h5 text-gray-900">Invoice</span>
                                 <span class="badge mr-2 text-white" id="editSpan" style="background-color: #adc728" visible="false" runat="server"></span>
                                 <span class="badge mr-2 text-white" id="editSpan2" style="background-color: #22e0ab" visible="false" runat="server">selected</span>
@@ -550,7 +550,7 @@
 
                                             <tr>
                                                 <td>
-                                                    <a class=" text-primary small " href="OtherInvoices.aspx?fsno=<%# Eval("fsno")%>"><span><%# Eval("fsno")%></span></a>
+                                                    <a class=" text-primary small " href="OtherInvoices.aspx?fsno=<%# Eval("fsno")%>"><span>#00<%# Eval("fsno")%></span></a>
                                                 </td>
                                                 <td>
                                                     <a class=" text-primary small " href="OtherInvoices.aspx?fsno=<%# Eval("fsno")%>"><span><%# Eval("customer")%></span></a>
