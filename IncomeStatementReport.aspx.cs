@@ -490,7 +490,7 @@ namespace advtech.Finance.Accounta
                         smtpClient.Credentials = new System.Net.NetworkCredential()
                         {
                             UserName = "abellegese5@gmail.com",
-                            Password = "Abel.lege2929#"
+                            Password = "xjiwawyuksgestqk"
                         };
                         // Gmail works on SSL, so set this property to true
                         smtpClient.EnableSsl = true;

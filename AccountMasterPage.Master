@@ -668,6 +668,14 @@
                                                 <i class="fas fa-print fa-sm fa-fw mr-2 text-gray-400"></i>
                                                 Download POS print app
                                             </a>
+                                            <a class="dropdown-item" href="https://metaappz.com/" target="_blank">
+                                                <i class="fas fa-calendar-check fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Ethiopian to GC Converter
+                                            </a>
+                                            <a class="dropdown-item" href="app/Support and Request Template.doc" target="_blank">
+                                                <i class="fas fa-plug fa-sm fa-fw mr-2 text-gray-400"></i>
+                                                Maintenance and Upgrade Form
+                                            </a>
                                             <a class="dropdown-item" href="help.aspx">
                                                 <i class="fas fa-sm fa-fw mr-2 fa-lightbulb"></i>
                                                 help

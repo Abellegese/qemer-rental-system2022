@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="exampleModalLongService" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle3" aria-hidden="true">
+        <div class="modal fade" id="exampleModalLongServicevb" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle3" aria-hidden="true">
             <div class="modal-dialog modal-sm" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -230,7 +230,7 @@
                                                     </div>
                                                 </a>
                                             </button>
-                                            <button runat="server" id="modalMain" type="button" class="btn btn-circle mx-2  btn-sm text-xs btn-danger" data-toggle="modal" data-target="#exampleModalLongService">
+                                            <button runat="server" id="modalMain" type="button" class="btn btn-circle mx-2  btn-sm text-xs btn-danger" data-toggle="modal" data-target="#exampleModalLongServicevb">
                                                 <a class="nav-link btn btn-sm" data-toggle="tooltip" data-placement="bottom" title="Export as Excel">
                                                     <div>
                                                         <i class="fas fa-file-excel text-white"></i>

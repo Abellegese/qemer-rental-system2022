@@ -25,11 +25,29 @@ namespace advtech.Finance.Accounta
                 {
                     txtNewPass.Text = "";
                     bindinfo(); bindpersonalinfo(); bindimage();
+                    bindEmail();
                 }
             }
             else
             {
                 Response.Redirect("~/Login/LogIn1.aspx");
+            }
+        }
+        private void bindEmail()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                //
+                SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + System.Web.HttpContext.Current.Session["USERNAME"].ToString() + "'", con);
+                SqlDataReader readerAC = cmd2AC.ExecuteReader();
+
+                if (readerAC.Read())
+                {
+                    emailwork.InnerText  = readerAC["Email"].ToString();
+                    readerAC.Close();
+                }
             }
         }
         private void bindimage()
@@ -66,6 +84,7 @@ namespace advtech.Finance.Accounta
                 if (readerAC.Read())
                 {
                     String FN = readerAC["Name"].ToString();
+                    String email = readerAC["Email"].ToString();
                     readerAC.Close();
                     SqlCommand cmd2 = new SqlCommand("select * from tblEmployeeBasic where FullName='" + FN + "'", con);
                     SqlDataReader reader = cmd2.ExecuteReader();
@@ -78,7 +97,7 @@ namespace advtech.Finance.Accounta
                         string dateofj = reader["DateofJoining"].ToString();
                         string department2 = reader["Department"].ToString();
                         name.InnerText = kc; ;
-                        emailwork.InnerText = workemail; datejoining.InnerText = dateofj;
+                      datejoining.InnerText = dateofj;
                         department.InnerText = department2;
                         reader.Close();
                         con.Close();
@@ -121,6 +140,7 @@ namespace advtech.Finance.Accounta
                 if (readerAC.Read())
                 {
                     String FN = readerAC["Name"].ToString();
+
                     readerAC.Close();
                     SqlCommand cmd2 = new SqlCommand("select * from tblPersonalInformation where FullName='" + FN + "'", con);
                     SqlDataReader reader = cmd2.ExecuteReader();

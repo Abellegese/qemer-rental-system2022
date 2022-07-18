@@ -270,7 +270,7 @@ namespace advtech.Finance.Accounta
 
                                         SqlCommand cmd455 = new SqlCommand("Update tblshop set status='Occupied' where shopno='" + ddlshop.SelectedItem.Text + "'", con);
                                         cmd455.ExecuteNonQuery();
-                                        SqlCommand cmdm = new SqlCommand("insert into tblCustomers values(N'" + txtBuisnesstype.Text + "',N'" + txtCustomerName.Text + "',N'" + txtCompanyName.Text + "','" + txtEmail.Text + "','" + txtWorkPhone.Text + "','" + txtMobile.Text + "','" + txtWebsite.Text + "','" + txtCreditLimit.Text + "','" + txtContactPerson.Text + "','" + ddlterms.SelectedItem.Text + "','Active','" + txtCreditLimit.Text + "','" + ddlshop.SelectedItem.Text + "','" + location + "','" + area + "','" + price + "','" + txtOpeningBalance.Text + "','" + txtDatejoinig.Text + "','" + txtDueDate.Text + "','" + txtContigency.Text + "','" + txtServiceCharge.Text + "','" + txtAgreement.Text + "','" + txtGurentorName.Text + "','" + txtGAddress.Text + "','" + txtContactGurentor.Text + "','" + txtAddress.Text + "','" + txtTIN.Text + "')", con);
+                                        SqlCommand cmdm = new SqlCommand("insert into tblCustomers values(N'" + txtBuisnesstype.Text.TrimEnd() + "',N'" + txtCustomerName.Text.TrimEnd() + "',N'" + txtCompanyName.Text.TrimEnd() + "','" + txtEmail.Text.TrimEnd() + "','" + txtWorkPhone.Text.TrimEnd() + "','" + txtMobile.Text.TrimEnd() + "','" + txtWebsite.Text.TrimEnd() + "','" + txtCreditLimit.Text.TrimEnd() + "','" + txtContactPerson.Text.TrimEnd() + "','" + ddlterms.SelectedItem.Text.TrimEnd() + "','Active','" + txtCreditLimit.Text + "','" + ddlshop.SelectedItem.Text + "','" + location + "','" + area + "','" + price + "','" + txtOpeningBalance.Text + "','" + txtDatejoinig.Text + "','" + txtDueDate.Text + "','" + txtContigency.Text + "','" + txtServiceCharge.Text + "','" + txtAgreement.Text + "','" + txtGurentorName.Text.TrimEnd() + "','" + txtGAddress.Text + "','" + txtContactGurentor.Text + "','" + txtAddress.Text.TrimEnd() + "','" + txtTIN.Text.TrimEnd() + "','"+txtVatRegNumber.Text.TrimEnd() + "')", con);
                                         cmdm.ExecuteNonQuery();
 
                                         /////////////////////////////////////////////////
@@ -317,6 +317,7 @@ namespace advtech.Finance.Accounta
                                         ///////////////////////////////////////////////
                                         SqlCommand cmdSt = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','**Opening Balance**','','','','" + txtOpeningBalance.Text + "','" + txtCustomerName.Text + "')", con);
                                         cmdSt.ExecuteNonQuery();
+                                        /**
                                         string exp = txtCustomerName.Text + "-Opening Balance";
                                         SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + txtCustomerName.Text + "','" + DateTime.Now + "','" + txtOpeningBalance.Text + "','" + txtOpeningBalance.Text + "','" + exp + "','" + txtDueDate.Text + "')", con);
                                         cmdcrn.ExecuteNonQuery();
@@ -359,6 +360,7 @@ namespace advtech.Finance.Accounta
                                                 }
                                             }
                                         }
+                                        **/
                                         SqlCommand cmd = new SqlCommand("select * from tblCustomers where FllName='" + txtCustomerName.Text + "'", con);
                                         SqlDataAdapter sda = new SqlDataAdapter(cmd);
                                         DataTable dt = new DataTable();

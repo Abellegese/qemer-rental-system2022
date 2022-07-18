@@ -55,9 +55,6 @@
             </div>
         </div>
     </div>
-
-
-
     <div class="modal fade" id="exampleModal9v" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel9v" aria-hidden="true">
         <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
@@ -221,6 +218,7 @@
             </div>
         </div>
     </div>
+
     <div class="container-fluid pr-3 pl-3">
 
         <div class="bg-white rounded-lg  mb-2">
@@ -328,12 +326,12 @@
                                                 <thead class=" thead-white">
                                                     <tr>
 
-
-                                                        <th scope="col" class="text-left ">Voucher#</th>
-                                                        <th scope="col" class="text-left">Cheque#</th>
                                                         <th scope="col" class="text-left">In</th>
                                                         <th scope="col" class="text-left">Out</th>
                                                         <th scope="col" class="text-right">balance</th>
+                                                        <th scope="col" class="text-center ">Voucher#</th>
+                                                        <th scope="col" class="text-center">Cheque#</th>
+
                                                         <th scope="col" class="text-center">Remark</th>
                                                         <th scope="col" class="text-right text-danger ">
                                                             <asp:LinkButton ID="LinkButton3" runat="server" CommandName="date">Date</asp:LinkButton></th>
@@ -350,14 +348,6 @@
                                     <ItemTemplate>
                                         <tr>
 
-
-                                            <td class="text-left text-gray-900">
-                                                <%# Eval("voucher")%>
-                    
-                                            </td>
-                                            <td class="text-left text-gray-900">
-                                                <%# Eval("cheque")%>
-                                            </td>
                                             <td class="text-left text-gray-900">
                                                 <%# Eval("cashin", "{0:N2}")%>
                                             </td>
@@ -367,6 +357,14 @@
                                             <td class="text-right text-gray-900">
                                                 <%# Eval("balance", "{0:N2}")%>
                                             </td>
+                                            <td class="text-center text-gray-900">
+                                                <%# Eval("voucher")%>
+                    
+                                            </td>
+                                            <td class="text-center text-gray-900">
+                                                <%# Eval("cheque")%>
+                                            </td>
+
                                             <td class="text-center text-gray-900">
                                                 <%# Eval("remark")%>
                                             </td>
@@ -395,8 +393,6 @@
 
                                                     <thead class=" thead-white">
                                                         <tr>
-
-
                                                             <th scope="col" class="text-left ">Voucher#</th>
                                                             <th scope="col" class="text-left">Cheque#</th>
                                                             <th scope="col" class="text-left">In</th>
@@ -405,11 +401,6 @@
                                                             <th scope="col" class="text-center">Remark</th>
                                                             <th scope="col" class="text-right text-danger ">
                                                               Date</th>
-
-
-
-
-
                                                         </tr>
                                                     </thead>
 
@@ -494,10 +485,11 @@
                         </nav>
                     </div>
                 </div>
+                <div class="col-2">
+                </div>
             </div>
         </div>
-        <div class="col-2">
-        </div>
+
 
     </div>
 </asp:Content>

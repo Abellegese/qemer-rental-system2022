@@ -438,6 +438,29 @@
                                             </asp:Repeater>
 
                                              </div>
+                    <div class="card-footer bg-white py-4">
+                    <nav aria-label="...">
+                        <ul class="pagination justify-content-end mb-0">
+                            <br />
+                            <td>
+                                <asp:Label ID="Label1" runat="server" class="m-1 text-primary"></asp:Label></td>
+                            <br />
+                            <li class="page-item active">
+
+                                <asp:Button ID="btnPrevious" class="btn btn-primary btn-sm btn-circle" runat="server" Text="<" OnClick="btnPrevious_Click" />
+
+                            </li>
+
+
+                            <li class="page-item active">
+
+                                <asp:Button ID="btnNext" class="btn btn-sm btn-primary btn-circle mx-2" runat="server" Text=">" OnClick="btnNext_Click" />
+
+                            </li>
+
+                        </ul>
+                    </nav>
+                </div>
                                         </div>
                                         <div id="con1" runat="server" visible="false">
                                             <asp:Repeater ID="Repeater2" runat="server">
@@ -491,7 +514,7 @@
                                                 </ItemTemplate>
                                                 <FooterTemplate>
                                                     </tbody>
-              </table>
+                                                    </table>
                                                 </FooterTemplate>
 
                                             </asp:Repeater>
@@ -507,29 +530,6 @@
                             <div class="col-2">
                             </div>
                         </div>
-                </div>
-                <div class="card-footer bg-white py-4">
-                    <nav aria-label="...">
-                        <ul class="pagination justify-content-end mb-0">
-                            <br />
-                            <td>
-                                <asp:Label ID="Label1" runat="server" class="m-1 text-primary"></asp:Label></td>
-                            <br />
-                            <li class="page-item active">
-
-                                <asp:Button ID="btnPrevious" class="btn btn-primary btn-sm btn-circle" runat="server" Text="<" OnClick="btnPrevious_Click" />
-
-                            </li>
-
-
-                            <li class="page-item active">
-
-                                <asp:Button ID="btnNext" class="btn btn-sm btn-primary btn-circle mx-2" runat="server" Text=">" OnClick="btnNext_Click" />
-
-                            </li>
-
-                        </ul>
-                    </nav>
                 </div>
                 </div>
             </div>

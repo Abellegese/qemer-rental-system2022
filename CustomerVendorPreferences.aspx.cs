@@ -765,49 +765,6 @@ namespace advtech.Finance.Accounta
                 }
             }
         }
-        public class LeaveUpdate
-        {
-            public void LeaveUpdates()
-            {
-                String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-                using (SqlConnection con = new SqlConnection(CS))
-                {
-                    con.Open();
-                    SqlCommand cmd41 = new SqlCommand("select * from tblPersonalInformation where DATEDIFF(day, datejoiningupdate, '" + DateTime.Now.Date + "') = 0", con);
-                    SqlDataAdapter sda1 = new SqlDataAdapter(cmd41);
-                    DataTable dt1 = new DataTable();
-                    sda1.Fill(dt1); int i1 = dt1.Rows.Count;
-                    for (int i = 0; i < dt1.Rows.Count; i++)
-                    {
-
-                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + dt1.Rows[i][1].ToString() + " Annual Leave days Renewed Automatically','Machine','','Unseen','fas fa-exclamation-triangle fa-2x text-white','icon-circle bg bg-success','employeeinfo.aspx?fname=" + dt1.Rows[i][1].ToString() + "','Acc')", con);
-                        cmd197h.ExecuteNonQuery();
-                        SqlCommand cmd197h2 = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + dt1.Rows[i][1].ToString() + " Annual Leave days Renewed Automatically','Machine','','Unseen','fas fa-exclamation-triangle fa-2x text-white','icon-circle bg bg-success','employeeinfo.aspx?fname=" + dt1.Rows[i][1].ToString() + "','MN')", con);
-                        cmd197h2.ExecuteNonQuery();
-                        SqlCommand cmd197h2g = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + dt1.Rows[i][1].ToString() + " Annual Leave days Renewed Automatically','Machine','','Unseen','fas fa-exclamation-triangle fa-2x text-white','icon-circle bg bg-success','employeeinfo.aspx?fname=" + dt1.Rows[i][1].ToString() + "','FH')", con);
-                        cmd197h2g.ExecuteNonQuery();
-                        if (dt1.Rows[i][10].ToString() == "0" || dt1.Rows[i][10].ToString() == "" || dt1.Rows[i][10].ToString() == null)
-                        {
-                            Int64 j = 1;
-                            Int64 k = j + 1;
-                            Int64 M = 15;
-                            SqlCommand cmdup = new SqlCommand("update tblPersonalInformation set leave_days_left='" + M + "',datejoiningupdate='" + DateTime.Now.Date + "',m='" + j + "'  where FullName='" + dt1.Rows[i][1].ToString() + "'", con);
-                            cmdup.ExecuteNonQuery();
-                        }
-                        else
-                        {
-                            Int64 j = Convert.ToInt64(dt1.Rows[i][12].ToString());
-                            Int64 b = Convert.ToInt64(dt1.Rows[i][10].ToString());
-                            Int64 k = j + 1;
-                            Int64 M = b + 15 + j;
-                            SqlCommand cmdup = new SqlCommand("update tblPersonalInformation set leave_days_left='" + M + "',datejoiningupdate='" + DateTime.Now.Date + "',m='" + k + "' where FullName='" + dt1.Rows[i][1].ToString() + "'", con);
-                            cmdup.ExecuteNonQuery();
-                        }
-
-                    }
-                }
-            }
-        }
         public class Agreement
         {
             public void Agreements()
@@ -830,41 +787,6 @@ namespace advtech.Finance.Accounta
                         SqlCommand cmd197h2g = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + dt1.Rows[2][1].ToString() + " Reaches its Agreement Renewal Date','Machine','','Unseen','fas fa-exclamation-triangle fa-2x text-white','icon-circle bg bg-warning','CustomerDetails.aspx?ref2='+" + dt1.Rows[2][1].ToString() + ",'FH')", con);
                         cmd197h2g.ExecuteNonQuery();
 
-                    }
-                }
-            }
-        }
-        public class Reorder
-        {
-            public void Reorders()
-            {
-                String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-                using (SqlConnection con = new SqlConnection(CS))
-                {
-                    con.Open();
-                    SqlCommand cmd4 = new SqlCommand("select * from tblSalesBrand", con);
-                    SqlDataAdapter sda = new SqlDataAdapter(cmd4);
-                    DataTable dt = new DataTable();
-                    sda.Fill(dt); int i = dt.Rows.Count;
-                    int j = 0;
-                    for (i = 0; i < dt.Rows.Count; i++)
-                    {
-                        SqlCommand cmd41 = new SqlCommand("select * from tblStockCard where product='" + dt.Rows[i][3].ToString() + "' and balance < " + dt.Rows[i][11].ToString() + "", con);
-                        SqlDataAdapter sda1 = new SqlDataAdapter(cmd41);
-                        DataTable dt1 = new DataTable();
-                        sda1.Fill(dt1); j = dt1.Rows.Count;
-                        if (j != 0)
-                        {
-                            for (int k = 0; k < dt1.Rows.Count; k++)
-                            {
-                                SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + dt1.Rows[k][1].ToString() + " Reaches its Reorder Quantity','Machine','','Unseen','fas fa-exclamation-triangle fa-2x text-white','icon-circle bg bg-warning','SalesProduct2324.aspx','Acc')", con);
-                                cmd197h.ExecuteNonQuery();
-                                SqlCommand cmd197h2 = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + dt1.Rows[k][1].ToString() + " Reaches its Reorder Quantity','Machine','','Unseen','fas fa-exclamation-triangle fa-2x text-white','icon-circle bg bg-warning','SalesProduct2324.aspx','MN')", con);
-                                cmd197h2.ExecuteNonQuery();
-                                SqlCommand cmd197h2g = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + dt1.Rows[k][1].ToString() + " Reaches its Reorder Quantity','Machine','','Unseen','fas fa-exclamation-triangle fa-2x text-white','icon-circle bg bg-warning','SalesProduct2324.aspx','FH')", con);
-                                cmd197h2g.ExecuteNonQuery();
-                            }
-                        }
                     }
                 }
             }
@@ -952,7 +874,7 @@ namespace advtech.Finance.Accounta
                                 TwilioClient.Init(accountSid, authToken);
 
                                 var message = MessageResource.Create(
-                                    body: "Dear customer, your payment remains 11 days. for more info, visit your portal.",
+                                    body: "Dear customer, your payment remains 15 days. Please pay your payment soon.",
                                     from: new Twilio.Types.PhoneNumber("(267) 613-9786"),
                                     to: new Twilio.Types.PhoneNumber("+251" + dt1.Rows[j][6].ToString())
                                 );
@@ -983,9 +905,7 @@ namespace advtech.Finance.Accounta
                         cmdcl.ExecuteNonQuery();
                         JobStorage.Current = new SqlServerStorage(CS);
 
-                        RecurringJob.AddOrUpdate<Reorder>("Reorder", x => x.Reorders(), Cron.Monthly());
                         RecurringJob.AddOrUpdate<Agreement>("Agreement", x => x.Agreements(), Cron.Monthly());
-                        RecurringJob.AddOrUpdate<LeaveUpdate>("Leave", x => x.LeaveUpdates(), Cron.Monthly());
                         RecurringJob.AddOrUpdate<remindDueDate>("remindDueDate", x => x.remindDueDates(), Cron.Monthly());
                     }
                     else
@@ -993,11 +913,10 @@ namespace advtech.Finance.Accounta
                         SqlCommand cmdcl = new SqlCommand("Update tblDepreciationAutomation set  status='stoped'", con);
 
                         cmdcl.ExecuteNonQuery();
-                        RecurringJob.RemoveIfExists("Depr");
-                        RecurringJob.RemoveIfExists("Reorder");
+
                         RecurringJob.RemoveIfExists("Agreement");
-                        RecurringJob.RemoveIfExists("Leave");
                         RecurringJob.RemoveIfExists("remindDueDate");
+
                     }
                 }
                 Response.Redirect("CustomerVendorPreferences.aspx");

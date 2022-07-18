@@ -48,10 +48,22 @@
                 x.style.display = "none";
             });
     </script>
+    <script>
+            function MarkasPaid() {
+                PageMethods.MakeCustomerAsPaid(Success);
+
+ 
+       
+            }
+            function Success(result) {
+                alert("The customer successfully Marked as paid");
+                window.location.reload();
+            }
+    </script>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
-
+    <asp:ScriptManager ID='ScriptManager1' runat='server' EnablePageMethods='true' />
     <div class="container-fluid pl-3 pr-2" style="position: relative;">
         <div class="modal fade bd-example-modal-lg" id="InvoiceSummary" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-md">
@@ -113,11 +125,6 @@
             </div>
         </div>
 
-
-
-
-
-
         <div class="modal fade bd-example-modal-lg" id="CashSummary" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-md">
                 <div class="modal-content">
@@ -177,12 +184,6 @@
                 </div>
             </div>
         </div>
-
-
-
-
-
-
 
         <div class="modal fade bd-example-modal-lg" id="SMChart" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-md">
@@ -349,7 +350,8 @@
                                     <a href="NoticeLetter.aspx" class="dropdown-item  text-gray-700  text-danger9" id="A1" runat="server"><span class="fas fa-exclamation-triangle  mr-2 text-gray-400  text-danger"></span>Generate Notice Letter</a>
                                     <a href="#" class="dropdown-item  text-gray-700  text-danger" id="A4" runat="server" data-toggle="modal" data-target="#exampleModalLongBulkSMS"><span class="fas fa-envelope  mr-2 text-gray-400  text-danger"></span>SMS Alert</a>
                                     <a href="rentreport.aspx" class="dropdown-item  text-gray-700  text-danger" runat="server"><span class="fas fa-user  mr-2 text-gray-400  text-danger"></span>Unpaid Rent Report</a>
-
+                                    <hr />
+                                    <a href="#" onclick="MarkasPaid();" class="dropdown-item  text-gray-700" runat="server"><span class="fas fa-check  mr-2 text-success"></span>Make Customer As Paid</a>
 
                                 </div>
                             </div>
@@ -1226,7 +1228,7 @@
                     y.style.display = "none";
                 }
             }
-        </script>
+    </script>
         <script>
             function myFunctionshop222() {
                 var y = document.getElementById("<%=btnCashSummary.ClientID %>"); var x = document.getElementById("Pbutton");

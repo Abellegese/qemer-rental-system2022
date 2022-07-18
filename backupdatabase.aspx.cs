@@ -5,9 +5,14 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web;
+using System.Web.UI;
 using System.Web.Services;
 using Hangfire;
 using Hangfire.SqlServer;
+using System.Net;
+using System.Net.Mail;
+using System.IO;
+
 
 
 namespace advtech.Finance.Accounta
@@ -15,10 +20,13 @@ namespace advtech.Finance.Accounta
     public partial class backupdatabase : System.Web.UI.Page
     {
         public static string getDirectory = string.Empty;
+        public static string emailAddress = string.Empty;
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
+
+                emailAddress = EmailAdd.Text;
                 getDirectory = Server.MapPath("~/Finance/Accounta/backup/raksym_database.bak");
 
             }
@@ -43,8 +51,6 @@ namespace advtech.Finance.Accounta
             }
             return email;
         }
-
-      
         [WebMethod]
         public static void UpdateAutomationPeriod(string period)
         {
@@ -242,7 +248,7 @@ namespace advtech.Finance.Accounta
             {
 
                 con.Open();
-                string explanation = "backup intitalted";
+                string explanation = "backup intitalted for the next scheduled cycle.";
                 SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + explanation + "','System','System','Unseen','fas fa-database text-white','icon-circle bg bg-primary','backupdatabase.aspx','MN')", con);
                 cmd197h.ExecuteNonQuery();
             }
@@ -270,41 +276,33 @@ namespace advtech.Finance.Accounta
                 }
             }
         }
-        private void SendEmail()
+        public static void SendEmail()
         {
-            //string filePath = Server.MapPath("~/Finance/Accounta/backup/raksym_database.bak");
-            //string fileName = Path.GetFileName(filePath);
-            // byte[] bytes = File.ReadAllBytes(filePath);
-            /**
-            MailMessage mm = new MailMessage("abellegese5@gmail.com", "abellegese5@gmail.com");
-            mm.Subject = "Database Backup";
-            mm.Body = "Raksym plaza database backup sent form qemer rent platfrom.";
-            mm.Attachments.Add(new Attachment(new MemoryStream(bytes), fileName));
-            mm.IsBodyHtml = true;
-            SmtpClient smtp = new SmtpClient();
-            smtp.Host = "smtp.gmail.com";
-            smtp.EnableSsl = true;
-            
-             NetworkCredential NetworkCred = new NetworkCredential();
-             NetworkCred.UserName = "abellegese5@gmail.com";
-             NetworkCred.Password = "Abel.lege2929#";
-             smtp.Credentials = NetworkCred;
-             smtp.Port = 587;
-             smtp.Send(mm);
-           
-            string customerEmail = "abellegese5@gmail.com";
-            string customerName = "Abel Legese";
-            WebMail.SmtpServer = "smtp.gmail.com";
-            WebMail.SmtpPort = 25;
-            WebMail.UserName = "abellegese5@gmail.com";
-            WebMail.Password = "Abel.lege2929#";
-            WebMail.From = "abellegese5@gmail.com";
+            backupdatabase backdata = new backupdatabase();
+            string email = backdata.bindEmailAddress();
+            string filePath = backdata.GetDtatabasePath();
+            string fileName = Path.GetFileName(filePath);
+            byte[] bytes = File.ReadAllBytes(filePath);
 
-            // Send email
-            WebMail.Send(to: customerEmail,
-                subject: "Help request from - " + customerName,
-                body: customerName
-            ); **/
+            MailMessage mailMessage = new MailMessage("abellegese5@gmail.com", email);
+            // Specify the email body
+            mailMessage.Body = "Raksym plaza database backup sent form qemer rent platfrom.";
+            mailMessage.Attachments.Add(new Attachment(new MemoryStream(bytes), fileName));
+            mailMessage.IsBodyHtml = true;
+            // Specify the email Subject
+            mailMessage.Subject = "Database Backup";
+            // Specify the SMTP server name and post number
+            SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587);
+            // Specify your gmail address and password
+            smtpClient.Credentials = new System.Net.NetworkCredential()
+            {
+                UserName = "abellegese5@gmail.com",
+                Password = "xjiwawyuksgestqk"
+            };
+            // Gmail works on SSL, so set this property to true
+            smtpClient.EnableSsl = true;
+            // Finall send the email message using Send() method
+            smtpClient.Send(mailMessage);
         }
         protected void btnCreateDatabase_Click(object sender, EventArgs e)
         {
@@ -325,6 +323,7 @@ namespace advtech.Finance.Accounta
                     cmd.Connection = con;
                     cmd.ExecuteNonQuery();
                     con.Close();
+                    SendEmail();
                     string message = "The backup has been successfully created.";
                     ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
                 }
@@ -334,6 +333,32 @@ namespace advtech.Finance.Accounta
             {
                 ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + ex.ToString() + "');", true);
             }
+
+        }
+        public string GetDtatabasePath()
+        {
+            string path = string.Empty;
+            path = Server.MapPath("~/Finance/Accounta/backup/raksym_database.bak");
+            return path;
+        }
+        public string bindEmailAddress()
+        {
+            string email = string.Empty;
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                //
+                SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
+                SqlDataReader readerAC = cmd2AC.ExecuteReader();
+
+                if (readerAC.Read())
+                {
+                    email = readerAC["Email"].ToString();
+                    readerAC.Close();
+                }
+            }
+            return email;
         }
     }
 }

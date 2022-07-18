@@ -43,18 +43,25 @@ namespace advtech.Finance.Accounta
         }
         protected void btnUpdate_Click(object sender, EventArgs e)
         {
+            if (txtDateform.Text == "" || txtDateto.Text == "")
+            {
+                string message = "Select date range to bind the summary!!";
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
+            }
+            else
+            {
+                SqlConnection con = new SqlConnection(strConnString);
+                con.Open();
+                str = "select * from tblActivity where Time between '" + Convert.ToDateTime(txtDateform.Text) + "' and '" + Convert.ToDateTime(txtDateto.Text) + "'";
+                com = new SqlCommand(str, con);
+                sqlda = new SqlDataAdapter(com);
+                DataTable dt = new DataTable();
+                sqlda.Fill(dt);
 
-            SqlConnection con = new SqlConnection(strConnString);
-            con.Open();
-            str = "select * from tblActivity where Time between '" + Convert.ToDateTime(txtDateform.Text) + "' and '" + Convert.ToDateTime(txtDateto.Text) + "'";
-            com = new SqlCommand(str, con);
-            sqlda = new SqlDataAdapter(com);
-            DataTable dt = new DataTable();
-            sqlda.Fill(dt);
-
-            Repeater1.DataSource = dt;
-            Repeater1.DataBind();
-            con.Close();
+                Repeater1.DataSource = dt;
+                Repeater1.DataBind();
+                con.Close();
+            }
 
         }
         private void bindcompany()

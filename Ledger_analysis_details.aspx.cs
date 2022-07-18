@@ -1620,6 +1620,7 @@ namespace advtech.Finance.Accounta
                         sda.Fill(dtBrands);
                         Repeater2.DataSource = dtBrands;
                         Repeater2.DataBind();
+                        con.Close();
 
                     }
                 }
@@ -1726,6 +1727,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         Repeater1.DataSource = dt;
                         Repeater1.DataBind();
+                        con.Close();
                     }
                     else if (greater.Checked == true)
                     {
@@ -1741,6 +1743,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         Repeater1.DataSource = dt;
                         Repeater1.DataBind();
+                        con.Close();
                     }
                     else if (less.Checked == true)
                     {
@@ -1756,6 +1759,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         Repeater1.DataSource = dt;
                         Repeater1.DataBind();
+                        con.Close();
                     }
                     else
                     {
@@ -1771,6 +1775,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         Repeater1.DataSource = dt;
                         Repeater1.DataBind();
+                        con.Close();
                     }
                 }
                 else if (ddlRecType.SelectedItem.Text == "Bills")
@@ -1791,6 +1796,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrBills.DataSource = dt;
                         rptrBills.DataBind();
+                        con.Close();
                     }
                     else if (greater.Checked == true)
                     {
@@ -1806,6 +1812,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrBills.DataSource = dt;
                         rptrBills.DataBind();
+                        con.Close();
                     }
                     else if (less.Checked == true)
                     {
@@ -1821,6 +1828,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrBills.DataSource = dt;
                         rptrBills.DataBind();
+                        con.Close();
                     }
                     else
                     {
@@ -1836,6 +1844,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrBills.DataSource = dt;
                         rptrBills.DataBind();
+                        con.Close();
                     }
                 }
                 else if (ddlRecType.SelectedItem.Text == "Asset Bills")
@@ -1855,6 +1864,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptAssetBills.DataSource = dt;
                         rptAssetBills.DataBind();
+                        con.Close();
                     }
                     else if (greater.Checked == true)
                     {
@@ -1870,6 +1880,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptAssetBills.DataSource = dt;
                         rptAssetBills.DataBind();
+                        con.Close();
                     }
                     else if (less.Checked == true)
                     {
@@ -1885,6 +1896,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptAssetBills.DataSource = dt;
                         rptAssetBills.DataBind();
+                        con.Close();
                     }
                     else
                     {
@@ -1900,6 +1912,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptAssetBills.DataSource = dt;
                         rptAssetBills.DataBind();
+                        con.Close();
                     }
                 }
                 else if (ddlRecType.SelectedItem.Text == "Bank Transaction")
@@ -1919,6 +1932,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrBank.DataSource = dt;
                         rptrBank.DataBind();
+                        con.Close();
                     }
                     else if (greater.Checked == true)
                     {
@@ -1934,6 +1948,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrBank.DataSource = dt;
                         rptrBank.DataBind();
+                        con.Close();
                     }
                     else if (less.Checked == true)
                     {
@@ -1949,6 +1964,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrBank.DataSource = dt;
                         rptrBank.DataBind();
+                        con.Close();
                     }
                     else
                     {
@@ -1964,6 +1980,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrBank.DataSource = dt;
                         rptrBank.DataBind();
+                        con.Close();
                     }
                 }
                 else
@@ -1983,6 +2000,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrOtherInvoice.DataSource = dt;
                         rptrOtherInvoice.DataBind();
+                        con.Close();
                     }
                     else if (greater.Checked == true)
                     {
@@ -1998,6 +2016,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrOtherInvoice.DataSource = dt;
                         rptrOtherInvoice.DataBind();
+                        con.Close();
                     }
                     else if (less.Checked == true)
                     {
@@ -2013,6 +2032,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrOtherInvoice.DataSource = dt;
                         rptrOtherInvoice.DataBind();
+                        con.Close();
                     }
                     else
                     {
@@ -2028,6 +2048,7 @@ namespace advtech.Finance.Accounta
                         sqlda.Fill(dt);
                         rptrOtherInvoice.DataSource = dt;
                         rptrOtherInvoice.DataBind();
+                        con.Close();
                     }
                 }
             }

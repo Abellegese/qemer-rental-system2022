@@ -208,7 +208,7 @@
                                             </td>
                                             <td>
                                                 <span>
-                                                    <a title="Show the details" class="text-primary" href="<%# Eval("Query")%>"><%# Eval("Module")%></a>
+                                                    <a title="Show the details" class="text-primary" href="#"><%# Eval("Module")%></a>
                                                 </span>
                                                 <span>
                                                     <h6>

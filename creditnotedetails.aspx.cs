@@ -186,7 +186,7 @@ namespace advtech.Finance.Accounta
             }
         }
         private readonly Random _random = new Random();
-        public int RandomNumber(int min, int max)
+        public long RandomNumber(int min, int max)
         {
             return _random.Next(min, max);
         }
@@ -335,7 +335,7 @@ namespace advtech.Finance.Accounta
                                         using (SqlDataAdapter sda22 = new SqlDataAdapter(cmd190c))
                                         {
                                             DataTable dtBrands232 = new DataTable();
-                                            sda22.Fill(dtBrands232); int i2 = dtBrands232.Rows.Count;
+                                            sda22.Fill(dtBrands232); long i2 = dtBrands232.Rows.Count;
                                             //
                                             if (i2 != 0)
                                             {
@@ -374,7 +374,7 @@ namespace advtech.Finance.Accounta
                                                         using (SqlDataAdapter sda22c3 = new SqlDataAdapter(cmd190h7c))
                                                         {
                                                             DataTable dtBrands232c3 = new DataTable();
-                                                            sda22c3.Fill(dtBrands232c3); int i2c3 = dtBrands232c3.Rows.Count;
+                                                            sda22c3.Fill(dtBrands232c3); long i2c3 = dtBrands232c3.Rows.Count;
                                                             //
                                                             if (i2c3 != 0)
                                                             {
@@ -515,7 +515,7 @@ namespace advtech.Finance.Accounta
                                         using (SqlDataAdapter sda22 = new SqlDataAdapter(cmdbank))
                                         {
                                             DataTable dt = new DataTable();
-                                            sda22.Fill(dt); int j = dt.Rows.Count;
+                                            sda22.Fill(dt); long j = dt.Rows.Count;
                                             string totalannounc = PID2 + " Paid through bank with ref# " + refe;
                                             if (j != 0)
                                             {
@@ -558,7 +558,7 @@ namespace advtech.Finance.Accounta
                                         using (SqlDataAdapter sda22 = new SqlDataAdapter(cmd190c))
                                         {
                                             DataTable dtBrands232 = new DataTable();
-                                            sda22.Fill(dtBrands232); int i2 = dtBrands232.Rows.Count;
+                                            sda22.Fill(dtBrands232); long i2 = dtBrands232.Rows.Count;
                                             //
                                             if (i2 != 0)
                                             {
@@ -598,7 +598,7 @@ namespace advtech.Finance.Accounta
                                                         using (SqlDataAdapter sda22c3 = new SqlDataAdapter(cmd190h7c))
                                                         {
                                                             DataTable dtBrands232c3 = new DataTable();
-                                                            sda22c3.Fill(dtBrands232c3); int i2c3 = dtBrands232c3.Rows.Count;
+                                                            sda22c3.Fill(dtBrands232c3); long i2c3 = dtBrands232c3.Rows.Count;
                                                             //
                                                             if (i2c3 != 0)
                                                             {
@@ -822,7 +822,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
                     {
                         DataTable dtBrands2322 = new DataTable();
-                        sda2222.Fill(dtBrands2322); int i2 = dtBrands2322.Rows.Count;
+                        sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
                         //
                         if (i2 != 0)
                         {
@@ -850,7 +850,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
                     {
                         DataTable dtBrandss2 = new DataTable();
-                        sdas2.Fill(dtBrandss2); int iss2 = dtBrandss2.Rows.Count;
+                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
                         //
                         if (iss2 != 0)
                         {

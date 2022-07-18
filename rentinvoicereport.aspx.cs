@@ -10,6 +10,7 @@ using System.Net.Mail;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using SelectPdf;
 
 namespace advtech.Finance.Accounta
 {
@@ -48,6 +49,7 @@ namespace advtech.Finance.Accounta
                     }
                     bindPM();
                     bind_footer(); bindInvExistence(); bindPaymentstatus();
+                    NumberToWord();
                 }
             }
             else
@@ -55,6 +57,83 @@ namespace advtech.Finance.Accounta
                 Response.Redirect("~/Login/LogIn1.aspx");
             }
 
+        }
+        protected string bindInvoiceDateVisibility()
+        {
+            if (Request.QueryString["cust"] != null)
+            {
+                return "style=\"display:none\"";
+            }
+            else
+            {
+                return "style=\"display:normal\"";
+            }
+        }
+        protected string bindDescriptionColVisibility()
+        {
+            if (Request.QueryString["cust"] != null)
+            {
+                return "style=\"display:normal\"";
+            }
+            else
+            {
+                return "style=\"display:none\"";
+            }
+        }
+        protected void btnSendEmail_Click(object sender, EventArgs e)
+        {
+            String PID = Convert.ToString(Request.QueryString["cust"]);
+            String PID2 = Convert.ToString(Request.QueryString["id"]);
+            string explanation = "Dear "+PID+" you made transaction amount of " + double.Parse(Total.InnerText).ToString("#,##0.00")+" from our" +
+                " company. Thanks for your service.";
+            using (StringWriter sw = new StringWriter())
+            {
+                using (HtmlTextWriter hw = new HtmlTextWriter(sw))
+                {
+                    con1.RenderControl(hw);
+                    StringReader sr = new StringReader(sw.ToString());
+                    Document pdfDoc = new Document(PageSize.A4, 10f, 10f, 10f, 0f);
+
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {
+                        PdfWriter writer = PdfWriter.GetInstance(pdfDoc, memoryStream);
+                        pdfDoc.Open();
+                        XMLWorkerHelper.GetInstance().ParseXHtml(writer, pdfDoc, sr);
+                        pdfDoc.Close();
+                        byte[] bytes = memoryStream.ToArray();
+                        memoryStream.Close();
+                        MailMessage mailMessage = new MailMessage("abellegese5@gmail.com", txtEmail.Text);
+                        // Specify the email body
+                        mailMessage.Body = explanation;
+                        mailMessage.IsBodyHtml = true;
+                        // Specify the email Subject
+                        mailMessage.Subject = "Transaction for invoice# "+PID2;
+                        mailMessage.Attachments.Add(new Attachment(new MemoryStream(bytes), "Invoice.pdf"));
+                        // Specify the SMTP server name and post number
+                        SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587);
+                        // Specify your gmail address and password
+                        smtpClient.Credentials = new System.Net.NetworkCredential()
+                        {
+                            UserName = "abellegese5@gmail.com",
+                            Password = "xjiwawyuksgestqk"
+                        };
+                        // Gmail works on SSL, so set this property to true
+                        smtpClient.EnableSsl = true;
+                        // Finall send the email message using Send() method
+                        smtpClient.Send(mailMessage);
+                        Response.Redirect(Request.RawUrl);
+                    }
+                }
+            }
+        }
+        private void NumberToWord()
+        {
+            if (Request.QueryString["cust"] != null)
+            {
+                double total = double.Parse(Total.InnerText);
+                NumberToWords NumToWrd = new NumberToWords();
+                AmountInWords.InnerText = NumToWrd.ConvertAmount(total);
+            }
         }
         private void bindPM()
         {
@@ -81,11 +160,16 @@ namespace advtech.Finance.Accounta
                 {
                     string Address2 = readercrd["addresscust"].ToString();
                     string TIN = readercrd["TIN"].ToString();
+                    string vatRegNumber = readercrd["vatregnumber"].ToString();
                     readercrd.Close();
                     if (Address2 == "" || Address2 == null) { Address.InnerText = "-         -"; DupAddress.InnerText = "-         -"; }
                     else { Address.InnerText = Address2; DupAddress.InnerText = Address2; }
                     TINNUMBER.InnerText = TIN;
                     DupCustomerPIN.InnerText = TIN;
+                    if (vatRegNumber != "")
+                    {
+                        CustVatRegNumber.InnerText = vatRegNumber;
+                    }
                     //Duplivate binding
                 }
             }
@@ -101,7 +185,7 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                 {
                     DataTable dt = new DataTable();
-                    sda.Fill(dt); int i = dt.Rows.Count;
+                    sda.Fill(dt); long i = dt.Rows.Count;
                     if (i == 0) { container.Visible = false; NoInvoiceDiv.Visible = true; }
                 }
             }
@@ -120,7 +204,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                     {
                         DataTable dt = new DataTable();
-                        sda.Fill(dt); int i = dt.Rows.Count;
+                        sda.Fill(dt); long i = dt.Rows.Count;
                         if (i != 0)
                         {
                             SqlDataReader reader22 = cmd.ExecuteReader();
@@ -173,7 +257,7 @@ namespace advtech.Finance.Accounta
                 SqlCommand cmdcn = new SqlCommand("select sum(balance) from tblcreditnote where customer='" + PID + "' and balance > 0", con);
                 SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
                 DataTable dtcn = new DataTable();
-                sdacn.Fill(dtcn); int nb = dtcn.Rows.Count;
+                sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
                 if (dtcn.Rows[0][0].ToString() == null || dtcn.Rows[0][0].ToString() == "")
                 {
                     credittotal.InnerText = "0.00";
@@ -291,7 +375,7 @@ namespace advtech.Finance.Accounta
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmd = new SqlCommand("select Oname,OAdress,Contact,TIN from tblOrganization", con);
+                SqlCommand cmd = new SqlCommand("select*from tblOrganization", con);
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 if (reader.Read())
@@ -302,6 +386,7 @@ namespace advtech.Finance.Accounta
                     contact1 = reader["Contact"].ToString();
                     string TINNumber = reader["TIN"].ToString();
                     VendorTIN.InnerText = TINNumber;
+                    VendorVatRegNumber.InnerText = reader["vatregnumber"].ToString();
                     DupVendorPIN.InnerText = TINNumber;
                     CompAddress.InnerText = bl;
                     Contact.InnerText = contact1;
@@ -429,6 +514,7 @@ namespace advtech.Finance.Accounta
                 RaksTDiv.Visible = true;
                 NotesDiv.Visible = true;
                 CustomerTIN.Visible = true;
+                CustVatRegNumberSpan.Visible = true;
                 Addressbar.Visible = true;
                 Button5.Visible = true;
                 Button1.Visible = false;
@@ -437,6 +523,8 @@ namespace advtech.Finance.Accounta
                 btnDelete.Visible = true;
                 btnEdit.Visible = true;
                 btnDeleteAll.Visible = false;
+                amoundInWordsDiv.Visible = true;
+                dateDiv.Visible = true;
                 String PID = Convert.ToString(Request.QueryString["cust"]);
                 String PID2 = Convert.ToString(Request.QueryString["id"]); InvNoBinding.InnerText = "INV# -" + PID2;
                 InvoiceBadge.InnerText = "INV# -" + PID2;
@@ -452,10 +540,11 @@ namespace advtech.Finance.Accounta
                 sqlda2 = new SqlDataAdapter(com2);
                 DataTable dt = new DataTable();
                 sqlda2.Fill(dt);
-                int i = dt.Rows.Count;
+                long i = dt.Rows.Count;
                 if (i != 0)
                 {
                     RefTag.Visible = true;
+                    dateSpan.InnerText = Convert.ToDateTime(dt.Rows[0]["date"].ToString()).ToString("MMM dd, yyyy");
                     RefTag.InnerText = "Ref# " + dt.Rows[0][2].ToString();
                     Repeater1.DataSource = dt;
                     Repeater1.DataBind();
@@ -489,7 +578,7 @@ namespace advtech.Finance.Accounta
             string str2 = "select * from tblrentreceipt order by date desc";
             com2 = new SqlCommand(str2, con);
             sqlda2 = new SqlDataAdapter(com2);
-            DataTable dt = new DataTable(); sqlda2.Fill(dt); int i = dt.Rows.Count;
+            DataTable dt = new DataTable(); sqlda2.Fill(dt); long i = dt.Rows.Count;
             if (i != 0)
             {
                 Label1.Text = "Showing Page: " + (CurrentPage + 1).ToString() + " of " + Pds1.PageCount.ToString();
@@ -535,7 +624,7 @@ namespace advtech.Finance.Accounta
                 sqlda2 = new SqlDataAdapter(com2);
                 DataTable dt = new DataTable();
                 sqlda2.Fill(dt);
-                int i = dt.Rows.Count;
+                long i = dt.Rows.Count;
                 if (i > 0)
                 {
                     RefTag.Visible = true;
@@ -617,47 +706,6 @@ namespace advtech.Finance.Accounta
         protected void btnDuplicateInvoice_Click(object sender, EventArgs e)
         {
             bindduplicate();
-        }
-        protected void btnSendEmail_Click(object sender, EventArgs e)
-        {
-            using (StringWriter sw = new StringWriter())
-            {
-                using (HtmlTextWriter hw = new HtmlTextWriter(sw))
-                {
-                    con1.RenderControl(hw);
-                    StringReader sr = new StringReader(sw.ToString());
-                    Document pdfDoc = new Document(PageSize.A4, 10f, 10f, 10f, 0f);
-
-                    using (MemoryStream memoryStream = new MemoryStream())
-                    {
-                        PdfWriter writer = PdfWriter.GetInstance(pdfDoc, memoryStream);
-                        pdfDoc.Open();
-                        XMLWorkerHelper.GetInstance().ParseXHtml(writer, pdfDoc, sr);
-                        pdfDoc.Close();
-                        byte[] bytes = memoryStream.ToArray();
-                        memoryStream.Close();
-                        MailMessage mailMessage = new MailMessage("abellegese5@gmail.com", txtEmail.Text);
-                        // Specify the email body
-                        mailMessage.Body = "";
-                        mailMessage.IsBodyHtml = false;
-                        // Specify the email Subject
-                        mailMessage.Subject = "";
-                        mailMessage.Attachments.Add(new Attachment(new MemoryStream(bytes), "Invoice.pdf"));
-                        // Specify the SMTP server name and post number
-                        SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587);
-                        // Specify your gmail address and password
-                        smtpClient.Credentials = new System.Net.NetworkCredential()
-                        {
-                            UserName = "abellegese5@gmail.com",
-                            Password = "Abel.lege2929#"
-                        };
-                        // Gmail works on SSL, so set this property to true
-                        smtpClient.EnableSsl = true;
-                        // Finall send the email message using Send() method
-                        smtpClient.Send(mailMessage);
-                    }
-                }
-            }
         }
         public override void VerifyRenderingInServerForm(Control control)
         {
@@ -741,12 +789,12 @@ namespace advtech.Finance.Accounta
 
                         double invoice_amount = due - SC;
                         double payment_status = Convert.ToDouble(Total.InnerText) - invoice_amount;
-                        if (payment_status == 0)
+                        if (Math.Round(payment_status) == 0)
                         {
                             PaymensStatus.InnerText = "fully paid";
                             PaymensStatus.Attributes.Add("class", "badge badge-success mr-2 text-uppercase");
                         }
-                        else if (payment_status > 0)
+                        else if (Math.Round(payment_status) > 0)
                         {
                             PaymensStatus.InnerText = "over paid";
                             PaymensStatus.Attributes.Add("class", "badge badge-warning mr-2 text-uppercase");
@@ -833,7 +881,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
                     {
                         DataTable dtBrands2322 = new DataTable();
-                        sda2222.Fill(dtBrands2322); int i2 = dtBrands2322.Rows.Count;
+                        sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
                         //
                         if (i2 != 0)
                         {
@@ -875,7 +923,7 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
                 {
                     DataTable dtBrands2322 = new DataTable();
-                    sda2222.Fill(dtBrands2322); int i2 = dtBrands2322.Rows.Count;
+                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
                     //
                     if (i2 != 0)
                     {
@@ -930,7 +978,7 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
                 {
                     DataTable dtBrands2322 = new DataTable();
-                    sda2222.Fill(dtBrands2322); int i2 = dtBrands2322.Rows.Count;
+                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
                     //
                     if (i2 != 0)
                     {
@@ -958,13 +1006,13 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                 {
                     DataTable dtBrandss = new DataTable();
-                    sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
                     //Selecting from Income account
                     SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
                     using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
                     {
                         DataTable dtBrandss2 = new DataTable();
-                        sdas2.Fill(dtBrandss2); int iss2 = dtBrandss2.Rows.Count;
+                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1006,7 +1054,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                     {
                         DataTable dttax = new DataTable();
-                        sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1066,7 +1114,7 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
                 {
                     DataTable dtBrands2322 = new DataTable();
-                    sda2222.Fill(dtBrands2322); int i2 = dtBrands2322.Rows.Count;
+                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
                     //
                     if (i2 != 0)
                     {
@@ -1094,13 +1142,13 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                 {
                     DataTable dtBrandss = new DataTable();
-                    sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
                     //Selecting from Income account
                     SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
                     using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
                     {
                         DataTable dtBrandss2 = new DataTable();
-                        sdas2.Fill(dtBrandss2); int iss2 = dtBrandss2.Rows.Count;
+                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1143,7 +1191,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                     {
                         DataTable dttax = new DataTable();
-                        sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1179,6 +1227,45 @@ namespace advtech.Finance.Accounta
 
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+        private void bind_account_receivable_when_credited(double diff)
+        {
+            String PID2 = Convert.ToString(Request.QueryString["id"]);
+            string CashorBank = "Accounts Receivable";
+            string explanation = "Account adjustment for invoice number " + PID2;
+
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + CashorBank + "'", con);
+                using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
+                {
+                    DataTable dtBrands2322 = new DataTable();
+                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
+                    //
+                    if (i2 != 0)
+                    {
+                        SqlDataReader reader6679034 = cmd19012.ExecuteReader();
+
+                        if (reader6679034.Read())
+                        {
+                            string ah12893;
+                            ah12893 = reader6679034["Balance"].ToString();
+                            reader6679034.Close();
+                            con.Close();
+                            con.Open();
+                            Double M1 = Convert.ToDouble(ah12893);
+                            Double bl1 = M1 + diff;
+
+                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + CashorBank + "'", con);
+                            cmd45.ExecuteNonQuery();
+                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + explanation + "','','" + diff + "','','" + bl1 + "','" + DateTime.Now.Date + "','" + CashorBank + "','','" + CashorBank + "')", con);
+                            cmd1974.ExecuteNonQuery();
                         }
                     }
                 }
@@ -1239,7 +1326,7 @@ namespace advtech.Finance.Accounta
                         sqlda2 = new SqlDataAdapter(com2);
                         DataTable dt = new DataTable();
                         sqlda2.Fill(dt);
-                        int i = dt.Rows.Count;
+                        long i = dt.Rows.Count;
                         if (i > 0)
                         {
                             SqlCommand custcmdw = new SqlCommand("update tblcreditnote set balance='" + totalpay + "' where ref='" + reftag + "'", con);
@@ -1250,6 +1337,7 @@ namespace advtech.Finance.Accounta
                         {
                             SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + bindSC().Item2 + "','" + totalpay + "','Credit for rent','" + DateTime.Now + "','" + reftag + "')", con);
                             cmdcrn.ExecuteNonQuery();
+                            bind_account_receivable_when_credited(totalpay);
                         }
                     }
                     double new_balance = Convert.ToDouble(ah11) + totalpay;
@@ -1274,7 +1362,7 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
                 {
                     DataTable dtBrands2322 = new DataTable();
-                    sda2222.Fill(dtBrands2322); int i2 = dtBrands2322.Rows.Count;
+                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
                     //
                     if (i2 != 0)
                     {
@@ -1302,13 +1390,13 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                 {
                     DataTable dtBrandss = new DataTable();
-                    sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
                     //Selecting from Income account
                     SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
                     using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
                     {
                         DataTable dtBrandss2 = new DataTable();
-                        sdas2.Fill(dtBrandss2); int iss2 = dtBrandss2.Rows.Count;
+                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1350,7 +1438,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                     {
                         DataTable dttax = new DataTable();
-                        sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                         //
                         if (iss2 != 0)
                         {

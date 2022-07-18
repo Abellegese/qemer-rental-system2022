@@ -75,7 +75,9 @@
                                     <div class=" mr-2" style="padding: 10px 0px 0px 0px">
                                         <span data-toggle="tooltip" data-placement="top" title="Mobile"><i class="fas fa-mobile text-white btn-circle btn-sm mr-2  " style="background-color: #ff6a00"></i></span><span id="mobile" class="text-gray-900 small" runat="server" title="Mobile Number"></span>
                                     </div>
-
+                                    <div class=" mr-2" style="padding: 10px 0px 0px 0px">
+                                        <span data-toggle="tooltip" data-placement="top" title="Vat Reg Number"><i class="fas fa-hashtag text-white btn-circle btn-sm mr-2  " style="background-color: #ff6a00"></i></span><span id="VatRegNumber" class="text-gray-900 small" runat="server" title="Vat Reg Number"></span>
+                                    </div>
 
                                 </div>
                             </div>
@@ -117,6 +119,11 @@
                     <div class="row mb-3">
                         <div class="col-md-12 ">
                             <asp:TextBox ID="txtTIN" class="form-control  form-control-sm" data-toggle="tooltip" title="Update TIN" placeholder="TIN#" runat="server"></asp:TextBox>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12 ">
+                            <asp:TextBox ID="txtVatRegNumber" class="form-control  form-control-sm" data-toggle="tooltip" title="Update Vat Reg Number" placeholder="Vat Reg Number" runat="server"></asp:TextBox>
                         </div>
                     </div>
                     <div class="row mb-3">

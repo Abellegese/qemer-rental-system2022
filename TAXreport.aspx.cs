@@ -36,7 +36,7 @@ namespace advtech.Finance.Accounta
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmd = new SqlCommand("select Oname,BuissnessLocation,Contact from tblOrganization", con);
+                SqlCommand cmd = new SqlCommand("select*from tblOrganization", con);
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 if (reader.Read())
@@ -51,7 +51,7 @@ namespace advtech.Finance.Accounta
         {
             SqlConnection con = new SqlConnection(strConnString);
             con.Open();
-            str = "select * from tblCustomerStatement where Payment>0 ";
+            str = "select * from tblrentreceipt";
             com = new SqlCommand(str, con);
             sqlda = new SqlDataAdapter(com);
             DataTable dt = new DataTable();
@@ -65,8 +65,8 @@ namespace advtech.Finance.Accounta
         {
             SqlConnection con = new SqlConnection(strConnString);
             con.Open();
-            str = "select SUM(Payment) from tblCustomerStatement where Date BETWEEN '" + txtDateform.Text + "' and '" + txtDateto.Text + "' ";
-            SqlCommand cmd = new SqlCommand("select sum(vatfree) as cash,sum(paid) as cashvat from tblrentreceipt where Date BETWEEN '" + txtDateform.Text + "' and '" + txtDateto.Text + "'", con);
+            str = "select sum(paid) as cash from tblrentreceipt where Date BETWEEN '" + txtDateform.Text + "' and '" + txtDateto.Text + "'";
+            SqlCommand cmd = new SqlCommand("select sum(paid) as cash from tblrentreceipt where Date BETWEEN '" + txtDateform.Text + "' and '" + txtDateto.Text + "'", con);
             SqlDataReader reader = cmd.ExecuteReader();
 
             if (reader.Read())
@@ -78,15 +78,15 @@ namespace advtech.Finance.Accounta
                 sqlda = new SqlDataAdapter(com);
                 DataTable dt = new DataTable();
                 sqlda.Fill(dt); int i = dt.Rows.Count;
-                if (dt.Rows[0][0].ToString() == null || dt.Rows[0][0].ToString() == "")
+                if (SC1 == null || SC1 == "")
                 {
                     Total.InnerText = "ETB 0.00";
                 }
                 else
                 {
-                    double Payment = Convert.ToDouble(dt.Rows[0][0].ToString()) - Convert.ToDouble(SC1);
+                    double Payment = Convert.ToDouble(dt.Rows[0][0].ToString());
                     double VATFREE = Payment / 1.15;
-                    double VAT = Convert.ToDouble(dt.Rows[0][0].ToString()) - Convert.ToDouble(SC1) - VATFREE;
+                    double VAT = Convert.ToDouble(dt.Rows[0][0].ToString())- VATFREE;
                     Total.InnerText = "ETB " + VAT.ToString("#,##0.00");
                     con.Close();
                 }
@@ -96,8 +96,8 @@ namespace advtech.Finance.Accounta
         {
             SqlConnection con = new SqlConnection(strConnString);
             con.Open();
-            str = "select SUM(Payment) from tblCustomerStatement where Payment > 0 ";
-            SqlCommand cmd = new SqlCommand("select sum(vatfree) as cash,sum(paid) as cashvat from tblrentreceipt", con);
+            str = "select sum(paid) as cash from tblrentreceipt";
+            SqlCommand cmd = new SqlCommand("select sum(paid) as cash from tblrentreceipt", con);
             SqlDataReader reader = cmd.ExecuteReader();
 
             if (reader.Read())
@@ -108,17 +108,18 @@ namespace advtech.Finance.Accounta
                 sqlda = new SqlDataAdapter(com);
                 DataTable dt = new DataTable();
                 sqlda.Fill(dt); int i = dt.Rows.Count;
-                if (dt.Rows[0][0].ToString() == null || dt.Rows[0][0].ToString() == "")
+                if (SC1 ==null || SC1 =="")
                 {
                     Total.InnerText = "ETB 0.00";
                 }
                 else
                 {
-                    double Payment = Convert.ToDouble(dt.Rows[0][0].ToString()) - Convert.ToDouble(SC1);
+                    double Payment = Convert.ToDouble(dt.Rows[0][0].ToString());
                     double VATFREE = Payment / 1.15;
-                    double VAT = Convert.ToDouble(dt.Rows[0][0].ToString()) - Convert.ToDouble(SC1) - VATFREE;
+                    double VAT = Convert.ToDouble(dt.Rows[0][0].ToString()) - VATFREE;
                     Total.InnerText = "ETB " + VAT.ToString("#,##0.00");
                     con.Close();
+
                 }
             }
         }
@@ -131,9 +132,9 @@ namespace advtech.Finance.Accounta
                     Label lbl = item.FindControl("lblPayment") as Label;
 
                     Label lbl3 = item.FindControl("lblVAT") as Label;
-                    double VATFREE = (Convert.ToDouble(lbl.Text) - 1500) / 1.15;
+                    double VATFREE = (Convert.ToDouble(lbl.Text)) / 1.15;
 
-                    double VAT = (Convert.ToDouble(lbl.Text) - 1500) - VATFREE;
+                    double VAT = (Convert.ToDouble(lbl.Text)) - VATFREE;
                     lbl3.Text = VAT.ToString("#,##0.00");
                 }
             }
@@ -153,7 +154,7 @@ namespace advtech.Finance.Accounta
                 mont.Visible = false;
                 SqlConnection con = new SqlConnection(strConnString);
                 con.Open();
-                str = "select * from tblCustomerStatement where Date BETWEEN '" + txtDateform.Text + "' and '" + txtDateto.Text + "' and Payment >0 ";
+                str = "select * from tblrentreceipt where Date BETWEEN '" + txtDateform.Text + "' and '" + txtDateto.Text + "' ";
                 com = new SqlCommand(str, con);
                 sqlda = new SqlDataAdapter(com);
                 DataTable dt = new DataTable();

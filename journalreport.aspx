@@ -15,11 +15,11 @@
     <title>Journal Report</title>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <div class="container-fluid">
+    <div class="container-fluid pl-3 pr-3">
       <!-- Table -->
       <div class="row">
         <div class="col">
-                       <div class="card shadow-none mb-1 card">
+                       <div class="bg-white rounded-lg mb-1 ">
             <div class="card-header bg-white ">
                 
                 

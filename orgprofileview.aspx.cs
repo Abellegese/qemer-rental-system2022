@@ -60,7 +60,8 @@ namespace advtech.Finance.Accounta
                     address.InnerText = kc1;
                     city.InnerText = kc2;
                     email.InnerText = kc3;
-
+                    txtVatRegNumber.Text = reader["vatregnumber"].ToString();
+                    VatRegNumber.InnerText = reader["vatregnumber"].ToString();
                     mobile.InnerText = kc6;
 
                     reader.Close();
@@ -75,7 +76,7 @@ namespace advtech.Finance.Accounta
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmd2 = new SqlCommand("Update tblOrganization set  Contact='" + txtMobile.Text + "',Email='" + txtEmail.Text + "',OAdress='" + txtAddress.Text + "', TIN='" + txtTIN.Text + "'", con);
+                SqlCommand cmd2 = new SqlCommand("Update tblOrganization set  Contact='" + txtMobile.Text + "',Email='" + txtEmail.Text + "',OAdress='" + txtAddress.Text + "', TIN='" + txtTIN.Text + "', vatregnumber='" + txtVatRegNumber.Text + "'", con);
                 cmd2.ExecuteNonQuery();
                 Response.Redirect("orgprofileview.aspx");
             }

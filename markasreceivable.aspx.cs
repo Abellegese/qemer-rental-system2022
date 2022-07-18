@@ -525,7 +525,16 @@ namespace advtech.Finance.Accounta
                                         con.Open();
                                         cmdAc.ExecuteNonQuery();
                                         string money = "ETB";
-                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(payment).ToString("#,##0.00") + "'+' '+'Issued as a Credit','" + FN + "','" + PID + "','Unseen','fas fa-dollar-sign text-white','icon-circle bg bg-warning','rentstatus1.aspx','MN')", con);
+                                        SqlCommand cmdcni = new SqlCommand("select * from tblcreditnote order by id desc", con);
+                                        SqlDataAdapter sdacni = new SqlDataAdapter(cmdcni);
+                                        DataTable dtcni = new DataTable();
+                                        sdacni.Fill(dtcni);
+                                        long nbcni = 0;
+                                        if (dtcni.Rows.Count > 0) { nbcni = Convert.ToInt64(dtcni.Rows[0][0].ToString()) + 1; }
+                                        else { nbcni += 1; }
+                                        ///
+                                        string crediturl = "creditnotedetails.aspx?ref2=" + nbcni + "&&cust=" + PID;
+                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(payment).ToString("#,##0.00") + "'+' '+'Issued as a Credit','" + FN + "','" + PID + "','Unseen','fas fa-dollar-sign text-white','icon-circle bg bg-warning','"+crediturl+"','MN')", con);
                                         cmd197h.ExecuteNonQuery();
 
                                         //Updating the Due Date
@@ -558,7 +567,7 @@ namespace advtech.Finance.Accounta
                                                 SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
                                                 cmdrent.ExecuteNonQuery();
                                             }
-                                            SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + due + "','" + due + "','Credit for rent','" + DateTime.Now + "')", con);
+                                            SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + due + "','" + due + "','Credit for rent','" + DateTime.Now + "','CN-NO-REF')", con);
                                             cmdcrn.ExecuteNonQuery();
                                         }
                                     }

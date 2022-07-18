@@ -19,11 +19,7 @@ namespace advtech.Finance.Accounta
         SqlDataAdapter sqlda;
         DataSet ds;
         protected void Page_Load(object sender, EventArgs e)
-        {
-            if (!IsPostBack)
-            {
-                BindBrandsRptr();
-            }
+        { 
         }
         public static String GetTimestamp(DateTime value)
         {
@@ -126,7 +122,6 @@ namespace advtech.Finance.Accounta
                 }
             }
         }
-
         protected void Button3_Click(object sender, EventArgs e)
         {
 
@@ -185,111 +180,25 @@ namespace advtech.Finance.Accounta
                 }
             }
         }
-        private void BindBrandsRptr()
-        {
-            SqlConnection con = new SqlConnection(strConnString);
-            con.Open();
-            str = "select * from tblGeneralLedger";
-            com = new SqlCommand(str, con);
-            sqlda = new SqlDataAdapter(com);
-            DataTable dt = new DataTable();
-            sqlda.Fill(dt);
-
-            Repeater1.DataSource = dt;
-            Repeater1.DataBind();
-            con.Close();
-        }
         protected void Button5_Click(object sender, EventArgs e)
         {
-            Response.Clear();
-            Response.Buffer = true;
-            Response.AddHeader("content-disposition", "attachment;filename=SqlExport.csv");
-            Response.Charset = "";
-            Response.ContentType = "application/text";
-            Response.Output.Write(counter.InnerText);
-            Response.Flush();
-            Response.End();
-        }
-        protected double bindLedgerValues(string account)
-        {
-            double values = 0;
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmdcrd = new SqlCommand("select * from tblGeneralLedger where Account='" +account + "'", con);
-                SqlDataReader readercrd = cmdcrd.ExecuteReader();
-                if (readercrd.Read())
+                SqlCommand cmd = new SqlCommand("select*from tblCustomers ", con);
+
+                using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                 {
-                    
-                    double debit = Convert.ToDouble(readercrd["Debit"].ToString());
-                    double credit = Convert.ToDouble(readercrd["Credit"].ToString());
-                    string accountType = readercrd["AccountType"].ToString();
-                    if (debit != 0)
+                    DataTable dt = new DataTable();
+                    sda.Fill(dt); int i = dt.Rows.Count;
+
+                    for (int j = 0; j < dt.Rows.Count; j++)
                     {
-                        values = debit;
-                    }
-                    else
-                    {
-                        values = -credit;
+                        SqlCommand cmdrent = new SqlCommand("Update tblCustomers set FllName='" + dt.Rows[j]["FllName"].ToString().TrimEnd() + "' where FllName='" + dt.Rows[j]["FllName"].ToString() + "'", con);
+                        cmdrent.ExecuteNonQuery();
                     }
                 }
-                readercrd.Close();
-            }
-            return values;
-        }
-        private string GenerateCSV(string amount)
-        {
-            string csv = string.Empty;
-
-            csv += " Date,Reference,Date Clear in Bank Rec,Number of Distributions,G/L Account,Description,Amount,Job ID,Used for Reimbursable Expenses,Transaction Period,Transaction Number,Consolidated Transaction,Recur Number,Recur Frequency";
-            csv += "\r\n";
-            csv += amount;
-            return csv;
-        }
-        protected void Repeater1_ItemDataBound(object sender, RepeaterItemEventArgs e)
-        {
-            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-            using (SqlConnection con = new SqlConnection(CS))
-            {
-                con.Open();
-                string csvValues = "";
-                string amountCollector = string.Empty;
-                string dateCollector = string.Empty;
-                string descriptionCollector = string.Empty;
-                foreach (RepeaterItem item in Repeater1.Items)
-                {
-                    
-                    Label Account = item.FindControl("lblID") as Label;
-                    if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
-                    {
-                        Label Amount = item.FindControl("lblAmount") as Label;
-                        SqlCommand cmdcrd = new SqlCommand("select * from tblGeneralLedger where LedID LIKE '%" + Account.Text + "%' order by LedID asc", con);
-                        SqlDataReader readercrd = cmdcrd.ExecuteReader();
-                        if (readercrd.Read())
-                        {
-                            string date = readercrd["Date"].ToString();
-                            string description = readercrd["Explanation"].ToString();
-                            double debit = Convert.ToDouble(readercrd["Debit"].ToString());
-                            double credit = Convert.ToDouble(readercrd["Credit"].ToString());
-                            string accountType = readercrd["AccountType"].ToString();
-                            if (debit != 0)
-                            {
-                                Amount.Text = debit.ToString();
-                                csvValues += date + ',' + "" + ',' + "" + ',' + "2" + ',' + "1000" + ',' + description + ',' + Amount.Text + ',' + "" + ',' + "FALSE" + ',' + "" + ',' + "FALSE" + ',' + "0" + ',' + "0" + "\r\n";
-                            }
-                            else
-                            {
-                                Amount.Text = (-credit).ToString();
-                                csvValues += date + ',' + "" + ',' + "" + ',' + "2" + ',' + "1000" + ',' + description + ',' + Amount.Text + ',' + "" + ',' + "FALSE" + ',' + "" + ',' + "FALSE" + ',' + "0" + ',' + "0" + "\r\n";
-
-                            }
-                        }
-                        readercrd.Close();
-                    }
-                }
-                con.Close();
-                counter.InnerText =GenerateCSV(csvValues);
             }
         }
     }

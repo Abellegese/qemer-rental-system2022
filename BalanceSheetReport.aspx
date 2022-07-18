@@ -16,7 +16,7 @@
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
-    <div class="container-fluid ">
+    <div class="container-fluid pl-3 pr-3">
       <!-- Table -->
         <div class="modal fade" id="exampleModalLongService" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle3" aria-hidden="true">
   <div class="modal-dialog modal-sm" role="document">
@@ -108,7 +108,7 @@
       </div>
     </div>
   </div>
-                                        <div class="card shadow-none mb-1 card">
+                                        <div class=" bg-white rounded-lg mb-1">
             <div class="card-header bg-white ">
                 
                 

@@ -356,6 +356,16 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="form-group">
+                                <label class="text-gray-900 small">VAT Reg. Number</label>
+
+                                <asp:TextBox ID="txtVatRegNumber" runat="server" class="form-control form-control-sm" placeholder="VAT Reg. Number" Style="border-color: #ff0000"></asp:TextBox>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
                                 <label class="text-gray-900 small">Email</label>
 
                                 <asp:TextBox ID="txtEmail" runat="server" class="form-control  form-control-sm" placeholder="Email" value="-"></asp:TextBox>

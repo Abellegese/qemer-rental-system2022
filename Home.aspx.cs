@@ -5,6 +5,9 @@ using System.Data.SqlClient;
 using System.Web.UI.WebControls;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
+using System.Web.Services;
+using System.Web.UI;
+using System.Web;
 
 
 namespace advtech.Finance.Accounta
@@ -52,6 +55,68 @@ namespace advtech.Finance.Accounta
             else
             {
                 Response.Redirect("~/Login/LogIn1.aspx");
+            }
+        }
+        [WebMethod]
+        public static void MakeCustomerAsPaid()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                UserUtility userutil = new UserUtility();
+                string username = userutil.BindUser();
+                SqlCommand cmd = new SqlCommand("select*from tblrent where DATEDIFF(day, '" + DateTime.Now.Date + "', duedate) <= 15 and status='Active'", con);
+
+                using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                {
+                    DataTable dt = new DataTable();
+                    sda.Fill(dt); int i = dt.Rows.Count;
+
+                    for (int j = 0; j < dt.Rows.Count; j++)
+                    {
+                        SqlCommand cmdc = new SqlCommand("select*from tblCustomers where FllName='" + dt.Rows[j]["customer"].ToString() + "'", con);
+
+                        using (SqlDataAdapter sdac = new SqlDataAdapter(cmdc))
+                        {
+                            DataTable dtc = new DataTable();
+                            sdac.Fill(dtc);
+
+                            if (dtc.Rows[0]["PaymentDuePeriod"].ToString() == "Monthly")
+                            {
+                                DateTime duedate = Convert.ToDateTime(dt.Rows[j]["duedate"].ToString());
+                                DateTime newduedate = duedate.AddDays(30);
+                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + dt.Rows[j]["customer"].ToString() + "'", con);
+                                cmdrent.ExecuteNonQuery();
+                            }
+                            else if (dtc.Rows[0]["PaymentDuePeriod"].ToString() == "Every Three Month")
+                            {
+                                DateTime duedate = Convert.ToDateTime(dt.Rows[j]["duedate"].ToString());
+                                DateTime newduedate = duedate.AddDays(90);
+                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + dt.Rows[j]["customer"].ToString() + "'", con);
+                                cmdrent.ExecuteNonQuery();
+                            }
+                            else if (dtc.Rows[0]["PaymentDuePeriod"].ToString() == "Every Six Month")
+                            {
+                                DateTime duedate = Convert.ToDateTime(dt.Rows[j]["duedate"].ToString());
+                                DateTime newduedate = duedate.AddDays(180);
+                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + dt.Rows[j]["customer"].ToString() + "'", con);
+                                cmdrent.ExecuteNonQuery();
+                            }
+                            else
+                            {
+                                DateTime duedate = Convert.ToDateTime(dt.Rows[j]["duedate"].ToString());
+                                DateTime newduedate = duedate.AddDays(365);
+                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + dt.Rows[j]["customer"].ToString() + "'", con);
+                                cmdrent.ExecuteNonQuery();
+                            }
+
+                        }
+                    }
+                }
+                string explanation = "All the status of unpaid customer marked as paid. Their payment period scheduled for the next.";
+                SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + explanation + "','" + username + "','" + username + "','Unseen','fas fa-check text-white','icon-circle bg bg-success','#','MN')", con);
+                cmd197h.ExecuteNonQuery();
             }
         }
         private void bindsusshop()
@@ -1565,10 +1630,10 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                     {
                         DataTable dtBrands = new DataTable();
-                        sda.Fill(dtBrands); int i = dtBrands.Rows.Count;
+                        sda.Fill(dtBrands); long i = dtBrands.Rows.Count;
                         if (i != 0)
                         {
-                            FirstDate = Convert.ToDateTime(dtBrands.Rows[0][6].ToString()).ToString("dd/MM/yyyy");
+                            FirstDate = Convert.ToDateTime(dtBrands.Rows[0][6].ToString()).ToString("yyyy-MM-dd");
                         }
                     }
                 }
@@ -1578,70 +1643,87 @@ namespace advtech.Finance.Accounta
         private double CalculateOverallBalanceIncome()
         {
             double Pbalance = 0;
-            SqlConnection con = new SqlConnection(strConnString);
-            con.Open();
-            DateTime dTimeLast = Convert.ToDateTime(txtCHDateFrom.Text).AddDays(-1);
-            DateTime dTimeFirst = Convert.ToDateTime(BindPDate());
-            str = "select Account from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Income' group by Account";
-
-            com = new SqlCommand(str, con);
-            sqlda = new SqlDataAdapter(com);
-            ds = new DataSet();
-            DataTable dt = new DataTable();
-            sqlda.Fill(dt);
-            if (dt.Rows.Count > 0)
+            if (txtCHDateFrom.Text == "" || txtCHDateTo.Text == "")
             {
-                for (int i = 0; i < dt.Rows.Count; i++)
-                {
-                    string str2 = "select TOP(1)* from tblGeneralLedger where Account='" + dt.Rows[i][0].ToString() + "' and Date between '" + dTimeFirst + "' and '" + dTimeLast + "' ORDER BY LedID DESC";
-
-                    SqlCommand com1 = new SqlCommand(str2, con);
-                    SqlDataAdapter sqlda1 = new SqlDataAdapter(com1);
-
-                    DataTable dt1 = new DataTable();
-                    sqlda1.Fill(dt1);
-                    if (dt1.Rows.Count > 0)
-                    {
-                        Pbalance = Pbalance + Convert.ToDouble(dt1.Rows[0][5].ToString());
-                    }
-                }
-
+                string message = "Select date range to bind the summary!!";
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
             }
+            else
+            {
 
+                SqlConnection con = new SqlConnection(strConnString);
+                con.Open();
+                DateTime dTimeLast = Convert.ToDateTime(txtCHDateFrom.Text).AddDays(-1);
+                DateTime dTimeFirst = Convert.ToDateTime(BindPDate());
+                str = "select Account from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Income' group by Account";
+
+                com = new SqlCommand(str, con);
+                sqlda = new SqlDataAdapter(com);
+                ds = new DataSet();
+                DataTable dt = new DataTable();
+                sqlda.Fill(dt);
+                if (dt.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        string str2 = "select TOP(1)* from tblGeneralLedger where Account='" + dt.Rows[i][0].ToString() + "' and Date between '" + dTimeFirst + "' and '" + dTimeLast + "' ORDER BY LedID DESC";
+
+                        SqlCommand com1 = new SqlCommand(str2, con);
+                        SqlDataAdapter sqlda1 = new SqlDataAdapter(com1);
+
+                        DataTable dt1 = new DataTable();
+                        sqlda1.Fill(dt1);
+                        if (dt1.Rows.Count > 0)
+                        {
+                            Pbalance = Pbalance + Convert.ToDouble(dt1.Rows[0][5].ToString());
+                        }
+                    }
+
+                }
+            }
             return Pbalance;
         }
         private double CalculateOverallBalanceExpense()
         {
             double Pbalance = 0;
-            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-            SqlConnection con = new SqlConnection(CS);
-            con.Open();
-            DateTime dTimeLast = Convert.ToDateTime(txtCHDateFrom.Text).AddDays(-1);
-            DateTime dTimeFirst = Convert.ToDateTime(BindPDate());
-            str = "select Account from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Expenses'";
-
-            com = new SqlCommand(str, con);
-            sqlda = new SqlDataAdapter(com);
-            ds = new DataSet();
-            DataTable dt = new DataTable();
-            sqlda.Fill(dt);
-            if (dt.Rows.Count > 0)
+            if (txtCHDateFrom.Text == "" || txtCHDateTo.Text == "")
             {
-                for (int i = 0; i < dt.Rows.Count; i++)
+                string message = "Select date range to bind the summary!!";
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
+            }
+            else
+            {
+
+                String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+                SqlConnection con = new SqlConnection(CS);
+                con.Open();
+                DateTime dTimeLast = Convert.ToDateTime(txtCHDateFrom.Text).AddDays(-1);
+                DateTime dTimeFirst = Convert.ToDateTime(BindPDate());
+                str = "select Account from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Expenses'";
+
+                com = new SqlCommand(str, con);
+                sqlda = new SqlDataAdapter(com);
+                ds = new DataSet();
+                DataTable dt = new DataTable();
+                sqlda.Fill(dt);
+                if (dt.Rows.Count > 0)
                 {
-                    string str2 = "select TOP 1* from tblGeneralLedger where Account='" + dt.Rows[i][0].ToString() + "' and Date between '" + dTimeFirst + "' and '" + dTimeLast + "' ORDER BY LedID DESC";
-
-                    SqlCommand com1 = new SqlCommand(str2, con);
-                    SqlDataAdapter sqlda1 = new SqlDataAdapter(com1);
-
-                    DataTable dt1 = new DataTable();
-                    sqlda1.Fill(dt1);
-                    if (dt1.Rows.Count > 0)
+                    for (int i = 0; i < dt.Rows.Count; i++)
                     {
-                        Pbalance = Pbalance + Convert.ToDouble(dt1.Rows[0][5].ToString());
-                    }
-                }
+                        string str2 = "select TOP 1* from tblGeneralLedger where Account='" + dt.Rows[i][0].ToString() + "' and Date between '" + dTimeFirst + "' and '" + dTimeLast + "' ORDER BY LedID DESC";
 
+                        SqlCommand com1 = new SqlCommand(str2, con);
+                        SqlDataAdapter sqlda1 = new SqlDataAdapter(com1);
+
+                        DataTable dt1 = new DataTable();
+                        sqlda1.Fill(dt1);
+                        if (dt1.Rows.Count > 0)
+                        {
+                            Pbalance = Pbalance + Convert.ToDouble(dt1.Rows[0][5].ToString());
+                        }
+                    }
+
+                }
             }
 
             return Pbalance;
@@ -1650,120 +1732,146 @@ namespace advtech.Finance.Accounta
         {
 
             double Pbalance = 0;
-            SqlConnection con = new SqlConnection(strConnString);
-            con.Open();
-            DateTime dTimeLast = Convert.ToDateTime(txtCHDateFrom.Text).AddDays(-1);
-            DateTime dTimeFirst = Convert.ToDateTime(BindPDate());
-            string q11 = "select Account from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accounts Receivable'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "'  and AccountType='Cash' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Assets'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Inventory' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Current Assets' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Fixed Assets' group by Account";
-            string str2r = q11;
-
-            com = new SqlCommand(str2r, con);
-            sqlda = new SqlDataAdapter(com);
-            ds = new DataSet();
-            DataTable dt = new DataTable();
-            sqlda.Fill(dt);
-            if (dt.Rows.Count > 0)
+            if (txtCHDateFrom.Text == "" || txtCHDateTo.Text == "")
             {
-                for (int i = 0; i < dt.Rows.Count; i++)
+                string message = "Select date range to bind the summary!!";
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
+            }
+            else
+            {
+
+                SqlConnection con = new SqlConnection(strConnString);
+                con.Open();
+                DateTime dTimeLast = Convert.ToDateTime(txtCHDateFrom.Text).AddDays(-1);
+                DateTime dTimeFirst = Convert.ToDateTime(BindPDate());
+                string q11 = "select Account from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accounts Receivable'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "'  and AccountType='Cash' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Assets'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Inventory' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Current Assets' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Fixed Assets' group by Account";
+                string str2r = q11;
+
+                com = new SqlCommand(str2r, con);
+                sqlda = new SqlDataAdapter(com);
+                ds = new DataSet();
+                DataTable dt = new DataTable();
+                sqlda.Fill(dt);
+                if (dt.Rows.Count > 0)
                 {
-                    string str2 = "select TOP 1* from tblGeneralLedger where Account='" + dt.Rows[i][0].ToString() + "' and Date between '" + dTimeFirst + "' and '" + dTimeLast + "' ORDER BY LedID DESC";
-
-                    SqlCommand com1 = new SqlCommand(str2, con);
-                    SqlDataAdapter sqlda1 = new SqlDataAdapter(com1);
-
-                    DataTable dt1 = new DataTable();
-                    sqlda1.Fill(dt1);
-                    if (dt1.Rows.Count > 0)
+                    for (int i = 0; i < dt.Rows.Count; i++)
                     {
-                        Pbalance = Pbalance + Convert.ToDouble(dt1.Rows[0][5].ToString());
-                    }
-                }
+                        string str2 = "select TOP 1* from tblGeneralLedger where Account='" + dt.Rows[i][0].ToString() + "' and Date between '" + dTimeFirst + "' and '" + dTimeLast + "' ORDER BY LedID DESC";
 
+                        SqlCommand com1 = new SqlCommand(str2, con);
+                        SqlDataAdapter sqlda1 = new SqlDataAdapter(com1);
+
+                        DataTable dt1 = new DataTable();
+                        sqlda1.Fill(dt1);
+                        if (dt1.Rows.Count > 0)
+                        {
+                            Pbalance = Pbalance + Convert.ToDouble(dt1.Rows[0][5].ToString());
+                        }
+                    }
+
+                }
             }
             return Pbalance;
         }
         private double BindbegLiabilityBalance()
         {
-
             double Pbalance = 0;
-            SqlConnection con = new SqlConnection(strConnString);
-            con.Open();
-            DateTime dTimeLast = Convert.ToDateTime(txtCHDateFrom.Text).AddDays(-1);
-            DateTime dTimeFirst = Convert.ToDateTime(BindPDate());
-            string q11 = "select Account from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accumulated Depreciation' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accounts Payable' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Current Liabilities'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Long Term Liabilities' group by Account";
-            string str2r = q11;
-
-            com = new SqlCommand(str2r, con);
-            sqlda = new SqlDataAdapter(com);
-            ds = new DataSet();
-            DataTable dt = new DataTable();
-            sqlda.Fill(dt);
-            if (dt.Rows.Count > 0)
+            if (txtCHDateFrom.Text == "" || txtCHDateTo.Text == "")
             {
-                for (int i = 0; i < dt.Rows.Count; i++)
+                string message = "Select date range to bind the summary!!";
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
+            }
+            else
+            {
+               
+                SqlConnection con = new SqlConnection(strConnString);
+                con.Open();
+                DateTime dTimeLast = Convert.ToDateTime(txtCHDateFrom.Text).AddDays(-1);
+                DateTime dTimeFirst = Convert.ToDateTime(BindPDate());
+                string q11 = "select Account from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accumulated Depreciation' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accounts Payable' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Current Liabilities'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Long Term Liabilities' group by Account";
+                string str2r = q11;
+
+                com = new SqlCommand(str2r, con);
+                sqlda = new SqlDataAdapter(com);
+                ds = new DataSet();
+                DataTable dt = new DataTable();
+                sqlda.Fill(dt);
+                if (dt.Rows.Count > 0)
                 {
-                    string str2 = "select TOP 1* from tblGeneralLedger where Account='" + dt.Rows[i][0].ToString() + "' and Date between '" + dTimeFirst + "' and '" + dTimeLast + "' ORDER BY LedID DESC";
-
-                    SqlCommand com1 = new SqlCommand(str2, con);
-                    SqlDataAdapter sqlda1 = new SqlDataAdapter(com1);
-
-                    DataTable dt1 = new DataTable();
-                    sqlda1.Fill(dt1);
-                    if (dt1.Rows.Count > 0)
+                    for (int i = 0; i < dt.Rows.Count; i++)
                     {
-                        Pbalance = Pbalance + Convert.ToDouble(dt1.Rows[0][5].ToString());
-                    }
-                }
+                        string str2 = "select TOP 1* from tblGeneralLedger where Account='" + dt.Rows[i][0].ToString() + "' and Date between '" + dTimeFirst + "' and '" + dTimeLast + "' ORDER BY LedID DESC";
 
+                        SqlCommand com1 = new SqlCommand(str2, con);
+                        SqlDataAdapter sqlda1 = new SqlDataAdapter(com1);
+
+                        DataTable dt1 = new DataTable();
+                        sqlda1.Fill(dt1);
+                        if (dt1.Rows.Count > 0)
+                        {
+                            Pbalance = Pbalance + Convert.ToDouble(dt1.Rows[0][5].ToString());
+                        }
+                    }
+
+                }
+                
             }
             return Pbalance;
         }
         private void networthcalculated()
         {
-            SqlConnection con = new SqlConnection(strConnString);
-            con.Open();
-
-            String query = "select (SUM(Debit)-SUM(Credit)) as Balance  from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accounts Receivable'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "'  and AccountType='Cash' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Assets'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Inventory' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Current Assets' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Fixed Assets'";
-            SqlCommand cmd = new SqlCommand(query, con);
-            SqlDataReader reader = cmd.ExecuteReader();
-            if (reader.Read())
+            if (txtCHDateFrom.Text == "" || txtCHDateTo.Text == "")
             {
-                string asset; double assetsssss;
-                asset = reader["Balance"].ToString();
-                if (asset == "" || asset == null)
-                {
-                    assetsssss = 0;
-                }
-                else
-                {
-                    assetsssss = Convert.ToDouble(asset) + BindbegAssetBalance();
-                }
-                reader.Close();
-                con.Close();
-                String query1 = "select (SUM(Credit)-SUM(Debit)) as Balance from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accumulated Depreciation' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accounts Payable' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Current Liabilities'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Long Term Liabilities'";
+                string message = "Select date range to bind the summary!!";
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
+            }
+            else
+            {
+                SqlConnection con = new SqlConnection(strConnString);
                 con.Open();
-                SqlCommand cmd1 = new SqlCommand(query1, con);
-                SqlDataReader reader1 = cmd1.ExecuteReader();
-                if (reader1.Read())
+
+                String query = "select (SUM(Debit)-SUM(Credit)) as Balance  from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accounts Receivable'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "'  and AccountType='Cash' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Assets'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Inventory' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Current Assets' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Fixed Assets'";
+                SqlCommand cmd = new SqlCommand(query, con);
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
                 {
-                    string liability; double liabilityyyyy;
-                    liability = reader1["Balance"].ToString();
-                    if (liability == "" || liability == null)
+                    string asset; double assetsssss;
+                    asset = reader["Balance"].ToString();
+                    if (asset == "" || asset == null)
                     {
-                        liabilityyyyy = 0;
+                        assetsssss = 0;
                     }
                     else
                     {
-                        liabilityyyyy = Convert.ToDouble(liability) + BindbegLiabilityBalance();
+                        assetsssss = Convert.ToDouble(asset) + BindbegAssetBalance();
                     }
-                    reader1.Close();
+                    reader.Close();
                     con.Close();
-                    Liability2.InnerText = liabilityyyyy.ToString("#,##0.00");
-                    Asset2.InnerText = assetsssss.ToString("#,##0.00");
+                    String query1 = "select (SUM(Credit)-SUM(Debit)) as Balance from tblGeneralLedger where Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accumulated Depreciation' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Accounts Payable' OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Other Current Liabilities'  OR Date between '" + txtCHDateFrom.Text + "' and '" + txtCHDateTo.Text + "' and AccountType='Long Term Liabilities'";
+                    con.Open();
+                    SqlCommand cmd1 = new SqlCommand(query1, con);
+                    SqlDataReader reader1 = cmd1.ExecuteReader();
+                    if (reader1.Read())
+                    {
+                        string liability; double liabilityyyyy;
+                        liability = reader1["Balance"].ToString();
+                        if (liability == "" || liability == null)
+                        {
+                            liabilityyyyy = 0;
+                        }
+                        else
+                        {
+                            liabilityyyyy = Convert.ToDouble(liability) + BindbegLiabilityBalance();
+                        }
+                        reader1.Close();
+                        con.Close();
+                        Liability2.InnerText = liabilityyyyy.ToString("#,##0.00");
+                        Asset2.InnerText = assetsssss.ToString("#,##0.00");
 
-                    double nw = assetsssss - liabilityyyyy;
-                    NetWorth.InnerText = nw.ToString("#,##0.00");
-                    Span3.InnerText = nw.ToString("#,##0.00");
+                        double nw = assetsssss - liabilityyyyy;
+                        NetWorth.InnerText = nw.ToString("#,##0.00");
+                        Span3.InnerText = nw.ToString("#,##0.00");
+                    }
                 }
             }
         }

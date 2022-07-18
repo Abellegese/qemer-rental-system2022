@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Finance/Accounta/AccountMasterPage.Master" AutoEventWireup="true" CodeBehind="NoticeLetter.aspx.cs" Inherits="advtech.Finance.Accounta.NoticeLetter" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Finance/Accounta/AccountMasterPage.Master" ValidateRequest="false" AutoEventWireup="true" CodeBehind="NoticeLetter.aspx.cs" Inherits="advtech.Finance.Accounta.NoticeLetter" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <script language="javascript">
@@ -13,6 +13,8 @@
             return false;
         }
     </script>
+    
+
     <script type="text/javascript">
         window.addEventListener('load', (event) => {
             var x = document.getElementById("myDIV5");
@@ -50,7 +52,7 @@
     <title>Notice Letter</title>
     <script>
 
-        var uri = 'http://localhost:9300/api/let';
+        var uri = 'http://localhost/api/let';
         function formatItem1(item) {
             return item.letter_name;
         }
@@ -282,30 +284,32 @@
                             <div class="row mb-4">
                                 <div class="col-12 text-center">
                                     <span class="small text-gray-900">Edit Body Section</span>
-                                    <asp:TextBox ID="txtpart2" class="form-control form-control-sm" Height="50px" TextMode="MultiLine" runat="server" Text="በራክሲም ንግድ ስራ ኃ/የተ/የግል ማህበር ህንፃ ላይ ለሱቅ ግልጋሎት የሚሆን ቦታ ተከራይተው እየሰሩ መሆኑ ይታወቃል ፡፡ በመሆኑም ከ"></asp:TextBox>
+                                    <asp:TextBox ID="txtpart2" ClientIDMode="Static" class="form-control form-control-sm" Height="50px" TextMode="MultiLine" runat="server" Text="በራክሲም ንግድ ስራ ኃ/የተ/የግል ማህበር ህንፃ ላይ ለሱቅ ግልጋሎት የሚሆን ቦታ ተከራይተው እየሰሩ መሆኑ ይታወቃል ፡፡ በመሆኑም ከ"></asp:TextBox>
 
                                 </div>
                             </div>
                             <div class="row mb-4">
                                 <div class="col-12">
 
-                                    <asp:TextBox ID="txtpart4" class="form-control form-control-sm" Height="40px" TextMode="MultiLine" runat="server" Text="የነበረው የክፍያ ጊዜ ስለተጠናቀቀ "></asp:TextBox>
+                                    <asp:TextBox ID="txtpart4" ClientIDMode="Static" class="form-control form-control-sm" Height="40px" TextMode="MultiLine" runat="server" Text="የነበረው የክፍያ ጊዜ ስለተጠናቀቀ "></asp:TextBox>
 
                                 </div>
                             </div>
 
-                            <div class="row mb-4">
+                            <div class="row">
                                 <div class="col-12">
 
-                                    <asp:TextBox ID="txtpart6" class="form-control form-control-sm" Height="40px" TextMode="MultiLine" runat="server" ReadOnly="false" Text="ያለውን የቤት ኪራይ ገቢ ከጠቅላላ አገልግሎት ክፍያ ጋር ብር"></asp:TextBox>
+                                    <asp:TextBox ID="txtpart6" ClientIDMode="Static" class="form-control form-control-sm" Height="40px" TextMode="MultiLine" runat="server" ReadOnly="false" Text="ያለውን የቤት ኪራይ ገቢ ከጠቅላላ አገልግሎት ክፍያ ጋር ብር" data-toggle="tooltip" title="Before Money"></asp:TextBox>
 
                                 </div>
                             </div>
-
+    
+                            <span class="text-success text-xs border-top border-bottom">Money Section Goes Here</span>
+       
                             <div class="row mb-4">
                                 <div class="col-12">
-
-                                    <asp:TextBox ID="txtpart7" class="form-control form-control-sm" Height="40px" TextMode="MultiLine" runat="server" ReadOnly="false" Text="ውላችን ላይ ባለው አንቀፅ ሶስት መሰረት ቀጣዩን የ 3 ወር ክፍያ በቀጣዮቹ 15 ተከታታይ ቀናት ውስጥ እንድትከፍሉ እንጠይቃለን፡፡"></asp:TextBox>
+                                  
+                                    <asp:TextBox ID="txtpart7" ClientIDMode="Static" class="form-control form-control-sm" Height="60px" TextMode="MultiLine" runat="server" ReadOnly="false" Text="ውላችን ላይ ባለው አንቀፅ ሶስት መሰረት ቀጣዩን የ 3 ወር ክፍያ በቀጣዮቹ 15 ተከታታይ ቀናት ውስጥ እንድትከፍሉ እንጠይቃለን፡፡" data-toggle="tooltip" title="After Money"></asp:TextBox>
 
                                 </div>
                             </div>
@@ -331,7 +335,20 @@
                                     </div>
 
                                 </div>
-                                <div class="col-3 mx-4">
+
+                                <div class="col-1 mx-5">
+                                    <div class="form-group">
+                                        <div class="input-group input-group-alternative">
+
+                                            <div class="form-group mb-0">
+                                                <div class="input-group input-group-alternative input-group-sm">
+                                        <button  class="btn btn-sm btn-light" Height="10" type="button" id="AddButton"  data-toggle="tooltip" data-placement="bottom" title="Add New Line."><span  class="fas  mb-4 fa-align-justify text-danger"></span></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </div>
+                                <div class="col-3 ">
                                     <div class="form-group">
 
                                         <div class="input-group input-group-alternative">
@@ -370,6 +387,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
 
@@ -1127,9 +1145,23 @@
                             </div>
                             <div class="col-10">
                                 <div class="form-group">
-                                    <asp:TextBox ID="txtCustomePart7" ClientIDMode="Static" TextMode="MultiLine" Height="31px" class="form-control form-control-sm" data-toggle="tooltip" title="7" ReadOnly="false" Style="border-color: #11f3df" Text="ጋር ውላችን ላይ ባለው አንቀፅ ሶስት መሰረት ቀጣዩን የ 3 ወር ክፍያ በቀጣዮቹ 10 ተከታታይ ቀናት ውስጥ እንድትከፍሉ እንጠይቃለን፡፡  " runat="server"></asp:TextBox>
+                                    <asp:TextBox ID="txtCustomePart7" ClientIDMode="Static" TextMode="MultiLine" Height="31px" class="form-control form-control-sm" data-toggle="tooltip" title="7" ReadOnly="false" Style="border-color: #11f3df" Text="ጋር ውላችን ላይ ባለው አንቀፅ ሶስት መሰረት ቀጣዩን የ 3 ወር ክፍያ በቀጣዮቹ 15 ተከታታይ ቀናት ውስጥ እንድትከፍሉ እንጠይቃለን፡፡  " runat="server"></asp:TextBox>
                                 </div>
                             </div>
+                        </div>
+                        <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <div class="input-group input-group-alternative">
+
+                                            <div class="form-group mb-0">
+                                                <div class="input-group input-group-alternative input-group-sm">
+                                                    <button class="btn btn-sm btn-light" height="10" type="button" id="AddButton2" ><span class="fas  mb-4 fa-align-justify text-danger"></span></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                         </div>
                         <div class="row mt-5">
                             <div class="col-12">
@@ -1275,8 +1307,6 @@
                                 <div class="col-1">
                                 </div>
                                 <div class="col-10">
-
-
                                     <asp:Repeater ID="Repeater1" runat="server">
                                         <ItemTemplate>
                                             <div>
@@ -1326,7 +1356,7 @@
                                                     <center>
                                                         <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#bind_headgudayu_text() %></span>
                                                     </center>
-                                                    <p class="text-gray-900" style="text-align: justify" contenteditable="true">
+                                                    <p class="text-gray-900" style="text-align: justify;" contenteditable="true">
 
                                                         <span <%#bind_bodyies() %>><%#bind_body1_text() %></span> <span <%#bind_period() %>>ግንቦት እስከ ሐምሌ</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body2_text() %></span>
                                                         <span <%#bind_period() %>>ነሃሴ እስከ ጥቅምት</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()+1%></span> <span <%#bind_bodyies() %>><%#bind_body3_text() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
@@ -1597,8 +1627,6 @@
                                 <div class="col-1">
                                 </div>
                             </div>
-
-
                             <div class="row" id="div5" runat="server">
                                 <div class="col-1">
                                 </div>
@@ -1945,8 +1973,8 @@
                     <div id="div9" runat="server" style="height: 500px">
                         <div class="mt-lg-5">
                             <center>
-                                <span class="fas fa-book-open fa-9x" style="color: #d46fe8"></span>
-                                <h6 class="text-gray-300 mt-4 font-weight-bold small">No Notice Letter Generated</h6>
+                                <span class="fas fa-book-open mb-5  fa-9x" style="color: #d46fe8" id ="Icon" runat="server"></span>
+                                <h6 class="text-gray-300 mt-4 font-weight-bold small" id="InfoText" runat="server">No Notice Letter Generated</h6>
                             </center>
                         </div>
                     </div>
@@ -1956,6 +1984,88 @@
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+        $("[id*=AddButton]").bind('click', function () {
+            var cursorPos1 = $('#txtpart7').prop('selectionStart');
+            if (cursorPos1 != 0) {
+                var v1 = $('#txtpart7').val();
+                var textBefore1 = v1.substring(0, cursorPos1);
+                var textAfter1 = v1.substring(cursorPos1, v1.length);
+
+
+                $('#txtpart7').val(textBefore1 + '*NewLine*' + textAfter1);
+            }
+            var cursorPos2 = $('#txtpart6').prop('selectionStart');
+            if (cursorPos2 != 0) {
+
+                var v2 = $('#txtpart6').val();
+                var textBefore2 = v2.substring(0, cursorPos2);
+                var textAfter2 = v2.substring(cursorPos2, v2.length);
+
+                $('#txtpart6').val(textBefore2 + '*NewLine*' + textAfter2);
+
+            }
+            var cursorPos3 = $('#txtpart4').prop('selectionStart');
+            if (cursorPos3 != 0) {
+
+                var v3 = $('#txtpart4').val();
+                var textBefore3 = v3.substring(0, cursorPos3);
+                var textAfter3 = v3.substring(cursorPos3, v3.length);
+
+                $('#txtpart4').val(textBefore3 + '*NewLine*' + textAfter3);
+            }
+            var cursorPos4 = $('#txtpart2').prop('selectionStart');
+            if (cursorPos4 != 0) {
+
+                var v4 = $('#txtpart2').val();
+                var textBefore4 = v4.substring(0, cursorPos4);
+                var textAfter4 = v4.substring(cursorPos4, v4.length);
+
+                $('#txtpart2').val(textBefore4 + '*NewLine*' + textAfter4);
+            }
+        });
+    </script>
+    <script type="text/javascript">
+        $("[id*=AddButton2]").bind('click', function () {
+            var cursorPos1 = $('#txtCustomePart1').prop('selectionStart');
+            if (cursorPos1 != 0) {
+                var v1 = $('#txtCustomePart1').val();
+                var textBefore1 = v1.substring(0, cursorPos1);
+                var textAfter1 = v1.substring(cursorPos1, v1.length);
+
+
+                $('#txtCustomePart1').val(textBefore1 + '<br/>' + textAfter1);
+            }
+            var cursorPos2 = $('#txtCustomePart3').prop('selectionStart');
+            if (cursorPos2 != 0) {
+
+                var v2 = $('#txtCustomePart3').val();
+                var textBefore2 = v2.substring(0, cursorPos2);
+                var textAfter2 = v2.substring(cursorPos2, v2.length);
+
+                $('#txtCustomePart3').val(textBefore2 + '<br/>' + textAfter2);
+
+            }
+            var cursorPos3 = $('#txtCustomePart5').prop('selectionStart');
+            if (cursorPos3 != 0) {
+
+                var v3 = $('#txtCustomePart5').val();
+                var textBefore3 = v3.substring(0, cursorPos3);
+                var textAfter3 = v3.substring(cursorPos3, v3.length);
+
+                $('#txtCustomePart5').val(textBefore3 + '<br/>' + textAfter3);
+            }
+            var cursorPos4 = $('#txtCustomePart7').prop('selectionStart');
+            if (cursorPos4 != 0) {
+
+                var v4 = $('#txtCustomePart7').val();
+                var textBefore4 = v4.substring(0, cursorPos4);
+                var textAfter4 = v4.substring(cursorPos4, v4.length);
+
+                $('#txtCustomePart7').val(textBefore4 + '<br/>' + textAfter4);
+            }
+        });
+    </script>
     <script>
         function myFunctionshop1vb() {
             var x = document.getElementById("Bd1"); var y = document.getElementById("Pbutton1");

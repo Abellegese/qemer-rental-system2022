@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.Services;
+using System.Collections.Generic;
 
 namespace advtech.Finance.Accounta
 {
@@ -35,7 +36,7 @@ namespace advtech.Finance.Accounta
                     bindcompany(); bindfixedaccount(); bindcashaccount(); bindotherinvoice();
                     binddetails(); bindINFO(); bindIncomeINFO(); bindFSnumber(); bindPaymentmode();
                     GetColumnVisibilityValues(); GetFontSizeAndHeadingName(); GetOtherVisiblityValues();
-                    bindDetails(); bindTotals(); GetEditContent();
+                    bindDetails(); bindTotals(); GetEditContent(); NumberToWord();
                 }
             }
             else
@@ -43,9 +44,56 @@ namespace advtech.Finance.Accounta
                 Response.Redirect("~/Login/LogIn1.aspx");
             }
         }
+        private void NumberToWord()
+        {
+            if (Request.QueryString["fsno"] != null)
+            {
+                double total = double.Parse(DupGrandTotal.InnerText);
+                NumberToWords NumToWrd = new NumberToWords();
+                AmountInWords.InnerText = NumToWrd.ConvertAmount(total);
+            }
+        }
+        [WebMethod]
+        public static List<string> GetListOfInvoiceItem(string fsno)
+        {
+
+            List<string> empResult = new List<string>();
+
+            String myConnection = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ToString();
+            using (SqlConnection con = new SqlConnection(@myConnection))
+            {
+                using (SqlCommand cmd = new SqlCommand())
+                {
+                    cmd.CommandText = "select rate,incomename,amount,qty from tblIncome where fsno LIKE '%'+@SearchEmpName+'%' ";
+                    cmd.Connection = con;
+                    con.Open();
+                    string amount = string.Empty;
+                    string rate = string.Empty;
+                    cmd.Parameters.AddWithValue("@SearchEmpName", fsno.Substring(8));
+                    SqlDataReader dr = cmd.ExecuteReader();
+                
+                    while (dr.Read())
+                    {
+                        rate = dr["rate"].ToString();
+                        if (rate == "1.0000")
+                        {
+                            amount = (Convert.ToDouble(dr["amount"].ToString()) / 1.15).ToString("#,##0.00") + " x " + Convert.ToDouble(dr["qty"].ToString()).ToString("##0.0");
+                            empResult.Add(dr["incomename"].ToString() + "\x0A" + amount + "\x0A");
+                        }
+                        else
+                        {
+                            amount = (Convert.ToDouble(dr["rate"].ToString())).ToString("#,##0.00") + " x " + Convert.ToDouble(dr["qty"].ToString()).ToString("##0.0");
+                            empResult.Add(dr["incomename"].ToString() + "\x0A" + amount + "\x0A");
+                        }
+                    }
+                    con.Close();
+                }
+            }
+            return empResult;
+        }
         private void GetEditContent()
         {
-            if (Request.QueryString["edit"] !=null)
+            if (Request.QueryString["edit"] != null)
             {
                 String PID = Convert.ToString(Request.QueryString["fsno"]);
                 String PID2 = Convert.ToString(Request.QueryString["invtype"]);
@@ -54,6 +102,10 @@ namespace advtech.Finance.Accounta
                 editTab.Visible = true;
                 deleteTab.Visible = true;
                 editSpan.Visible = true;
+            }
+            if (Request.QueryString["fsno"] != null)
+            {
+                deleteTab.Visible = true;
             }
         }
         private void bindDetails()
@@ -217,13 +269,13 @@ namespace advtech.Finance.Accounta
                         using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                         {
                             DataTable dtBrandss = new DataTable();
-                            sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                            sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
 
                             SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
                             using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                             {
                                 DataTable dttax = new DataTable();
-                                sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                                sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                                 //
                                 if (iss2 != 0)
                                 {
@@ -278,7 +330,7 @@ namespace advtech.Finance.Accounta
                         using (SqlDataAdapter sda22 = new SqlDataAdapter(cmdbank))
                         {
                             DataTable dt = new DataTable();
-                            sda22.Fill(dt); int j = dt.Rows.Count;
+                            sda22.Fill(dt); long j = dt.Rows.Count;
                             //
                             if (j != 0)
                             {
@@ -358,13 +410,13 @@ namespace advtech.Finance.Accounta
                                 using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                                 {
                                     DataTable dtBrandss = new DataTable();
-                                    sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
 
                                     SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
                                     using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                                     {
                                         DataTable dttax = new DataTable();
-                                        sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                                         //
                                         if (iss2 != 0)
                                         {
@@ -542,8 +594,11 @@ namespace advtech.Finance.Accounta
                 if (readercrd.Read())
                 {
                     string Address2 = readercrd["addresscust"].ToString();
-
-
+                    string vatregnum = readercrd["vatregnumber"].ToString();
+                    if (vatregnum != "")
+                    {
+                        CustVatRegNumb.InnerText = vatregnum;
+                    }
                 }
                 readercrd.Close();
                 SqlCommand cmdcrd1 = new SqlCommand("select * from tblIncome where fsno='" + PID2 + "'", con);
@@ -554,6 +609,7 @@ namespace advtech.Finance.Accounta
                     string TIN = readercrd1["TIN"].ToString();
                     string FSNumber = readercrd1["fsno"].ToString();
                     string Address_reader = readercrd1["address"].ToString();
+
 
                     if (TIN == "" || TIN == null)
                     {
@@ -585,7 +641,7 @@ namespace advtech.Finance.Accounta
             }
         }
         private readonly Random _random = new Random();
-        public int RandomNumber(int min, int max)
+        public long RandomNumber(int min, int max)
         {
             return _random.Next(min, max);
         }
@@ -642,13 +698,19 @@ namespace advtech.Finance.Accounta
                     {
  
                         String amount = readerAC["amount"].ToString();
-                        double VATFREE = Convert.ToDouble(amount) / 1.15;
-                        double vat = Convert.ToDouble(amount) - VATFREE;
+                        if(amount=="" || amount == null)
+                        {
 
-                        DupVatFree.InnerText = Convert.ToDouble(VATFREE).ToString("#,##0.00");
-                        DupVAT.InnerText = Convert.ToDouble(vat).ToString("#,##0.00");
-                        DupGrandTotal.InnerText = Convert.ToDouble(amount).ToString("#,##0.00");
+                        }
+                        else
+                        {
+                            double VATFREE = Convert.ToDouble(amount) / 1.15;
+                            double vat = Convert.ToDouble(amount) - VATFREE;
 
+                            DupVatFree.InnerText = Convert.ToDouble(VATFREE).ToString("#,##0.00");
+                            DupVAT.InnerText = Convert.ToDouble(vat).ToString("#,##0.00");
+                            DupGrandTotal.InnerText = Convert.ToDouble(amount).ToString("#,##0.00");
+                        }
                     }
                 }
             }
@@ -709,7 +771,7 @@ namespace advtech.Finance.Accounta
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmd = new SqlCommand("select Oname,BuissnessLocation,Contact,TIN from tblOrganization", con);
+                SqlCommand cmd = new SqlCommand("select*from tblOrganization", con);
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 if (reader.Read())
@@ -722,6 +784,7 @@ namespace advtech.Finance.Accounta
                     addressname.InnerText = address;
                     oname.InnerText = company;
                     phone.InnerText = cont;
+                    VendorVatRegNumber.InnerText = reader["vatregnumber"].ToString();
                 }
             }
         }
@@ -1004,13 +1067,13 @@ namespace advtech.Finance.Accounta
                                     using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                                     {
                                         DataTable dtBrandss = new DataTable();
-                                        sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                                        sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
 
                                         SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
                                         using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                                         {
                                             DataTable dttax = new DataTable();
-                                            sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                                            sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                                             //
                                             if (iss2 != 0)
                                             {
@@ -1065,7 +1128,7 @@ namespace advtech.Finance.Accounta
                                     using (SqlDataAdapter sda22 = new SqlDataAdapter(cmdbank))
                                     {
                                         DataTable dt = new DataTable();
-                                        sda22.Fill(dt); int j = dt.Rows.Count;
+                                        sda22.Fill(dt); long j = dt.Rows.Count;
                                         //
                                         if (j != 0)
                                         {
@@ -1145,13 +1208,13 @@ namespace advtech.Finance.Accounta
                                             using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                                             {
                                                 DataTable dtBrandss = new DataTable();
-                                                sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                                                sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
 
                                                 SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
                                                 using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                                                 {
                                                     DataTable dttax = new DataTable();
-                                                    sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                                                    sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                                                     //
                                                     if (iss2 != 0)
                                                     {
@@ -1263,7 +1326,7 @@ namespace advtech.Finance.Accounta
             {
                 DateRangerSpan.InnerText = "Condition: Amount Less Than " + Convert.ToDouble(txtFilteredAmount.Text).ToString("#,##0.00");
                 DateRangerSpan.Visible = true;
-                str = "select   sum(amount) as amount,date,customer,fsnofrom tblIncome where amount < '" + txtFilteredAmount.Text + "' group by fsno,customer,date";
+                str = "select   sum(amount) as amount,date,customer,fsno from tblIncome where amount < '" + txtFilteredAmount.Text + "' group by fsno,customer,date";
                 com = new SqlCommand(str, con);
                 sqlda = new SqlDataAdapter(com);
                 DataTable dt = new DataTable();
@@ -1372,17 +1435,27 @@ namespace advtech.Finance.Accounta
         private string bindIncomeaccount()
         {
             String PID = Convert.ToString(Request.QueryString["invtype"]);
+            String PID2 = Convert.ToString(Request.QueryString["fsno"]);
             string income = "";
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmd2AC = new SqlCommand("select * from tblIncomeBrand where incomename='" + PID + "'", con);
-                SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                if (readerAC.Read())
+                SqlCommand cmd2AC3 = new SqlCommand("select * from tblIncome where fsno='" + PID2 + "'", con);
+                SqlDataReader readerAC3 = cmd2AC3.ExecuteReader();
+                
+                if (readerAC3.Read())
                 {
-                    income += readerAC["incomeaccount"].ToString();
+                    string fs = readerAC3["incomename"].ToString();
+                    readerAC3.Close();
+                    SqlCommand cmd2AC = new SqlCommand("select * from tblIncomeBrand where incomename='" + fs + "'", con);
+                    SqlDataReader readerAC = cmd2AC.ExecuteReader();
+
+                    if (readerAC.Read())
+                    {
+                        income += readerAC["incomeaccount"].ToString();
+                        readerAC.Close();
+                    }
                 }
             }
             return income;
@@ -1404,7 +1477,7 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
                 {
                     DataTable dtBrands2322 = new DataTable();
-                    sda2222.Fill(dtBrands2322); int i2 = dtBrands2322.Rows.Count;
+                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
                     //
                     if (i2 != 0)
                     {
@@ -1432,13 +1505,13 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                 {
                     DataTable dtBrandss = new DataTable();
-                    sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
                     //Selecting from Income account
                     SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + bindIncomeaccount() + "'", con);
                     using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
                     {
                         DataTable dtBrandss2 = new DataTable();
-                        sdas2.Fill(dtBrandss2); int iss2 = dtBrandss2.Rows.Count;
+                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1480,7 +1553,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                     {
                         DataTable dttax = new DataTable();
-                        sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1541,7 +1614,7 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
                 {
                     DataTable dtBrands2322 = new DataTable();
-                    sda2222.Fill(dtBrands2322); int i2 = dtBrands2322.Rows.Count;
+                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
                     //
                     if (i2 != 0)
                     {
@@ -1569,13 +1642,13 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                 {
                     DataTable dtBrandss = new DataTable();
-                    sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
                     //Selecting from Income account
                     SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + bindIncomeaccount() + "'", con);
                     using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
                     {
                         DataTable dtBrandss2 = new DataTable();
-                        sdas2.Fill(dtBrandss2); int iss2 = dtBrandss2.Rows.Count;
+                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1617,7 +1690,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                     {
                         DataTable dttax = new DataTable();
-                        sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1718,7 +1791,7 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
                 {
                     DataTable dtBrands2322 = new DataTable();
-                    sda2222.Fill(dtBrands2322); int i2 = dtBrands2322.Rows.Count;
+                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
                     //
                     if (i2 != 0)
                     {
@@ -1746,13 +1819,13 @@ namespace advtech.Finance.Accounta
                 using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
                 {
                     DataTable dtBrandss = new DataTable();
-                    sdas.Fill(dtBrandss); int iss = dtBrandss.Rows.Count;
+                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
                     //Selecting from Income account
                     SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + bindIncomeaccount() + "'", con);
                     using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
                     {
                         DataTable dtBrandss2 = new DataTable();
-                        sdas2.Fill(dtBrandss2); int iss2 = dtBrandss2.Rows.Count;
+                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1794,7 +1867,7 @@ namespace advtech.Finance.Accounta
                     using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
                     {
                         DataTable dttax = new DataTable();
-                        sdatax.Fill(dttax); int iss2 = dttax.Rows.Count;
+                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
                         //
                         if (iss2 != 0)
                         {
@@ -1963,14 +2036,24 @@ namespace advtech.Finance.Accounta
                     bind_customer_statement_adjustment_deleted();
 
                 }
-                SqlCommand cmdreb1 = new SqlCommand("delete tblIncome  where id='" + PID + "'", con);
-                cmdreb1.ExecuteNonQuery();
-
-                string exlanation = PID3 + " FS# " + PID4 + " has been deleted";
+                string exlanation = string.Empty;
+                if (Request.QueryString["edit"] != null)
+                {
+                    exlanation = PID3 + " FS# " + PID4 + " has been deleted";
+                    SqlCommand cmdreb1 = new SqlCommand("delete tblIncome  where id='" + PID + "'", con);
+                    cmdreb1.ExecuteNonQuery();
+                    Response.Redirect(Request.RawUrl);
+                }
+                if (Request.QueryString["fsno"] != null && Request.QueryString["edit"] == null)
+                {
+                    exlanation =" FS# " + PID4 + " has been deleted";
+                    SqlCommand cmdreb1 = new SqlCommand("delete tblIncome  where fsno='" + PID4 + "'", con);
+                    cmdreb1.ExecuteNonQuery();
+                    Response.Redirect("OtherInvoices.aspx");
+                }
                 SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + exlanation + "','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-trash text-white','icon-circle bg bg-danger','OtherInvoices.aspx','MN')", con);
                 cmd197h.ExecuteNonQuery();
 
-                Response.Redirect("OtherInvoices.aspx");
             }
         }
         protected Tuple<string,string,string,string> ColumnvistoRepeater()
@@ -2194,18 +2277,14 @@ namespace advtech.Finance.Accounta
                     Label lblQty = item.FindControl("lblQty") as Label;
                     Label lblRate = item.FindControl("lblRate") as Label;
                     Label lblUnit = item.FindControl("lblUnit") as Label;
+                    Label lblAmount = item.FindControl("lblAmount") as Label;
                     //
-                    if (lblRate.Text == "1.0000")
+                    if (lblRate.Text == "1.00")
                     {
-                        lblQty.Text = "-";
+                        lblQty.Text = "1";
                         lblUnit.Text = "-";
-                        lblRate.Text = "-";
-                    }
-                    else
-                    {
-                        lblQty.Text =Convert.ToDouble(lblQty.Text).ToString("#,##0.00");
-
-                        lblRate.Text = Convert.ToDouble(lblRate.Text).ToString("#,##0.00");
+                        lblRate.Visible = false;
+                        lblAmount.Visible = true;
                     }
                 }
             }

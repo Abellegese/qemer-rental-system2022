@@ -20,6 +20,87 @@
     <!-- Navbar -->
 
     <div class="container-fluid pl-3 pr-3">
+        <div class="modal fade" id="ExportGJ" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle3" aria-hidden="true">
+            <div class="modal-dialog modal-md" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title h6 font-weight-bold text-gray-900" id=""><span class="fas fa-download mr-2" style="color: #e61ce8"></span>General Journal Export</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+
+
+
+                            <div class="col-6 ">
+                                <div class="form-group">
+                                    <label class="font-weight-bold">From<span class="text-danger">*</span></label>
+
+
+                                    <br />
+                                    <div class="form-group mb-0">
+                                        <div class="input-group input-group-alternative">
+                                            <asp:TextBox ID="txtGJDateFrom" class="form-control form-control-sm " TextMode="Date" runat="server"></asp:TextBox>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label class="font-weight-bold">To<span class="text-danger">*</span></label>
+
+
+                                    <br />
+                                    <div class="form-group mb-0">
+                                        <div class="input-group input-group-alternative">
+                                            <asp:TextBox ID="txtGJDateTo" class="form-control form-control-sm " TextMode="Date" runat="server"></asp:TextBox>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <center>
+                                        <div id="Div2" style="display: none" runat="server" clientidmode="Static">
+                                            <span class="spinner-border spinner-border-sm" style="color: #ff2ccd;"></span>
+                                            <br />
+                                            <span class="text-xs text-gray-900">Processing...</span>
+                                            <br />
+                                            <span class="text-xs text-gray-900">This could take a few minute...</span>
+                                        </div>
+                                    </center>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <center>
+                                        <asp:LinkButton ID="btnGJ" OnClick="btnGJ_Click" class="btn text-white btn-primary  btn-sm w-100"  runat="server"><span class="fas fa-download mr-2" style="color:#ffffff"  ></span>Export</asp:LinkButton>
+
+                                    </center>
+
+
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
         <div class="modal fade" id="ExportPeachtree" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle3" aria-hidden="true">
             <div class="modal-dialog modal-md" role="document">
                 <div class="modal-content">
@@ -210,6 +291,8 @@
                             </div>
                             <div class="col-6 text-right ">
                                 <div class="dropdown no-arrow">
+                                    <button type="button" data-toggle="modal" data-target="#ExportGJ" class="btn mt-1 mr-2 mb-1 btn-circle btn-sm btn-primary"><span data-toggle="tooltip" title="Default General Journal Export" class="fas fa-download text-white"></span></button>
+
                                     <button type="button" data-toggle="modal" data-target="#ExportPeachtree" class="btn mt-1 mr-2 mb-1 btn-circle btn-sm btn-success"><span data-toggle="tooltip" title="Export for Peachtree Software" class="fas fa-download text-white"></span></button>
 
                                     <button type="button" data-toggle="modal" data-target="#EX" class="btn mt-1 mr-2 mb-1 btn-circle btn-sm btn-warning"><span data-toggle="tooltip" title="Export as excel" class="fas fa-file-excel text-white"></span></button>

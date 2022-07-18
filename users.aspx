@@ -253,7 +253,7 @@
                 <div class="form-group">
                   <div class="input-group input-group-alternative mb-3">
 
-                                <asp:TextBox ID="txtNewPass" class="form-control" placeholder="New Password"  runat="server" 
+                                <asp:TextBox ID="txtNewPass" data-toggle="tooltip" title="New Password" class="form-control" placeholder="New Password"  runat="server" 
                           TextMode="Password"></asp:TextBox>
                   </div>
                     </div>
@@ -262,8 +262,8 @@
                 <div class="form-group">
                   <div class="input-group input-group-alternative">
 
-                          <asp:TextBox ID="txtComfirmPassword" class="form-control" placeholder="Confirm Password"  runat="server" 
-                          TextMode="Password"></asp:TextBox>
+                          <asp:TextBox ID="txtComfirmPassword" data-toggle="tooltip" title="Confirm Password" class="form-control" placeholder="Confirm Password" runat="server"
+                              TextMode="Password"></asp:TextBox>
 
                   </div>
                 </div>
@@ -272,8 +272,7 @@
                 <div class="form-group">
                   <div class="input-group input-group-alternative mb-3">
 
-                                <asp:TextBox ID="txtUname" class="form-control  text-gray-900" placeholder="Username"  runat="server" 
-                          ></asp:TextBox>
+                                <asp:TextBox ID="txtUname" data-toggle="tooltip" title="Set a New Username if you want to chenage new one" class="form-control  text-gray-900" placeholder="Username" runat="server"></asp:TextBox>
 
                   </div>
                 </div>

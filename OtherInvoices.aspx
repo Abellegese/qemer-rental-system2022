@@ -18,7 +18,7 @@
             //We are binding onchange event using jQuery built-in change event
             $('#ddlVendor').change(function () {
                 //get selected value and check if subject is selected else show alert box
-                var SelectedValue = $("#ddlVendor").val();
+                var SelectedValue = $("#ddlVendor").val(); 
                 if (SelectedValue > 0) {
                     //get selected text and set to label
                     let SelectedText = $("#ddlVendor option:selected").val();
@@ -34,6 +34,8 @@
         });
 
     </script>
+
+
     <script type="text/javascript">
 
         window.addEventListener('load', (event) => {
@@ -66,7 +68,7 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="container-fluid pl-3 pr-3" style="position: relative;">
 
-
+        <asp:ScriptManager ID='ScriptManager1' runat='server' EnablePageMethods='true' />
         <div class="modal fade" id="exampleModalLongService" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle3" aria-hidden="true">
             <div class="modal-dialog modal-sm" role="document">
                 <div class="modal-content">
@@ -652,7 +654,8 @@
                                                                 <br />
                                                                 <span width="200px" class="">TIN<span class="fas fa-hashtag text-gray-300 ml-1"></span><span id="TINNUMBER" width="200px" contenteditable="true" runat="server" class="ml-1 text-gray-900"></span></span>
                                                                 <br />
-
+                                                                <span id="CustVatRegNumbSpan" contenteditable="true" runat="server" width="200px">Vat Reg. Number<span class="fas fa-hashtag text-gray-300 ml-1"></span><span id="CustVatRegNumb" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
+                                                                <br />
                                                                 <span class="   font-weight-bold mr-2">Ref#</span><span class=" text-gray-900  font-weight-bold " id="RefNum" runat="server"></span>
                                                                 <br />
                                                                 <span id="PayMode" contenteditable="true" visible="false" runat="server" class=" mt-3 border-top border-dark"><i class=" fas fa-dollar-sign text-dark "></i><span class="mx-1"><span class="font-weight-bold  text-gray-400">Payment Mode:</span> <span id="PaymentMode" runat="server"></span></span></span>
@@ -669,6 +672,8 @@
                                                             <br />
                                                             <div id="BodyFontSizeDiv2" runat="server">
                                                                 <span class="border-top mt-1 mb-1">VENDOR TIN<span class="fas border-top m-1 fa-hashtag text-gray-300 ml-1"></span><span id="VendorTIN" runat="server"></span></span>
+                                                                <br />
+                                                                <span id="VendorVatRegSpan" contenteditable="true" runat="server" width="200px">Vat Reg. Number<span class="fas fa-hashtag text-gray-300 ml-1"></span><span id="VendorVatRegNumber" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
                                                                 <br />
                                                                 <span class="fas fa-address-book text-gray-400 mr-2"></span><span class="mb-2 text-gray-900  " id="addressname" runat="server"></span>
                                                                 <br />
@@ -694,14 +699,14 @@
                                                                     <thead class=" thead-dark">
                                                                         <tr>
                                                                           
-                                                                            <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item1 %>>INV#</th>
-                                                                            <th scope="col" class="text-left text-white" >Item</th>
+                                                                            <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item1 %>>Item #</th>
+                                                                            <th scope="col" class="text-left text-white" >Description</th>
                                                                             <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item2 %>>Unit</th>
-                                                                            <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item3 %>>Rate</th>
                                                                             <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item4 %>>Qty.</th>
-                                                                            <th scope="col" class="text-right text-white">Amount</th>
-                                                                            <th scope="col" class="text-right text-white">VAT(15%)</th>
-                                                                            <th scope="col" class="text-right text-white">Total</th>
+                                                                            <th scope="col" class="text-left text-white" <%#ColumnvistoRepeater().Item3 %>>Unit Price</th>
+
+                                                                            <th scope="col" class="text-right text-white">Total Price</th>
+                                
 
                                                                         </tr>
                                                                     </thead>
@@ -711,7 +716,7 @@
 
                                                                 <tr>
                                                                     <td <%#ColumnvistoRepeater().Item1 %>>
-                                                                        <a class=" text-primary small " data-toggle="tooltip" title="Edit the Line" href="OtherInvoices.aspx?fsno=<%# Eval("fsno")%>&&id=<%# Eval("id")%>&&invtype=<%# Eval("incomename")%>&&edit=true&&customer=<%# Eval("customer")%>"><span><%# Eval("id")%></span></a>
+                                                                       <a class=" text-primary small " data-toggle="tooltip" title="Edit the Line" href="OtherInvoices.aspx?fsno=<%# Eval("fsno")%>&&id=<%# Eval("id")%>&&invtype=<%# Eval("incomename")%>&&edit=true&&customer=<%# Eval("customer")%>"><span>000<%# Eval("id")%></span></a>
                                                                     
                                                                     </td>
                                                                     <td>
@@ -720,25 +725,22 @@
                                                                     <td <%#ColumnvistoRepeater().Item2 %>>
                                                                         <asp:Label ID="lblUnit" runat="server" Text='<%# Eval("unit")%>'></asp:Label>
                                                                     </td>
-                                                                    <td <%#ColumnvistoRepeater().Item3 %>>
-                                                                        <asp:Label ID="lblRate" runat="server" Text='<%# Eval("rate")%>'></asp:Label>
-                                                                    </td>
                                                                     <td <%#ColumnvistoRepeater().Item4 %>>
 
-                                                                        <asp:Label ID="lblQty" runat="server" Text='<%# Eval("qty")%>'></asp:Label>
+                                                                        <asp:Label ID="lblQty" runat="server" Text='<%# Convert.ToDouble(Eval("qty")).ToString("#,##0.00")%>'></asp:Label>
                                                                     </td>
+                                                                    <td <%#ColumnvistoRepeater().Item3 %>>     
+                                                                        <asp:Label ID="lblAmount" Visible="false" runat="server" Text='<%# (Convert.ToDouble(Eval("amount"))/1.15).ToString("#,##0.00") %>'></asp:Label>
+                                                                        <asp:Label ID="lblRate" runat="server" Text='<%# Convert.ToDouble(Eval("rate")).ToString("#,##0.00")%>'></asp:Label>
+                                                                    </td>
+ 
                                                                     <td class="text-right">
                                                                         <%# (Convert.ToDouble(Eval("amount"))/1.15).ToString("#,##0.00") %>
-                                                                        
+                                                                   
                                                                     </td>
 
-                                                                    <td class="text-right">
-                                                                        <%# (Convert.ToDouble(Eval("amount"))-Convert.ToDouble(Eval("amount"))/1.15).ToString("#,##0.00") %>
-                                                                    </td>
-                                                                    <td class="text-right">
-                                                                        <%# (Convert.ToDouble(Eval("amount"))).ToString("#,##0.00")%>
-                                                                  
-                                                                    </td>
+                                  
+                                            
                                                                 </tr>
 
                                                             </ItemTemplate>
@@ -753,7 +755,8 @@
                                                     </div>
                                                     <div class="row" id="Div1" runat="server">
                                                         <div class="col-md-8 text-left">
-                                                            <p class="small text-danger">* If you have any disagreement with the invoice please contact us</p>
+                                                            <span class="text-gray-900 h6 text-uppercase mr-1 border-bottom border-dark">Amount in words: </span>
+                                                            <h6 class="text-uppercase font-weight-bold text-gray-900" id="AmountInWords" runat="server"></h6>
                                
                                                             <p class="small text-gray-900 font-weight-bold border-top">* Invalid without Fiscal or Refund Receipt</p>
                                                             <span class="fas fa-phone text-gray-400 mr-2"></span><span class="mb-2 text-gray-900 small " id="phone" runat="server"></span>
@@ -1076,6 +1079,7 @@
                 }
             }
         </script>
+        <span id="itemList" visible="false"></span>
         <script type="text/javascript" src="http://cdn.jsdelivr.net/json2/0.1/json2.js"></script>
 
         <div class="modal fade" id="exampleModalSMS" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel8shopSMS" aria-hidden="true">
@@ -1105,6 +1109,18 @@
         <script>
 
 </script>
+        <script>
+
+            function GetSystemStatus() {
+                PageMethods.GetListOfInvoiceItem(document.getElementById("<%=FSno.ClientID %>").innerText, SuccessStatus);
+
+
+            }
+            function SuccessStatus(result) {
+                alert(result);
+            }
+
+        </script>
         <script type="text/javascript">
             var invType, amount;
             function AddTable(invType, amount) {
@@ -1157,42 +1173,57 @@
                 });
             });
         </script>
-        <script>
 
+        <script>
+            /*
+            var FSNo = document.getElementById("<%=FSno.ClientID %>");
+            //var pre = document.getElementById("<%=DupVatFree.ClientID %>");
+            //var itemList = document.getElementById("itemList");
+            //function GetSystemStatus1() {
+                //PageMethods.GetListOfInvoiceItem(document.getElementById("<%=FSno.ClientID %>").innerText, SuccessStatus1);
+
+
+            //}
+            //function SuccessStatus1(result) {
+              //  itemList.innerHTML = result;
+            //}
+            //$(document).ready(function () {
+            //    GetSystemStatus1();
+            //});
             //WebSocket settings
-            JSPM.JSPrintManager.auto_reconnect = true;
-            JSPM.JSPrintManager.start();
-            JSPM.JSPrintManager.WS.onStatusChanged = function () {
-                if (jspmWSStatus()) {
+           // JSPM.JSPrintManager.auto_reconnect = true;
+           // JSPM.JSPrintManager.start();
+            //JSPM.JSPrintManager.WS.onStatusChanged = function () {
+            //    if (jspmWSStatus()) {
                     //get client installed printers
-                    JSPM.JSPrintManager.getPrinters().then(function (myPrinters) {
-                        var options = '';
-                        for (var i = 0; i < myPrinters.length; i++) {
-                            options += '<option>' + myPrinters[i] + '</option>';
-                        }
-                        $('#installedPrinterName').html(options);
-                    });
-                }
-            };
+              //      JSPM.JSPrintManager.getPrinters().then(function (myPrinters) {
+              //          var options = '';
+              //          for (var i = 0; i < myPrinters.length; i++) {
+              //              options += '<option>' + myPrinters[i] + '</option>';
+              //          }
+              //          $('#installedPrinterName').html(options);
+            //        });
+             //   }
+          //  };
 
             //Check JSPM WebSocket status
-            function jspmWSStatus() {
-                if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Open)
-                    return true;
-                else if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Closed) {
-                    alert('JSPrintManager (JSPM) is not installed or not running! Download JSPM Client App from http://192.168.1.254:9300/Finance/Accounta/app/jspm4-4.0.22.512-win.exe');
-                    return false;
-                }
-                else if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Blocked) {
-                    alert('JSPM has blocked this website!');
-                    return false;
-                }
-            }
+            //function jspmWSStatus() {
+            //    if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Open)
+             //       return true;
+            //    else if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Closed) {
+                 //   alert('JSPrintManager (JSPM) is not installed or not running! Download JSPM Client App from http://192.168.1.254:9300/Finance/Accounta/app/jspm4-4.0.22.512-win.exe');
+                //    return false;
+              //  }
+              //  else if (JSPM.JSPrintManager.websocket_status == JSPM.WSStatus.Blocked) {
+               //     alert('JSPM has blocked this website!');
+               //     return false;
+               // }
+            //}
 
             //Do printing...
             function print2(o) {
                 var tot = document.getElementById("<%=DupGrandTotal.ClientID %>");
-                var pre = document.getElementById("<%=DupVatFree.ClientID %>");
+       
                 var Vat = document.getElementById("<%=DupVAT.ClientID %>");
    
                 var date = document.getElementById("<%=BillDate1.ClientID %>");
@@ -1225,11 +1256,10 @@
                     cmds += '   Bole \k 03 \H. No 088'; //text to print
                     cmds += newLine;
                     cmds += contact.innerHTML; //text to print
-                    cmds += newLine + newLine;
+                    cmds += newLine;
                     cmds += FSNo.innerHTML; //text to print
                     cmds += newLine;
                     cmds += 'date:' + date.innerHTML;
-                    cmds += newLine;
                     cmds += newLine;
                     cmds += esc + '!' + '\x00';
                     cmds += ref.innerHTML;
@@ -1238,14 +1268,16 @@
                     cmds += newLine;
                     cmds += esc + '##############' + '\x00'; //Character font A selected (ESC ! 0)
                     cmds += newLine;
-                    cmds += '1x' + pre.innerHTML + " =";
+                    cmds += itemList.innerHTML;
                     cmds += newLine;
-                    cmds += 'TXBL1      *' + pre.innerHTML;
+                    cmds += '------------------';
                     cmds += newLine;
-                    cmds += 'TAX1 15%   *' + Vat.innerHTML;
+                    cmds += 'TXBL1   *' + pre.innerHTML;
+                    cmds += newLine;
+                    cmds += 'TAX1 15%  *' + Vat.innerHTML;
                     cmds += newLine;
                     cmds += esc + '!' + '\x38';
-                    cmds += 'TOTAL:     *' + tot.innerHTML;
+                    cmds += 'TOTAL:  *' + tot.innerHTML;
                     cmds += newLine;
                     cmds += '------------------';
                     cmds += newLine;

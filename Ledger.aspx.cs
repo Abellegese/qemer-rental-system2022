@@ -554,7 +554,7 @@ namespace advtech.Finance.Accounta
         {
             string csv = string.Empty;
 
-            csv += " Date,Reference,Date Clear in Bank Rec,Number of Distributions,G/L Account,Description,Amount,Job ID,Used for Reimbursable Expenses,Transaction Period,Transaction Number,Consolidated Transaction,Recur Number,Recur Frequency";
+            csv += " Date,Reference,Date Clear in Bank Rec,Number of Distributions,G/L Account,Description,Amount,Job ID,Used for Reimbursable Expenses,Transaction Period,Transaction Number,Consolidated Transaction,Recur Number,Recur Frequency,";
             csv += "\r\n";
             csv += amount;
             return csv;
@@ -573,17 +573,61 @@ namespace advtech.Finance.Accounta
             Repeater2.DataBind();
             con.Close();
         }
-        private void DownLoadCSVFile()
+        private void bindCsvDataForGJ()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                using (SqlCommand cmd = new SqlCommand("select Date,Explanation,Account,Debit,Credit,Balance from tblGeneralLedger where Date between CONVERT(datetime, '" + txtGJDateFrom.Text + "') AND CONVERT(datetime, '" + txtGJDateTo.Text + "')", con))
+                {
+                    using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                    {
+                        DataTable dtBrands = new DataTable();
+                        sda.Fill(dtBrands);
+                        string csv = string.Empty;
+                        foreach (DataColumn column in dtBrands.Columns)
+                        {
+                            //Add the Header row for CSV file.
+                            csv += column.ColumnName + ',';
+                        }
+                        csv += "\r\n";
+                        foreach (DataRow row in dtBrands.Rows)
+                        {
+                            foreach (DataColumn column in dtBrands.Columns)
+                            {
+                                //Add the Data rows.
+                                csv += row[column.ColumnName].ToString() + ',';
+                            }
+
+                            //Add new line.
+                            csv += "\r\n";
+                        }
+                        Response.Clear();
+                        Response.Buffer = true;
+                        Response.AddHeader("content-disposition", "attachment;filename=General_Journal_Custom.csv");
+                        
+                        Response.Charset = "";
+                        Response.ContentType = "application/text";
+                        Response.Output.Write(csv);
+                        Response.Flush();
+                        Response.End();
+                        con.Close();
+
+                    }
+                }
+            }
+     
+        }
+        private void DownLoadCSVFile(string csv)
         {
             Response.Clear();
             Response.Buffer = true;
             Response.AddHeader("content-disposition", "attachment;filename=GeneralJournal.csv");
             Response.Charset = "";
             Response.ContentType = "application/text";
-            Response.Output.Write(counter.InnerText);
+            Response.Output.Write(csv);
             Response.Flush();
             Response.End();
-            InfoDiv.Visible = false;
         }
         protected void Button1_Click(object sender, EventArgs e)
         {
@@ -604,7 +648,7 @@ namespace advtech.Finance.Accounta
                     if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
                     {
                         Label Amount = item.FindControl("lblAmount") as Label;
-                        SqlCommand cmdcrd = new SqlCommand("select * from tblGeneralLedger where LedID LIKE '%" + Account.Text + "%' order by LedID asc", con);
+                        SqlCommand cmdcrd = new SqlCommand("select * from tblGeneralLedger where LedID = '" + Account.Text + "'", con);
                         SqlDataReader readercrd = cmdcrd.ExecuteReader();
                         if (readercrd.Read())
                         {
@@ -617,23 +661,27 @@ namespace advtech.Finance.Accounta
                             if (debit != 0)
                             {
                                 Amount.Text = debit.ToString();
-                                csvValues += date + ',' + "" + ',' + "" + ',' + "2" + ',' + AccountNumber.Text + ',' + description + ',' + Amount.Text + ',' + "" + ',' + "FALSE" + ',' + "" + ',' + "" + ',' + "FALSE" + ',' + "0" + ',' + "0" + "\r\n";
+                                csvValues += date + "," + " " + "," + " " + "," + "3" + "," + AccountNumber.Text + "," + description + "," + Amount.Text + "," + " " + "," + "FALSE" + "," + " " + "," + " " + "," + "FALSE" + "," + "0" + "," + "0" +","+ "\r\n";
                             }
                             else
                             {
                                 Amount.Text = (-credit).ToString();
-                                csvValues += date + ',' + "" + ',' + "" + ',' + "2" + ',' + AccountNumber.Text + ',' + description + ',' + Amount.Text + ',' + "" + ',' + "FALSE" + ',' + "" + ',' + "" + ',' + "FALSE" + ',' + "0" + ',' + "0" + "\r\n";
-
+                                csvValues += date + "," + " " + "," + " " + "," + "3" + "," + AccountNumber.Text + "," + description + "," + Amount.Text + "," + " " + "," + "FALSE" + "," + " " + "," + " " + "," + "FALSE" + "," + "0" + "," + "0" + "," + "\r\n";
                             }
                         }
                         readercrd.Close();
                     }
                 }
                 con.Close();
-                counter.InnerText = GenerateCSV(csvValues);
-                DownLoadCSVFile();
+
+
+                DownLoadCSVFile(GenerateCSV(csvValues));
             }
             
+        }
+        protected void btnGJ_Click(object sender, EventArgs e)
+        {
+            bindCsvDataForGJ();
         }
     }
 }

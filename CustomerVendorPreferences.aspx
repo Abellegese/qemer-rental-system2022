@@ -15,7 +15,7 @@
             <div class="col">
                 <div id="div_print">
 
-                    <div class="card shadow-none mb-4">
+                    <div class="bg-white rounded-lg mb-4">
                         <div class="card-header bg-white">
                             <div class="row">
                                 <div class="col-xl-6 text-left">

@@ -46,21 +46,17 @@ namespace advtech.Finance.Accounta
                 SqlDataAdapter sda = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
                 sda.Fill(dt);
+                ddlLettrType.DataSource = dt;
+                ddlLettrType.DataTextField = "letter_name";
+                ddlLettrType.DataValueField = "id";
+                ddlLettrType.DataBind();
+                ddlLettrType.Items.Insert(0, new ListItem("Default Letter", "0"));
 
-                if (dt.Rows.Count != 0)
-                {
-                    ddlLettrType.DataSource = dt;
-                    ddlLettrType.DataTextField = "letter_name";
-                    ddlLettrType.DataValueField = "id";
-                    ddlLettrType.DataBind();
-                    ddlLettrType.Items.Insert(0, new ListItem("Default Letter", "0"));
-
-                    //Bind Form Custom Letter Update dropdown content
-                    ddlCustomLetterName.DataSource = dt;
-                    ddlCustomLetterName.DataTextField = "letter_name";
-                    ddlCustomLetterName.DataValueField = "id";
-                    ddlCustomLetterName.DataBind();
-                }
+                //Bind Form Custom Letter Update dropdown content
+                ddlCustomLetterName.DataSource = dt;
+                ddlCustomLetterName.DataTextField = "letter_name";
+                ddlCustomLetterName.DataValueField = "id";
+                ddlCustomLetterName.DataBind();
             }
         }
         private void bind_page_marigin()
@@ -500,7 +496,7 @@ namespace advtech.Finance.Accounta
         {
             SqlConnection con = new SqlConnection(strConnString);
             con.Open();
-            str = "select * from tblrent where status='Active' and DATEDIFF(day, '" + DateTime.Now.Date + "', duedate) <=15";
+            str = "select * from tblrent where status='Active' and DATEDIFF(day, '" + DateTime.Now.Date + "', duedate) <=20";
             com = new SqlCommand(str, con);
             sqlda = new SqlDataAdapter(com);
             DataTable ds = new DataTable();
@@ -545,11 +541,12 @@ namespace advtech.Finance.Accounta
         {
             SqlConnection con = new SqlConnection(strConnString);
             con.Open();
-            str = "select * from tblrent where status='Active' and DATEDIFF(day, '" + DateTime.Now.Date + "', duedate) <=15";
+            str = "select * from tblrent where status='Active' and DATEDIFF(day, '" + DateTime.Now.Date + "', duedate) <=20";
             com = new SqlCommand(str, con);
             sqlda = new SqlDataAdapter(com);
             DataTable ds = new DataTable();
             sqlda.Fill(ds); int i = ds.Rows.Count;
+
             counter.InnerText = i.ToString();
             if (Request.QueryString["p1"] != null)
             {
@@ -559,7 +556,6 @@ namespace advtech.Finance.Accounta
                 div1.Visible = true;
                 periodSpan.Visible = true;
                 periodSpan.InnerText = "ነሃሴ እስከ ጥቅምት";
-                DropDownList1.SelectedItem.Text = "ነሃሴ እስከ ጥቅምት";
             }
             if (Request.QueryString["p2"] != null)
             {
@@ -570,7 +566,7 @@ namespace advtech.Finance.Accounta
 
                 periodSpan.Visible = true;
                 periodSpan.InnerText = "ህዳር እስከ ጥር";
-                DropDownList1.SelectedItem.Text = "ህዳር እስከ ጥር";
+  
             }
             if (Request.QueryString["p3"] != null)
             {
@@ -580,7 +576,7 @@ namespace advtech.Finance.Accounta
                 div3.Visible = true;
                 periodSpan.Visible = true;
                 periodSpan.InnerText = "የካቲት እስከ ሚያዚያ";
-                DropDownList1.SelectedItem.Text = "የካቲት እስከ ሚያዚያ";
+
             }
             if (Request.QueryString["p4"] != null)
             {
@@ -590,7 +586,7 @@ namespace advtech.Finance.Accounta
                 div4.Visible = true;
                 periodSpan.Visible = true;
                 periodSpan.InnerText = "ግንቦት እስከ ሐምሌ";
-                DropDownList1.SelectedItem.Text = "ግንቦት እስከ ሐምሌ";
+
             }
             //Custom Letter
             if (Request.QueryString["pCustom1"] != null)
@@ -601,7 +597,7 @@ namespace advtech.Finance.Accounta
                 div5.Visible = true;
                 periodSpan.Visible = true;
                 periodSpan.InnerText = "ነሃሴ እስከ ጥቅምት";
-                DropDownList1.SelectedItem.Text = "ነሃሴ እስከ ጥቅምት";
+
             }
             if (Request.QueryString["pCustom2"] != null)
             {
@@ -611,7 +607,7 @@ namespace advtech.Finance.Accounta
                 div6.Visible = true;
                 periodSpan.Visible = true;
                 periodSpan.InnerText = "ህዳር እስከ ጥር";
-                DropDownList1.SelectedItem.Text = "ህዳር እስከ ጥር";
+
             }
             if (Request.QueryString["pCustom3"] != null)
             {
@@ -621,7 +617,7 @@ namespace advtech.Finance.Accounta
                 div7.Visible = true;
                 periodSpan.Visible = true;
                 periodSpan.InnerText = "የካቲት እስከ ሚያዚያ";
-                DropDownList1.SelectedItem.Text = "የካቲት እስከ ሚያዚያ";
+
             }
             if (Request.QueryString["pCustom4"] != null)
             {
@@ -631,8 +627,9 @@ namespace advtech.Finance.Accounta
                 div8.Visible = true;
                 periodSpan.Visible = true;
                 periodSpan.InnerText = "ግንቦት እስከ ሐምሌ";
-                DropDownList1.SelectedItem.Text = "ግንቦት እስከ ሐምሌ";
+
             }
+
         }
         private void bindLetterType()
         {
@@ -647,10 +644,22 @@ namespace advtech.Finance.Accounta
         protected void contreturn_Click(object sender, EventArgs e)
         {
             //Show period
-            //
             periodSpan.Visible = true;
             periodSpan.InnerText = DropDownList1.SelectedItem.Text;
             string letterType = ddlLettrType.SelectedItem.Text;
+            UserUtility userutil = new UserUtility();
+            String FN = userutil.BindUser();
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            SqlConnection con = new SqlConnection(CS);
+            string url = "NoticeLetter.aspx";
+            string explanation = "Letter has been generated for period " + periodSpan.InnerText+"<br/>Date:"+getethiopianDate()+ "<br/>" + "Ref No./የደ.ቁ፤- ራክሲ፡-"+GetActiveClass();
+            if (Convert.ToInt32(counter.InnerText) > 0)
+            {
+                con.Open();
+                SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "',N'" + explanation + "','" + FN + "','" + FN + "','Unseen','fas fa-book-open text-white','icon-circle bg bg-primary','" + url + "','MN')", con);
+                cmd197h.ExecuteNonQuery();
+                con.Close();
+            }
             if (Checkbox2.Checked == true)
             {
                 if (ddlLettrType.SelectedItem.Text == "Default Letter")
@@ -1520,7 +1529,7 @@ namespace advtech.Finance.Accounta
                 if (reader.Read())
                 {
                     text += reader["heading_text"].ToString();
-                    txtpart2.Text = text;
+                    txtpart2.Text = text.Replace("<br/>", "*NewLine*"); ;
                 }
             }
             return text;
@@ -1539,7 +1548,7 @@ namespace advtech.Finance.Accounta
                 if (reader.Read())
                 {
                     text += reader["heading_text"].ToString();
-                    txtpart4.Text = text;
+                    txtpart4.Text = text.Replace("<br/>", "*NewLine*"); ;
                 }
             }
             return text;
@@ -1557,7 +1566,7 @@ namespace advtech.Finance.Accounta
                 if (reader.Read())
                 {
                     text += reader["heading_text"].ToString();
-                    txtpart6.Text = text;
+                    txtpart6.Text = text.Replace("<br/>", "*NewLine*"); ;
                 }
             }
             return text;
@@ -1574,11 +1583,11 @@ namespace advtech.Finance.Accounta
 
                 if (reader.Read())
                 {
-                    text += reader["heading_text"].ToString();
-                    txtpart7.Text = text;
+                    text += Convert.ToString(reader["heading_text"].ToString());
+                    txtpart7.Text = text.Replace("<br/>", "*NewLine*");
                 }
             }
-            return text;
+            return text.ToString();
         }
         protected string bind_bodyies()
         {
@@ -1905,16 +1914,16 @@ namespace advtech.Finance.Accounta
                 SqlCommand cmdg = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + txtHeadlineEdit.Text + "',bold='" + return_checkbox_headgudayu().Item1 + "',italic='" + return_checkbox_headgudayu().Item2 + "',underline='" + return_checkbox_headgudayu().Item3 + "',fontsize='" + txtHeadFontSize.Text + "',lineheight='" + txtHeadlineLine.Text + "' where type='heading_gudayu'", con);
                 cmdg.ExecuteNonQuery();
                 //Updates for body1
-                SqlCommand cmdb1 = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + txtpart2.Text + "',bold='" + return_checkbox_bodies().Item1 + "',italic='" + return_checkbox_bodies().Item2 + "',underline='" + return_checkbox_bodies().Item3 + "',fontsize='" + txtBodySize.Text + "',lineheight='" + txtBodyLine.Text + "' where type='heading_body1'", con);
+                SqlCommand cmdb1 = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + Convert.ToString(txtpart2.Text).Replace("*NewLine*","<br/>") + "',bold='" + return_checkbox_bodies().Item1 + "',italic='" + return_checkbox_bodies().Item2 + "',underline='" + return_checkbox_bodies().Item3 + "',fontsize='" + txtBodySize.Text + "',lineheight='" + txtBodyLine.Text + "' where type='heading_body1'", con);
                 cmdb1.ExecuteNonQuery();
                 //Updates for body2
-                SqlCommand cmdb2 = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + txtpart4.Text + "',bold='" + return_checkbox_bodies().Item1 + "',italic='" + return_checkbox_bodies().Item2 + "',underline='" + return_checkbox_bodies().Item3 + "',fontsize='" + txtBodySize.Text + "',lineheight='" + txtBodyLine.Text + "' where type='heading_body2'", con);
+                SqlCommand cmdb2 = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + Convert.ToString(txtpart4.Text).Replace("*NewLine*", "<br/>") + "',bold='" + return_checkbox_bodies().Item1 + "',italic='" + return_checkbox_bodies().Item2 + "',underline='" + return_checkbox_bodies().Item3 + "',fontsize='" + txtBodySize.Text + "',lineheight='" + txtBodyLine.Text + "' where type='heading_body2'", con);
                 cmdb2.ExecuteNonQuery();
                 //Updates for body3
-                SqlCommand cmdb3 = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + txtpart6.Text + "',bold='" + return_checkbox_bodies().Item1 + "',italic='" + return_checkbox_bodies().Item2 + "',underline='" + return_checkbox_bodies().Item3 + "',fontsize='" + txtBodySize.Text + "',lineheight='" + txtBodyLine.Text + "' where type='heading_body3'", con);
+                SqlCommand cmdb3 = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + Convert.ToString(txtpart6.Text).Replace("*NewLine*", "<br/>") + "',bold='" + return_checkbox_bodies().Item1 + "',italic='" + return_checkbox_bodies().Item2 + "',underline='" + return_checkbox_bodies().Item3 + "',fontsize='" + txtBodySize.Text + "',lineheight='" + txtBodyLine.Text + "' where type='heading_body3'", con);
                 cmdb3.ExecuteNonQuery();
                 //Updates for body4
-                SqlCommand cmdb4 = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + txtpart7.Text + "',bold='" + return_checkbox_bodies().Item1 + "',italic='" + return_checkbox_bodies().Item2 + "',underline='" + return_checkbox_bodies().Item3 + "',fontsize='" + txtBodySize.Text + "',lineheight='" + txtBodyLine.Text + "' where type='heading_body4'", con);
+                SqlCommand cmdb4 = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + Convert.ToString(txtpart7.Text).Replace("*NewLine*", "<br/>") + "',bold='" + return_checkbox_bodies().Item1 + "',italic='" + return_checkbox_bodies().Item2 + "',underline='" + return_checkbox_bodies().Item3 + "',fontsize='" + txtBodySize.Text + "',lineheight='" + txtBodyLine.Text + "' where type='heading_body4'", con);
                 cmdb4.ExecuteNonQuery();
                 //Updates for period
                 SqlCommand cmdp = new SqlCommand("update tblCustomizingLetter set heading_text=N'" + txtpart3.Text + "',bold='" + return_checkbox_period().Item1 + "',italic='" + return_checkbox_period().Item2 + "',underline='" + return_checkbox_period().Item3 + "',fontsize='" + txtPeriodSize.Text + "',lineheight='" + txtPeriodLine.Text + "',visibility='" + return_period_vis() + "' where type='heading_period'", con);

@@ -158,6 +158,7 @@
 }
     </style>
     <link href="../../asset/css/starter-template.css" rel="stylesheet" />
+
     <script type="text/javascript">
         function GetSystemStatus() {
             PageMethods.bindBackupInfoCheck(SuccessStatus, FailureStatus);
@@ -287,8 +288,8 @@
                 <br />
                 <div id="HideOrShow">
                     <span class="badge badge-success mt-3 text-uppercase" id="cycleSpan" runat="server" clientidmode="Static" data-toggle="tooltip" title="Database backup cycle"></span>
-               
-                 
+                    <asp:Label ID="EmailAdd" runat="server" Text="Label" class="badge text-white" ClientIDMode="Static" Style="background-color: #c80eb9"></asp:Label>
+
                     <button data-toggle="modal" id="cycleSetting" runat="server" data-target="#exampleModalEdit" type="button" class="btn btn-default"><span class="fas fa-cog text-gray-400 ml-2"></span></button>
                 </div>
 
@@ -363,6 +364,18 @@
                     }
                     $(document).ready(function () {
                         GetPeriod();
+                    });
+            </script>
+            <script type="text/javascript">
+                    function GetEmail() {
+                        PageMethods.bindEmail(SuccessStatus1);
+                    }
+                    function SuccessStatus1(result) {
+                        var email = document.getElementById("<%=EmailAdd.ClientID%>");
+                        email.innerHTML = result;
+                    }
+                    $(document).ready(function () {
+                        GetEmail();
                     });
             </script>
     </div>

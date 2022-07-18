@@ -18,6 +18,167 @@
     </script>
 
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        ul.timeline {
+            list-style-type: none;
+            position: relative;
+        }
+
+            ul.timeline:before {
+                content: ' ';
+                background: #b374d9;
+                display: inline-block;
+                position: absolute;
+                left: 29px;
+                width: 2px;
+                height: 100%;
+                z-index: 400;
+            }
+
+            ul.timeline > li {
+                margin: 20px 0;
+                padding-left: 20px;
+            }
+
+                ul.timeline > li:before {
+                    content: ' ';
+                    background: white;
+                    display: inline-block;
+                    position: absolute;
+                    border-radius: 20%;
+                    border: 3px solid #b374d9;
+                    left: 22px;
+                    width: 15px;
+                    height: 15px;
+                    z-index: 400;
+                }
+
+        body {
+            background-color: #eee
+        }
+
+        .mt-70 {
+            margin-top: 70px
+        }
+
+        .mb-70 {
+            margin-bottom: 70px
+        }
+
+        .card {
+            box-shadow: 0 0.46875rem 2.1875rem rgba(4, 9, 20, 0.03), 0 0.9375rem 1.40625rem rgba(4, 9, 20, 0.03), 0 0.25rem 0.53125rem rgba(4, 9, 20, 0.05), 0 0.125rem 0.1875rem rgba(4, 9, 20, 0.03);
+            border-width: 0;
+            transition: all .2s
+        }
+
+        .card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            word-wrap: break-word;
+            background-color: #fff;
+            background-clip: border-box;
+            border: 1px solid rgba(26, 54, 126, 0.125);
+            border-radius: .25rem
+        }
+
+        .card-body {
+            flex: 1 1 auto;
+            padding: 1.25rem
+        }
+
+        .vertical-timeline {
+            width: 100%;
+            position: relative;
+            padding: 1.5rem 0 1rem
+        }
+
+            .vertical-timeline::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 67px;
+                height: 100%;
+                width: 4px;
+                background: #e9ecef;
+                border-radius: .25rem
+            }
+
+        .vertical-timeline-element {
+            position: relative;
+            margin: 0 0 1rem
+        }
+
+        .vertical-timeline--animate .vertical-timeline-element-icon.bounce-in {
+            visibility: visible;
+            animation: cd-bounce-1 .8s
+        }
+
+        .vertical-timeline-element-icon {
+            position: absolute;
+            top: 0;
+            left: 60px
+        }
+
+            .vertical-timeline-element-icon .badge-dot-xl {
+                box-shadow: 0 0 0 5px #fff
+            }
+
+        .badge-dot-xl {
+            width: 18px;
+            height: 18px;
+            position: relative
+        }
+
+        .badge:empty {
+            display: none
+        }
+
+        .badge-dot-xl::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: .25rem;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin: -5px 0 0 -5px;
+            background: #fff
+        }
+
+        .vertical-timeline-element-content {
+            position: relative;
+            margin-left: 90px;
+            font-size: .8rem
+        }
+
+            .vertical-timeline-element-content .timeline-title {
+                font-size: .8rem;
+                text-transform: uppercase;
+                margin: 0 0 .5rem;
+                padding: 2px 0 0;
+                font-weight: bold
+            }
+
+            .vertical-timeline-element-content .vertical-timeline-element-date {
+                display: block;
+                position: absolute;
+                left: -90px;
+                top: 0;
+                padding-right: 10px;
+                text-align: right;
+                color: #adb5bd;
+                font-size: .7619rem;
+                white-space: nowrap
+            }
+
+            .vertical-timeline-element-content:after {
+                content: "";
+                display: table;
+                clear: both
+            }
+    </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
     <div class="modal fade bd-example-modal-lg" id="CashSummary" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
@@ -766,23 +927,25 @@
                                       </div>
                                       <div class="row">
                                           <div class="card-body">
-                                              <asp:Repeater ID="Repeater4" runat="server">
-                                                  <ItemTemplate>
-                                                      <div class="col-9">
-                                                          <span class="small text-primary">#<%#Eval("id")%></span><span class="text-gray-900 mx-2 small"><%#Eval("delinquency")%></span>
-                                                      </div>
+                                              <div style="overflow-y: scroll; height: 450px" class="mb-3 border-bottom" id="delinquecyDiv" runat="server">
+                                                  <asp:Repeater ID="Repeater4" runat="server">
+                                                      <itemtemplate>
 
+                                                          <ul class="timeline">
 
+                                                              <li>
 
+                                                                  <p>
+                                                                      <asp:Label ID="Label5" class="small text-gray-900 font-weight-bold" runat="server"><%#Eval("delinquency")%></asp:Label>
+                                                                  </p
+                                                                  <span class="fas fa-edit text-gray-500"></span><span class="text-xs mx-1 font-italic text-gray-900"><%#Eval("datetime","{0: MMMM dd, yyyy}")%></span>
+                                                              </li>
+                                                          </ul>
 
-                                                      <div class="col-3 text-right">
-                                                          <span class="text-xs fas fa-calendar-check text-gray-300"></span><span class="text-xs mx-1 text-primary"><%#Eval("datetime","{0: MMMM dd, yyyy}")%></span>
-
-                                                      </div>
-                                                      <hr />
-
-                                                  </ItemTemplate>
-                                              </asp:Repeater>
+                                                      </itemtemplate>
+                                                  </asp:Repeater>
+                                              </div>
+                                             
                                               <center>
 
                                                   <main role="main" id="maind" runat="server">
@@ -1188,6 +1351,11 @@ uncollectible accounts.</span>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-12 ">
+                            <asp:TextBox ID="txtVatRegNumber" data-toggle="tooltip" title="Vat Reg. Number" Style="border-color: #ff0000" class="form-control form-control-sm" placeholder="Vat Reg. Number" runat="server"></asp:TextBox>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12 ">
                             <asp:TextBox ID="txtEmail" class="form-control form-control-sm" placeholder="Email" runat="server" data-toggle="tooltip" data-placement="top" title="Email"></asp:TextBox>
                         </div>
                     </div>
@@ -1245,7 +1413,7 @@ uncollectible accounts.</span>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-12 ">
-                            <asp:TextBox ID="txtCostRemark" class="form-control form-control-sm" TextMode="MultiLine" Height="100px" placeholder="Remark" runat="server"></asp:TextBox>
+                            <asp:TextBox ID="txtCostRemark" class="form-control form-control-sm" TextMode="MultiLine" Height="100px" placeholder="Remark/Reference" runat="server"></asp:TextBox>
 
                         </div>
                     </div>
