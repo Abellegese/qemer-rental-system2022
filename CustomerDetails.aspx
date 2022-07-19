@@ -535,18 +535,6 @@
                                       </div>
                                   </div>
 
-                                  <div class="mr-2 border-top">
-                                      <span class="small text-danger">Portal Access<b>:</b>  </span><b><span class="text-right small" id="Span6" runat="server"></span>
-                                          <button runat="server" title="Update status" id="Button10" type="button" class="btn btn-sm btn-default btn-circle " data-toggle="modal" data-target="#exampleModal44">
-                                              <a class="nav-link btn btn-sm" data-toggle="tooltip" data-placement="bottom" title="Change Portal Access">
-                                                  <div>
-                                                      <i class="fas fa-pencil-alt text-danger"></i>
-
-                                                  </div>
-                                              </a>
-                                          </button>
-                                      </b>
-                                  </div>
                               </div>
 
                           </div>
@@ -1185,14 +1173,14 @@ uncollectible accounts.</span>
                     </div>
                     <div class="row">
                         <div class="col-md-1">
-                            <div id="myDIV55" class="spinner-border text-danger spinner-border-sm  mr-4 mt-2" role="status">
+                            <div id="myDIV551" class="spinner-border text-danger spinner-border-sm  mr-4 mt-2" style="display:none" role="status">
                                 <span class="sr-only">Loading.ffrfyyrg..</span>
                             </div>
                         </div>
                         <div class="col-md-11">
 
                             <center>
-                                <asp:Button ID="btnMergeShop" runat="server" class="btn btn-sm btn-danger w-100" Text="Merge shops..." OnClick="btnMergeShop_Click" OnClientClick="myFunctionshop1()" />
+                                <asp:Button ID="btnMergeShop" runat="server" class="btn btn-sm btn-danger w-100" Text="Merge shops..." OnClick="btnMergeShop_Click" OnClientClick="myFunctionshop11()" />
                             </center>
 
 
@@ -1272,6 +1260,14 @@ uncollectible accounts.</span>
     <script>
         function myFunctionshop1() {
             var x = document.getElementById("myDIV55");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        function myFunctionshop11() {
+            var x = document.getElementById("myDIV551");
             if (x.style.display === "none") {
                 x.style.display = "block";
             } else {
@@ -1778,35 +1774,6 @@ uncollectible accounts.</span>
                         <div class="col-md-12">
                             <center>
                                 <asp:Button ID="btnAgreement" runat="server" class="btn btn-sm btn-light" OnClick="btnAgreement_Click" Text="Update" />
-                            </center>
-
-
-                        </div>
-                    </div>
-                </div>
-                <center>
-                    <div class="modal-footer">
-                    </div>
-
-                </center>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="exampleModal44" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel44" aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title text-gray-900" id="exampleModalLabel44">Update portal Access</h6>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <center>
-                                <asp:Button ID="Button12" runat="server" class="btn btn-sm btn-danger" OnClick="Button12_Click" Text="Change Access" />
                             </center>
 
 

@@ -750,15 +750,6 @@ namespace advtech.Finance.Accounta
                         string pstatus;
                         //Shop Details
                         pstatus = reader22["status"].ToString(); reader22.Close();
-                        if (pstatus == "Active")
-                        {
-                            Span6.InnerText = pstatus; Span6.Attributes.Add("class", "small text-right text-success");
-                        }
-                        else
-                        {
-                            Span6.InnerText = pstatus; Span6.Attributes.Add("class", "small text-right text-danger");
-                        }
-
                         SqlCommand cmd2 = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
                         SqlDataReader reader = cmd2.ExecuteReader();
                         if (reader.Read())
@@ -1278,68 +1269,6 @@ namespace advtech.Finance.Accounta
                 SqlCommand cmdre1 = new SqlCommand("Update tblCustomers set duedate='" + txtDueDateUpdate.Text + "' where FllName='" + PID + "'", con);
                 cmdre1.ExecuteNonQuery();
                 Response.Redirect("CustomerDetails.aspx?ref2=" + PID);
-            }
-        }
-        protected void Button12_Click(object sender, EventArgs e)
-        {
-            String PID = Convert.ToString(Request.QueryString["ref2"]);
-            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-            using (SqlConnection con = new SqlConnection(CS))
-            {
-                con.Open();
-                SqlCommand cmd = new SqlCommand("select status from UsersCust where Name='" + PID + "'", con);
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    string company;
-                    company = reader["status"].ToString();
-                    reader.Close();
-                    if (company == "Active")
-                    {
-
-                        SqlCommand cmd1cl = new SqlCommand("Update UsersCust set  status='Inactive' where Name='" + PID + "'", con);
-                        cmd1cl.ExecuteNonQuery();
-                        Response.Redirect("CustomerDetails.aspx?ref2=" + PID);
-                    }
-                    else
-                    {
-                        SqlCommand cmd1cl = new SqlCommand("Update UsersCust set  status='Active' where Name='" + PID + "'", con);
-                        cmd1cl.ExecuteNonQuery();
-                        SqlCommand cmd2AC2 = new SqlCommand("select * from UsersCust where Username='" + PID + "'", con);
-                        SqlDataReader readerAC2 = cmd2AC2.ExecuteReader();
-
-                        if (readerAC2.Read())
-                        {
-                            String location2 = readerAC2["password"].ToString(); readerAC2.Close();
-                            string HTMLBODY = "<h3 class=\"text-uppercase text-center\">Welcome to raksym customer portal</h3><br />";
-                            HTMLBODY += "<h4 class=\"\">Password:AB12345678#?</h4>";
-                            HTMLBODY += "<h4 class=\"\">Username:" + PID + "</h4>...please visit your portal:  https://bsite.net/raksyrmerp/customer_home/Home.aspx";
-
-                            MailMessage mailMessage = new MailMessage("abellegese5@gmail.com", email.InnerText);
-                            // Specify the email body
-                            mailMessage.Body = HTMLBODY;
-                            mailMessage.IsBodyHtml = true;
-                            // Specify the email Subject
-                            mailMessage.Subject = "Portal Authentication";
-
-                            // Specify the SMTP server name and post number
-                            SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587);
-                            // Specify your gmail address and password
-                            smtpClient.Credentials = new System.Net.NetworkCredential()
-                            {
-                                UserName = "abellegese5@gmail.com",
-                                Password = "Abel.lege2929#"
-                            };
-                            // Gmail works on SSL, so set this property to true
-                            smtpClient.EnableSsl = true;
-
-                            // Finall send the email message using Send() method
-                            smtpClient.Send(mailMessage);
-                            Response.Redirect("CustomerDetails.aspx?ref2=" + PID);
-                        }
-                    }
-                }
             }
         }
         protected void Button14_Click(object sender, EventArgs e)
