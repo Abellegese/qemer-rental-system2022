@@ -753,6 +753,33 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.DropDownList ddlCustomLetterName;
 
         /// <summary>
+        /// ddlDateofLetterRecorded control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlDateofLetterRecorded;
+
+        /// <summary>
+        /// ddlReferenceofLetterRecorded control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlReferenceofLetterRecorded;
+
+        /// <summary>
+        /// btnBindReferencedLetterRecord control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnBindReferencedLetterRecord;
+
+        /// <summary>
         /// ScriptManager1 control.
         /// </summary>
         /// <remarks>
@@ -859,6 +886,24 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl con;
+
+        /// <summary>
+        /// letterRecordedDiv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl letterRecordedDiv;
+
+        /// <summary>
+        /// rptLetterRecorded control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptLetterRecorded;
 
         /// <summary>
         /// div1 control.
