@@ -27,7 +27,9 @@ namespace advtech.Finance.Accounta
                     bindstatus(); div1.Visible = false; div2.Visible = false; div3.Visible = false; div4.Visible = false;
                     div5.Visible = false; div6.Visible = false; div7.Visible = false; div8.Visible = false;
                     binddiv(); bindstatuscustomer(); bindstatusall(); bind_page_marigin(); bind_text_alignment1(); bind_border_all_precedence();
-                    bindLetter(); bindLetterType();
+                    bindLetter(); bindLetterType(); bindLetterRecordedDate();
+                    bindLetterRecordedReference(); bindLetterRecordedToRepeater();
+                    showRecordedLetter();
                 }
             }
             else
@@ -35,7 +37,148 @@ namespace advtech.Finance.Accounta
                 Response.Redirect("~/Login/LogIn1.aspx");
             }
         }
+        private void bindLetterRecordedDate()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                SqlCommand cmd = new SqlCommand("select * from tblLetterRecord", con);
+                con.Open();
+                SqlDataAdapter sda = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                sda.Fill(dt);
+                ddlDateofLetterRecorded.DataSource = dt;
+                ddlDateofLetterRecorded.DataTextField = "date";
+                ddlDateofLetterRecorded.DataValueField = "id";
+                ddlDateofLetterRecorded.DataBind();
+                ddlDateofLetterRecorded.Items.Insert(0, new ListItem("-Select Date-", "0"));
+            }
+        }
+        private void bindLetterRecordedReference()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                SqlCommand cmd = new SqlCommand("select * from tblLetterRecord", con);
+                con.Open();
+                SqlDataAdapter sda = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                sda.Fill(dt);
+                ddlReferenceofLetterRecorded.DataSource = dt;
+                ddlReferenceofLetterRecorded.DataTextField = "reference_no";
+                ddlReferenceofLetterRecorded.DataValueField = "id";
+                ddlReferenceofLetterRecorded.DataBind();
+                ddlReferenceofLetterRecorded.Items.Insert(0, new ListItem("-Select Reference-", "0"));
+            }
+        }
+        private Tuple<string,string,string> GetPrevPeriodandDateReferenceNumber(string currentPeriod)
+        {
+            string prevPeriod = string.Empty;
+            int ethiopianYear = GetEthYear();
+            string date = getethiopianDate();
+            string refernceNumber = GetActiveClass();
+            if (currentPeriod== "ነሃሴ እስከ ጥቅምት")
+            {
+           
+                prevPeriod = "ግንቦት እስከ ሐምሌ "+ethiopianYear;
+            }
+            else if (currentPeriod == "ህዳር እስከ ጥር")
+            {
+                prevPeriod = "ነሃሴ እስከ ጥቅምት " + (ethiopianYear+1);
+            }
+            else if (currentPeriod == "የካቲት እስከ ሚያዚያ")
+            {
+                prevPeriod = "ህዳር እስከ ጥር " + ethiopianYear;
+            }
+            else 
+            {
+                prevPeriod = "የካቲት እስከ ሚያዚያ " + ethiopianYear;
+            }
+            return Tuple.Create(date,refernceNumber,prevPeriod);
+        }
+        private bool CheckForReferenceExistenceInLetterRecord(string referenceNumner)
+        {
+            bool isFound = false;
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("select*from tblLetterRecord where reference_no='" + referenceNumner+"'", con);
 
+                using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                {
+                    DataTable dt = new DataTable();
+                    sda.Fill(dt); int i = dt.Rows.Count;
+                    if (i != 0)
+                    {
+                        isFound = true;
+                    }
+                }
+            }
+            return isFound;
+        }
+        private void insertToLetterRecord()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                string headline = string.Empty;
+                if (ddlLettrType.SelectedItem.Text=="Default Letter") { headline = bind_headgudayu_text(); }
+                else{ headline = bind_heading_Custom(); }
+
+                if (CheckForReferenceExistenceInLetterRecord(GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item2) == false)
+                {
+                    SqlCommand cmd1974 = new SqlCommand("insert into tblLetterRecord values('" + GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item1 + "','" + GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item2 + "',N'"+ GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item3 + "',N'" + DropDownList1.SelectedItem.Text +" "+GetEthYear()+ "',N'"+headline+"')", con);
+                    cmd1974.ExecuteNonQuery();
+                }
+            }
+        }
+        protected Tuple<string,string,string,string,string> GetLetterRecordedData()
+        {
+            String dateR = Convert.ToString(Request.QueryString["Date"]);
+            String refno = Convert.ToString(Request.QueryString["refno"]);
+            string date = string.Empty, referenceNo = string.Empty, prevPeriod = string.Empty, currentPeriod = string.Empty, headline = string.Empty;
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("select *from tblLetterRecord where date='"+dateR+ "' or reference_no='"+refno+"'", con);
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    date += reader["date"].ToString();
+                    referenceNo += reader["reference_no"].ToString();
+                    prevPeriod += reader["prev_period"].ToString();
+                    currentPeriod += reader["current_period"].ToString();
+                    headline += reader["headline"].ToString();
+                }
+            }
+            return Tuple.Create(date,referenceNo,prevPeriod,currentPeriod,headline);
+        }
+        private void bindLetterRecordedToRepeater()
+        {
+            if (Request.QueryString["findRecord"] != null)
+            {
+                SqlConnection con = new SqlConnection(strConnString);
+                con.Open();
+                str = "select * from tblrent where status='Active'";
+                com = new SqlCommand(str, con);
+                sqlda = new SqlDataAdapter(com);
+                DataTable ds = new DataTable();
+                sqlda.Fill(ds); int i = ds.Rows.Count;
+                rptLetterRecorded.DataSource = ds;
+                rptLetterRecorded.DataBind();
+            }
+        }
+        private void showRecordedLetter()
+        {
+            if(Request.QueryString["findRecord"] != null)
+            {
+                letterRecordedDiv.Visible = true;
+            }
+        }
         private void bindLetter()
         {
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -659,6 +802,7 @@ namespace advtech.Finance.Accounta
                 SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "',N'" + explanation + "','" + FN + "','" + FN + "','Unseen','fas fa-book-open text-white','icon-circle bg bg-primary','" + url + "','MN')", con);
                 cmd197h.ExecuteNonQuery();
                 con.Close();
+                insertToLetterRecord();
             }
             if (Checkbox2.Checked == true)
             {
@@ -2007,7 +2151,7 @@ namespace advtech.Finance.Accounta
                 using (SqlConnection con = new SqlConnection(CS))
                 {
                     con.Open();
-                    SqlCommand cvb = new SqlCommand("insert into tblCustomLetter values(N'" + txtLetterName.Text + "',N'" + txtHeading.Text + "',N'" + txtCustomePart1.Text + "',N'" + txtCustomePart3.Text + "',N'" + txtCustomePart5.Text + "',N'" + txtCustomePart7.Text + "')", con);
+                    SqlCommand cvb = new SqlCommand("insert into tblCustomLetter values(N'" + txtLetterName.Text + "',N'" + Convert.ToString(txtHeading.Text).Replace("*NewLine*", "<br/>") + "',N'" + Convert.ToString(txtCustomePart1.Text).Replace("*NewLine*","<br/>") + "',N'" + Convert.ToString(txtCustomePart3.Text).Replace("*NewLine*", "<br/>") + "',N'" + Convert.ToString(txtCustomePart5.Text).Replace("*NewLine*", "<br/>") + "',N'" + Convert.ToString(txtCustomePart7.Text).Replace("*NewLine*", "<br/>") + "')", con);
                     cvb.ExecuteNonQuery();
                     Response.Redirect(Request.RawUrl);
                 }
@@ -2021,11 +2165,32 @@ namespace advtech.Finance.Accounta
             {
                 con.Open();
                 //Updates for headline
-                SqlCommand cmdhl = new SqlCommand("update tblCustomLetter set letter_name=N'" + txtLetterName.Text + "',heading=N'" + txtHeading.Text + "'" +
-                    ",part1=N'" + txtCustomePart1.Text + "',part3=N'" + txtCustomePart3.Text + "',part5=N'" + txtCustomePart5.Text + "'" +
-                    ",part7=N'" + txtCustomePart7.Text + "' where letter_name='" + ddlCustomLetterName.SelectedItem.Text + "'", con);
+                SqlCommand cmdhl = new SqlCommand("update tblCustomLetter set letter_name=N'" + txtLetterName.Text + "',heading=N'" + Convert.ToString(txtHeading.Text).Replace("*NewLine*", "<br/>") + "'" +
+                    ",part1=N'" + Convert.ToString(txtCustomePart1.Text).Replace("*NewLine*", "<br/>") + "',part3=N'" + Convert.ToString(txtCustomePart3.Text).Replace("*NewLine*", "<br/>") + "',part5=N'" + Convert.ToString(txtCustomePart5.Text).Replace("*NewLine*", "<br/>") + "'" +
+                    ",part7=N'" + Convert.ToString(txtCustomePart7.Text).Replace("*NewLine*", "<br/>") + "' where letter_name='" + ddlCustomLetterName.SelectedItem.Text + "'", con);
                 cmdhl.ExecuteNonQuery();
                 Response.Redirect("NoticeLetter.aspx");
+            }
+        }
+
+        protected void btnBindReferencedLetterRecord_Click(object sender, EventArgs e)
+        {
+            if (ddlDateofLetterRecorded.SelectedItem.Text == "-Select Date-" && ddlReferenceofLetterRecorded.SelectedItem.Text != "-Select Reference-")
+            {
+                Response.Redirect("NoticeLetter.aspx?findRecord=true&&refno=" + ddlReferenceofLetterRecorded.SelectedItem.Text);
+            }
+            else if (ddlDateofLetterRecorded.SelectedItem.Text != "-Select Date-" && ddlReferenceofLetterRecorded.SelectedItem.Text == "-Select Reference-")
+            {
+                Response.Redirect("NoticeLetter.aspx?findRecord=true&&Date=" + ddlDateofLetterRecorded.SelectedItem.Text);
+            }
+            else if (ddlDateofLetterRecorded.SelectedItem.Text != "-Select Date-" && ddlReferenceofLetterRecorded.SelectedItem.Text != "-Select Reference-")
+            {
+                Response.Redirect("NoticeLetter.aspx?findRecord=true&&Date=" + ddlDateofLetterRecorded.SelectedItem.Text + "&&refno=" + ddlReferenceofLetterRecorded.SelectedItem.Text);
+            }
+            else
+            {
+                string message = "Please Select Date or Reference Number!!";
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
             }
         }
     }

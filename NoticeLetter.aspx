@@ -116,7 +116,6 @@
             }
         }
     </script>
-
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -1229,6 +1228,50 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal rounded fade" id="ModalReference" tabindex="-1" role="dialog" aria-labelledby="MHeader" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title text-gray-900 small font-weight-bold" id="exampleModalLabel4"><span class="fas fa-filter mr-2" style="color: #ff00bb"></span>Filter Notice Letter</h6>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="text-gray-900 small text-uppercase">Select Date</label>
+                                <asp:DropDownList ID="ddlDateofLetterRecorded" class="form-control form-control-sm mb-2" style="border-color:#ff00bb" runat="server">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="text-gray-900 small text-uppercase">Select Reference Number</label>
+                                <asp:DropDownList ID="ddlReferenceofLetterRecorded" Style="border-color: #ff00bb" class="form-control form-control-sm mb-2" runat="server">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+
+                    </div>
+                    <center>
+                        <div class="modal-footer">
+                            <button class="btn btn-sm text-uppercase text-white" type="button" disabled id="myDIV5f11" style="display: none; background-color: #d46fe8">
+                                <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+                               Binding
+                            </button>
+                            <div id="Gdiv1">
+                                <asp:Button ID="btnBindReferencedLetterRecord" runat="server" class="btn text-white btn-sm w-100" Style="background-color: #d46fe8"
+                                    OnClick="btnBindReferencedLetterRecord_Click" OnClientClick="myFunctionshop1011()" Text="Bind Letter..." />
+                            </div>
+
+                        </div>
+
+                    </center>
+                </div>
+            </div>
+        </div>
         <asp:ScriptManager ID="ScriptManager1" runat="server">
         </asp:ScriptManager>
 
@@ -1238,6 +1281,7 @@
                     <div class="card-header mb-3 bg-white ">
                         <div class="row">
                             <div class="col-6 text-left">
+
                                 <a class="btn btn-light btn-circle mr-2" id="buttonback" runat="server" href="NoticeLetter.aspx" data-toggle="tooltip" data-placement="bottom" title="Back to Home">
 
                                     <span class="fa fa-arrow-left text-danger"></span>
@@ -1255,6 +1299,12 @@
 
                             </div>
                             <div class="col-6 text-right">
+                                <button type="button" style="background-color: #9867a1;" id="ShowReference" class="mr-2 btn btn-sm btn-circle" data-toggle="modal" data-target="#ModalReference">
+                                    <div>
+                                        <i class="fas fa-hashtag text-white font-weight-bold" data-toggle="tooltip" title="Bind Recorded Letter"></i>
+                                        <span></span>
+                                    </div>
+                                </button>
                                 <button type="button" style="background-color: #9867a1;" runat="server" id="Button3" class="mr-2 btn btn-sm btn-circle" data-toggle="modal" data-target="#CustomLetter">
                                     <div>
                                         <i class="fas fa-book-open text-white font-weight-bold" data-toggle="tooltip" title="Custom Letter"></i>
@@ -1302,7 +1352,87 @@
                     </div>
                     <div id="con" runat="server">
                         <div id="div_print">
+                            <div class="row " id="letterRecordedDiv" visible="false" runat="server">
+                                <div class="col-1">
+                                </div>
+                                <div class="col-10">
+                                    <asp:Repeater ID="rptLetterRecorded" runat="server">
+                                        <ItemTemplate>
+                                            <div>
+                                                <div class="card-header text-black bg-white font-weight-bold">
 
+
+
+                                                    <div class="row ">
+                                                        <div class="col-4 text-left">
+                                                            <img class="" src="../../asset/Brand/gh.jpg" alt="" width="110" <%#bind_logo_visibility() %>>
+                                                        </div>
+                                                        <div <%#bind_text_alignment() %>>
+
+                                                            <a href="#" class="btn btn-default btn-sm" data-toggle="modal" data-target="#ModalHeader">
+                                                                <span class="text-gray-900" id="headtext" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
+                                                            </a>
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="text-gray-900" <%# bind_border_all()%>>
+                                                        <div class="row  mb-3 text-gray-900" <%#bind_address() %>>
+                                                            <div class="col-md-6 text-left">
+                                                                <span translate="no">Ethiopia:-Addis Abeba</span>
+                                                            </div>
+                                                            <div class="col-md-6 text-right">
+                                                                <span translate="no">Tell: - 0991-12121</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div style="margin-top: 20px">
+                                                        <div class="row  ">
+                                                            <div class="col-md-12 text-right">
+                                                                <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# GetLetterRecordedData().Item1 %></h6>
+                                                                <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetLetterRecordedData().Item2 %></h6>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row  ">
+                                                        <div class="col-md-12 text-left">
+                                                            <h5 class="mb-2 text-gray-900" contenteditable="true" translate="yes" <%#bind_headline() %>>ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                            <h5 class="text-gray-900" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card-body " <%#bind_borderbottom() %>>
+                                                    <center>
+                                                        <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#GetLetterRecordedData().Item5 %></span>
+                                                    </center>
+                                                    <p class="text-gray-900" style="text-align: justify;" contenteditable="true">
+
+                                                        <span <%#bind_bodyies() %>><%#bind_body1_text() %></span> <span <%#bind_period() %>><%#GetLetterRecordedData().Item3 %></span></span> <span <%#bind_bodyies() %>><%#bind_body2_text() %></span>
+                                                        <span <%#bind_period() %>><%#GetLetterRecordedData().Item4 %></span>  <span <%#bind_bodyies() %>><%#bind_body3_text() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
+                                                        <span <%#bind_bodyies() %>><%#bind_body4_text() %></span>
+                                                        <center>
+                                                            <h1 class="water h1  font-weight-bolder" style="font-size: 60px">ራክሲም ንግድ ስራ ኃ/የ/የግል/ማ</h1>
+                                                        </center>
+                                                    </p>
+                                                    <div class="row" contenteditable="true">
+                                                        <div class="col-md-12 text-right">
+                                                            <h5 class="mb-2 text-gray-900" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                            <h5 class="text-gray-900" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+
+
+                                </div>
+
+                                <div class="col-1">
+                                </div>
+                            </div>
                             <div class="row " id="div1" runat="server">
                                 <div class="col-1">
                                 </div>
@@ -2034,7 +2164,7 @@
                 var textAfter1 = v1.substring(cursorPos1, v1.length);
 
 
-                $('#txtCustomePart1').val(textBefore1 + '<br/>' + textAfter1);
+                $('#txtCustomePart1').val(textBefore1 + '*NewLine*' + textAfter1);
             }
             var cursorPos2 = $('#txtCustomePart3').prop('selectionStart');
             if (cursorPos2 != 0) {
@@ -2043,7 +2173,7 @@
                 var textBefore2 = v2.substring(0, cursorPos2);
                 var textAfter2 = v2.substring(cursorPos2, v2.length);
 
-                $('#txtCustomePart3').val(textBefore2 + '<br/>' + textAfter2);
+                $('#txtCustomePart3').val(textBefore2 + '*NewLine*' + textAfter2);
 
             }
             var cursorPos3 = $('#txtCustomePart5').prop('selectionStart');
@@ -2053,7 +2183,7 @@
                 var textBefore3 = v3.substring(0, cursorPos3);
                 var textAfter3 = v3.substring(cursorPos3, v3.length);
 
-                $('#txtCustomePart5').val(textBefore3 + '<br/>' + textAfter3);
+                $('#txtCustomePart5').val(textBefore3 + '*NewLine*' + textAfter3);
             }
             var cursorPos4 = $('#txtCustomePart7').prop('selectionStart');
             if (cursorPos4 != 0) {
@@ -2062,7 +2192,7 @@
                 var textBefore4 = v4.substring(0, cursorPos4);
                 var textAfter4 = v4.substring(cursorPos4, v4.length);
 
-                $('#txtCustomePart7').val(textBefore4 + '<br/>' + textAfter4);
+                $('#txtCustomePart7').val(textBefore4 + '*NewLine*' + textAfter4);
             }
         });
     </script>
@@ -2106,6 +2236,21 @@
     <script>
         function myFunctionshop101() {
             var x = document.getElementById("myDIV5f1"); var y = document.getElementById("Gdiv");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+            if (y.style.display === "none") {
+                y.style.display = "block";
+            } else {
+                y.style.display = "none";
+            }
+        }
+    </script>
+    <script>
+        function myFunctionshop1011() {
+            var x = document.getElementById("myDIV5f11"); var y = document.getElementById("Gdiv1");
             if (x.style.display === "none") {
                 x.style.display = "block";
             } else {
