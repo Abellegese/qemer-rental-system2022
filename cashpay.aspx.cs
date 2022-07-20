@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
 
@@ -24,11 +25,91 @@ namespace advtech.Finance.Accounta
                     BindNotesContent(); bindbankaccount();
                     BindBrandsRptr2(); ShowDataIncreaseMonthly(); bindsearch();
                     bindSC(); bindFSnumber(); bindDueDate();
+                    bindCreditTitle();
                 }
             }
             else
             {
                 Response.Redirect("~/Login/LogIn1.aspx");
+            }
+        }
+        private double GetServiceCharge()
+        {
+            String PID = Convert.ToString(Request.QueryString["cust"]);
+            double SC = 0;
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                if (Checkbox3.Checked == true){
+                    SqlCommand cmdcrd = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
+                    SqlDataReader readercrd = cmdcrd.ExecuteReader();
+                    if (readercrd.Read())
+                    {
+
+                        string pp = readercrd["PaymentDuePeriod"].ToString();
+                        readercrd.Close();
+                        SqlCommand cmd2 = new SqlCommand("select * from tblrent where customer='" + PID + "'", con);
+                        SqlDataReader reader = cmd2.ExecuteReader();
+
+                        if (reader.Read())
+                        {
+                            string servicecharge; servicecharge = reader["servicecharge"].ToString();
+                            if (pp == "Every Three Month") { SC = Convert.ToDouble(servicecharge) * 3; }
+                            else if (pp == "Every Six Month") { SC = Convert.ToDouble(servicecharge) * 6; }
+                            else if (pp == "Monthly") { SC = Convert.ToDouble(servicecharge) * 1; }
+                            else { SC = Convert.ToDouble(servicecharge) * 12; }
+                        }
+                    }
+                }
+            }
+            return SC;
+        }
+        
+        private void bindCreditTitle()
+        {
+            String PID = Convert.ToString(Request.QueryString["cust"]);
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmdcn = new SqlCommand("select*from tblcreditnote where customer='" + PID + "' and balance > 0", con);
+                SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
+                DataTable dtcn = new DataTable();
+                sdacn.Fill(dtcn); int nb = dtcn.Rows.Count;
+                if(nb != 0)
+                {
+                    ddlExistingCredit.DataSource = dtcn;
+                    ddlExistingCredit.DataTextField = "Notes";
+                    ddlExistingCredit.DataValueField = "id";
+                    ddlExistingCredit.DataBind();
+                }
+            }
+        }
+        private void GetandUpdateCredit(double newCredit)
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd2vb = new SqlCommand("select * from tblcreditnote where id='" + ddlExistingCredit.SelectedValue + "'", con);
+                SqlDataReader readervb = cmd2vb.ExecuteReader();
+                if (readervb.Read())
+                {
+                    if (ddlExistingCredit.Items.Count == 0)
+                    {
+                        string message = "There is not any existing credit to merge with!";
+                        ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');",true);
+                    }
+                    else
+                    {
+                        string existingBalance;
+                        existingBalance = readervb["Balance"].ToString();
+                        double newBalance = newCredit + Convert.ToDouble(existingBalance);
+                        SqlCommand cmd = new SqlCommand("Update tblcreditnote set Balance='" + newBalance + "'  where id='" + ddlExistingCredit.SelectedValue + "'", con);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
             }
         }
         private void bindDueDate()
@@ -60,6 +141,26 @@ namespace advtech.Finance.Accounta
                     }
                 }
             }
+        }
+        private bool CheckFSNumber()
+        {
+            bool isFound = false;
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("select fsno from tblrentreceipt where fsno = '" + txtFSNo.Text + "'", con);
+                using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                {
+                    DataTable dt = new DataTable();
+                    sda.Fill(dt); long i = dt.Rows.Count;
+                    if (i != 0)
+                    {
+                        isFound = true;
+                    }
+                }
+            }
+            return isFound;
         }
         private void bindFSnumber()
         {
@@ -128,6 +229,7 @@ namespace advtech.Finance.Accounta
                         reader.Close();
                         if (pp == "Every Three Month") { SC = Convert.ToDouble(servicecharge) * 3; }
                         else if (pp == "Monthly") { SC = Convert.ToDouble(servicecharge) * 1; }
+                        else if (pp == "Every Six Month") { SC = Convert.ToDouble(servicecharge) * 6; }
                         else { SC = Convert.ToDouble(servicecharge) * 12; }
                         ServieCharge.InnerText = SC.ToString("#,##0.00");
                     }
@@ -463,7 +565,14 @@ namespace advtech.Finance.Accounta
                 else
                 {
 
-                    String PID = Convert.ToString(Request.QueryString["cust"]);
+                    String PID = Convert.ToString(Request.QueryString["cust"]); 
+                    double SC = GetServiceCharge();
+                    UserUtility getUserName = new UserUtility();
+                    string FN = getUserName.BindUser();                                
+                    CustomerUtil getAmount = new CustomerUtil(PID);
+                    double climit = Convert.ToDouble(getAmount.GetCustomerName.Item3);
+                    double totalpay = Convert.ToDouble(getAmount.GetCustomerRentInfo.Item2);
+                    double balance = Convert.ToDouble(txtqtyhand.Text) - totalpay;
                     String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
                     using (SqlConnection con = new SqlConnection(CS))
                     {
@@ -476,1461 +585,339 @@ namespace advtech.Finance.Accounta
                             readerset.Close();
                             if (set == "Yes")
                             {
-                                SqlCommand cmdcrd = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                SqlDataReader readercrd = cmdcrd.ExecuteReader();
-                                if (readercrd.Read())
+
+                                if (-balance > climit && Convert.ToDouble(CashPay1.InnerText) > 0)
                                 {
-                                    double SC = 0;
-                                    string pp = readercrd["PaymentDuePeriod"].ToString();
-                                    string limit = readercrd["CreditLimit"].ToString();
-                                    readercrd.Close();
 
-                                    SqlCommand cmd2 = new SqlCommand("select * from tblrent where customer='" + PID + "'", con);
-                                    SqlDataReader reader = cmd2.ExecuteReader();
+                                    double ex = -balance;
+                                    string message = "Credit Limit Exceeded By " + ex.ToString("#,##0.00") + " Addind the existing credit " + Convert.ToDouble(CashPay1.InnerText);
+                                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "')", true);
 
-                                    if (reader.Read())
+                                }
+                                else
+                                {
+                                    BindNotes();
+                                    if (balance == 0)
                                     {
+                                        //Declare New User
+                                        //selecting from "+ddlCashorBank.SelectedItem.Text+"
+                                        GeneralLedger GLCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                        GLCash.increaseDebitAccount();
+                                        //Selecting from account prefernce
+                                        GeneralLedger getAccountInfo = new GeneralLedger();
+                                        DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                        double income = (totalpay - SC) / 1.15;
+                                        double vat = totalpay - SC - income;
+                                        income = income + SC;
 
-                                        string kc; string duedates = reader["duedate"].ToString();
-                                        string servicecharge; servicecharge = reader["servicecharge"].ToString();
-                                        kc = reader["currentperiodue"].ToString();
-                                        if (pp == "Every Three Month") { SC = Convert.ToDouble(servicecharge) * 3; }
-                                        else if (pp == "Every Six Month") { SC = Convert.ToDouble(servicecharge) * 6; }
-                                        else if (pp == "Monthly") { SC = Convert.ToDouble(servicecharge) * 1; }
-                                        else { SC = Convert.ToDouble(servicecharge) * 12; }
-                                        string totalpay1 = Convert.ToDouble(kc).ToString("#,##0.00");
-                                        double totalpay = Convert.ToDouble(totalpay1);
-                                        reader.Close();
-                                        double balance = Convert.ToDouble(txtqtyhand.Text) - totalpay;
+                                        GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                        GLIncome.increaseCreditAccount();
 
-                                        double due = Convert.ToDouble(kc);
-                                        double climit = Convert.ToDouble(limit);
-                                        if (-balance > climit && Convert.ToDouble(CashPay1.InnerText) > 0)
+                                        GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                        GLTax.increaseCreditAccount();
+                                        //Inserting to customer statement
+                                        CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                        updateStatus.UpdateStatement();
+                                        updateStatus.UpdateDueDate();
+                                        //Insert into cash receipt journal
+                                        double payment = Convert.ToDouble(txtqtyhand.Text);
+                                        SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                        DataTable dtdf = new DataTable();
+                                        sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
+                                        double vatfree = totalpay - SC;
+                                        SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb + "','" + txtFSNo.Text + "','Cash')", con);
+                                        cmdri.ExecuteNonQuery();
+                                        string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash";
+                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                        cmd197h.ExecuteNonQuery();
+                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                        cmdAc.ExecuteNonQuery();
+                                        Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash");
+
+                                    }
+                                    else if (balance < 0)
+                                    {
+                                        double newclimit = climit + balance;
+                                        SqlCommand cmdclim = new SqlCommand("Update tblCustomers set CreditLimit='" + newclimit + "' where FllName='" + PID + "'", con);
+                                        cmdclim.ExecuteNonQuery();
+                                        //Calling and Updating Accounts Receivable
+                                        GeneralLedger GlReceivable = new GeneralLedger("Accounts Receivable", PID, -balance);
+                                        GlReceivable.increaseDebitAccount();
+                                        //Calling Cash Account
+                                        GeneralLedger GlCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                        GlCash.increaseDebitAccount();
+                                        GeneralLedger getAccountInfo = new GeneralLedger();
+                                        DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                        //Crediting income and tax account
+                                        double income = (totalpay - SC) / 1.15;
+                                        double vat = totalpay - SC - income;
+                                        income = income + SC;
+                                        GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                        GLIncome.increaseCreditAccount();
+
+                                        GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                        GLTax.increaseCreditAccount();
+                                        CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                        updateStatus.UpdateStatement();
+                                        updateStatus.UpdateDueDate();
+
+                                        if (Checkbox2.Checked == true)
                                         {
-
-                                            double ex = -balance;
-                                            lblMsg.Text = "Credit Limit Exceeded By " + ex.ToString("#,##0.00"); lblMsg.ForeColor = Color.Red;
-                                            lblMsg.Visible = true; infoicon.Visible = true;
-
-                                        }
-                                        else
-                                        {
-                                            BindNotes();
-                                            if (balance == 0)
+                                            if (Checkbox1.Checked == true)
                                             {
-                                                //selecting from "+ddlCashorBank.SelectedItem.Text+"
-
-                                                SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                {
-                                                    DataTable dtBrands2322 = new DataTable();
-                                                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                    //
-                                                    if (i2 != 0)
-                                                    {
-                                                        SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                        if (reader6679034.Read())
-                                                        {
-                                                            string ah12893;
-                                                            ah12893 = reader6679034["Balance"].ToString();
-                                                            reader6679034.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                            Double M1 = Convert.ToDouble(ah12893);
-                                                            Double bl1 = M1 + deb;
-                                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                            cmd45.ExecuteNonQuery();
-                                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                            cmd1974.ExecuteNonQuery();
-                                                        }
-                                                    }
-                                                }
-                                                //Selecting from account prefernce
-                                                SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                {
-                                                    DataTable dtBrandss = new DataTable();
-                                                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                    //Selecting from Income account
-                                                    SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                    {
-                                                        DataTable dtBrandss2 = new DataTable();
-                                                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmds2.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double income = (totalpay - SC) / 1.15;
-                                                                    income = income + SC;
-                                                                    Double bl1 = income + M1;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    //Selecting from cash acccount
-                                                    SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                    {
-                                                        DataTable dttax = new DataTable();
-                                                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmdintax.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double vatfree = (totalpay - SC) / 1.15;
-                                                                    double income = (totalpay - SC) - vatfree;
-                                                                    Double bl1 = M1 + income;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                //Inserting to customer statement
-                                                SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                                SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                if (readerbcustb.Read())
-                                                {
-                                                    string ah11;
-
-                                                    ah11 = readerbcustb["Balance"].ToString();
-                                                    readerbcustb.Close();
-
-                                                    SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtReference.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + ah11 + "','" + PID + "')", con);
-                                                    custcmd.ExecuteNonQuery();
-                                                    SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                    SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                    if (readerAC.Read())
-                                                    {
-                                                        String FN = readerAC["Name"].ToString();
-                                                        readerAC.Close();
-                                                        con.Close();
-                                                        //Activity
-                                                        con.Open();
-                                                        string money = "ETB";
-
-
-                                                        //Updating the Due Date
-                                                        SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                        SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                        if (readerup.Read())
-                                                        {
-                                                            String terms = readerup["PaymentDuePeriod"].ToString();
-                                                            readerup.Close();
-                                                            if (terms == "Monthly")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(30);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Three Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(90);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Six Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(180);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(365);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            //Insert into cash receipt journal
-                                                            double payment = Convert.ToDouble(txtqtyhand.Text);
-                                                            double credit = due - payment;
-                                                            double balancedue = Convert.ToDouble(ah11);
-                                                            double unpaid = -balance;
-                                                            double remain = balancedue + unpaid;
-
-                                                            SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                            SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                            DataTable dtdf = new DataTable();
-                                                            sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
-                                                            double vatfree = due - SC;
-                                                            SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','" + ah11 + "','" + nb + "','" + txtFSNo.Text + "','Cash')", con);
-                                                            cmdri.ExecuteNonQuery();
-                                                            string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash";
-                                                            SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-
-                                                            cmd197h.ExecuteNonQuery();
-                                                            SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
-
-                                                            cmdAc.ExecuteNonQuery();
-                                                            Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash");
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            else if (balance < 0)
-                                            {
-
-                                                //selecting from Accounts Receivable
-                                                double newclimit = climit + balance;
-                                                SqlCommand cmdclim = new SqlCommand("Update tblCustomers set CreditLimit='" + newclimit + "' where FllName='" + PID + "'", con);
-                                                cmdclim.ExecuteNonQuery();
-                                                if (Checkbox2.Checked == true)
-                                                {
-                                                    SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='Accounts Receivable'", con);
-                                                    using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                    {
-                                                        DataTable dtBrands2322 = new DataTable();
-                                                        sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                        //
-                                                        if (i2 != 0)
-                                                        {
-                                                            SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                            if (reader6679034.Read())
-                                                            {
-                                                                string ah12893;
-                                                                ah12893 = reader6679034["Balance"].ToString();
-                                                                reader6679034.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                Double M1 = Convert.ToDouble(ah12893);
-                                                                double unpaid = -balance;
-                                                                Double bl1 = M1 + unpaid; ;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='Accounts Receivable'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + unpaid + "','0','" + bl1 + "','" + DateTime.Now.Date + "','Accounts Receivable','','Accounts Receivable')", con);
-                                                                cmd1974.ExecuteNonQuery();
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                SqlCommand cmdacr = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmdacr))
-                                                {
-                                                    DataTable dtBrands2322 = new DataTable();
-                                                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                    //
-                                                    if (i2 != 0)
-                                                    {
-                                                        SqlDataReader reader6679034 = cmdacr.ExecuteReader();
-
-                                                        if (reader6679034.Read())
-                                                        {
-                                                            string ah12893;
-                                                            ah12893 = reader6679034["Balance"].ToString();
-                                                            reader6679034.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                            Double M1 = Convert.ToDouble(ah12893);
-                                                            Double bl1 = M1 + deb;
-                                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                            cmd45.ExecuteNonQuery();
-                                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                            cmd1974.ExecuteNonQuery();
-                                                        }
-                                                    }
-                                                }
-                                                //Selecting from account prefernce
-                                                SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                {
-                                                    DataTable dtBrandss = new DataTable();
-                                                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                    //Selecting from Income account
-                                                    SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                    {
-                                                        DataTable dtBrandss2 = new DataTable();
-                                                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmds2.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                    income = income + SC;
-                                                                    Double bl1 = income + M1;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    //Selecting from cash acccount
-                                                    SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                    {
-                                                        DataTable dttax = new DataTable();
-                                                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmdintax.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double vatfree = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                    double vat = (Convert.ToDouble(txtqtyhand.Text) - SC) - vatfree;
-                                                                    Double bl1 = M1 + vat;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                //Inserting to customer statement
-                                                SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                                SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                if (readerbcustb.Read())
-                                                {
-                                                    string ah11;
-
-                                                    ah11 = readerbcustb["Balance"].ToString();
-                                                    readerbcustb.Close();
-
-                                                    double payment = Convert.ToDouble(txtqtyhand.Text);
-                                                    double credit = due - payment;
-                                                    double balancedue = Convert.ToDouble(ah11);
-                                                    double unpaid = -balance;
-                                                    double remain = balancedue + unpaid;
-                                                    SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtReference.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + remain + "','" + PID + "')", con);
-                                                    custcmd.ExecuteNonQuery();
-                                                    SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                    SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                    if (readerAC.Read())
-                                                    {
-                                                        String FN = readerAC["Name"].ToString();
-                                                        readerAC.Close();
-                                                        con.Close();
-                                                        //Activity
-                                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                        con.Open();
-                                                        cmdAc.ExecuteNonQuery();
-                                                        string money = "ETB";
-
-                                                        //Updating the Due Date
-                                                        SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                        SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                        if (readerup.Read())
-                                                        {
-                                                            String terms = readerup["PaymentDuePeriod"].ToString();
-                                                            readerup.Close();
-                                                            if (terms == "Monthly")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(30);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Three Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(90);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Six Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(180);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(365);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            double cash = due - credit - SC;
-                                                            if (Checkbox2.Checked == true)
-                                                            {
-                                                                SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + due + "','" + -balance + "','Credit for rent','" + DateTime.Now + "','" + txtReference.Text + "')", con);
-                                                                cmdcrn.ExecuteNonQuery();
-                                                                ///Credit Url Extraction
-                                                                SqlCommand cmdcni = new SqlCommand("select * from tblcreditnote order by id desc", con);
-                                                                SqlDataAdapter sdacni = new SqlDataAdapter(cmdcni);
-                                                                DataTable dtcni = new DataTable();
-                                                                sdacni.Fill(dtcni); long nbcni = Convert.ToInt64(dtcni.Rows[0][0].ToString());
-                                                                ///
-                                                                string crediturl = "creditnotedetails.aspx?ref2=" + nbcni + "&&cust=" + PID;
-                                                                SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(credit).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
-                                                                cmdcn.ExecuteNonQuery();
-                                                            }
-                                                            else
-                                                            {
-                                                                SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(credit).ToString("#,##0.00") + "'+' '+'was not recognized as credit','" + FN + "','" + PID + "','Unseen','fas fa-exclamation-circle text-white','icon-circle bg bg-danger','#','MN')", con);
-                                                                cmdcn.ExecuteNonQuery();
-                                                            }
-                                                            SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                            SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                            DataTable dtdf = new DataTable();
-                                                            sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
-                                                            SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + cash + "','" + ah11 + "','" + nb + "','" + txtFSNo.Text + "','Cash')", con);
-                                                            cmdri.ExecuteNonQuery();
-                                                            string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash";
-
-                                                            SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(payment).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                            cmd197h.ExecuteNonQuery();
-                                                            SqlCommand cmdfh = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(payment).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','FH')", con);
-                                                            cmdfh.ExecuteNonQuery();
-
-                                                            Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash");
-
-                                                        }
-                                                    }
-                                                }
-
+                                                GetandUpdateCredit(-balance);
+                                                ///
+                                                string crediturl = "creditnotedetails.aspx?ref2=" + ddlExistingCredit.SelectedValue + "&&cust=" + PID;
+                                                SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB'+' '+'" + Convert.ToDouble(-balance).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
+                                                cmdcn.ExecuteNonQuery();
                                             }
                                             else
                                             {
-                                                SqlCommand cmdcn = new SqlCommand("select sum(balance) from tblcreditnote where customer='" + PID + "' and balance > 0", con);
-                                                SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
-                                                DataTable dtcn = new DataTable();
-                                                sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
-                                                if (dtcn.Rows[0][0].ToString() == null || dtcn.Rows[0][0].ToString() == "")
-                                                {
-
-                                                    SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                    using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                    {
-                                                        DataTable dtBrands2322 = new DataTable();
-                                                        sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                        //
-                                                        if (i2 != 0)
-                                                        {
-                                                            SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                            if (reader6679034.Read())
-                                                            {
-                                                                string ah12893;
-                                                                ah12893 = reader6679034["Balance"].ToString();
-                                                                reader6679034.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                                Double M1 = Convert.ToDouble(ah12893);
-                                                                Double bl1 = M1 + deb;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                                cmd1974.ExecuteNonQuery();
-                                                            }
-                                                        }
-                                                    }
-                                                    //Selecting from account prefernce
-                                                    SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                    using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                    {
-                                                        DataTable dtBrandss = new DataTable();
-                                                        sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                        //Selecting from Income account
-                                                        SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                        using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                        {
-                                                            DataTable dtBrandss2 = new DataTable();
-                                                            sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                            //
-                                                            if (iss2 != 0)
-                                                            {
-                                                                SqlDataReader readers = cmds2.ExecuteReader();
-                                                                if (readers.Read())
-                                                                {
-                                                                    string ah1289;
-                                                                    ah1289 = readers["Balance"].ToString();
-                                                                    readers.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                    SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                    if (reader66.Read())
-                                                                    {
-                                                                        string ah11;
-                                                                        string ah1258;
-                                                                        ah11 = reader66["No"].ToString();
-                                                                        ah1258 = reader66["AccountType"].ToString();
-                                                                        reader66.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        Double M1 = Convert.ToDouble(ah1289);
-
-                                                                        double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                        income = income + SC;
-                                                                        Double bl1 = income + M1;
-                                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                        cmd45.ExecuteNonQuery();
-                                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                        cmd1974.ExecuteNonQuery();
-
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        //Selecting from cash acccount
-                                                        SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                        using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                        {
-                                                            DataTable dttax = new DataTable();
-                                                            sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                            //
-                                                            if (iss2 != 0)
-                                                            {
-                                                                SqlDataReader readers = cmdintax.ExecuteReader();
-                                                                if (readers.Read())
-                                                                {
-                                                                    string ah1289;
-                                                                    ah1289 = readers["Balance"].ToString();
-                                                                    readers.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                    SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                    if (reader66.Read())
-                                                                    {
-                                                                        string ah11;
-                                                                        string ah1258;
-                                                                        ah11 = reader66["No"].ToString();
-                                                                        ah1258 = reader66["AccountType"].ToString();
-                                                                        reader66.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        Double M1 = Convert.ToDouble(ah1289);
-                                                                        double vatfree = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                        double vat = (Convert.ToDouble(txtqtyhand.Text) - SC) - vatfree;
-                                                                        Double bl1 = M1 + vat;
-                                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + vat + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                        cmd45.ExecuteNonQuery();
-                                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                        cmd1974.ExecuteNonQuery();
-
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    //Inserting to customer statement
-                                                    SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                                    SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                    if (readerbcustb.Read())
-                                                    {
-                                                        string ah11;
-
-                                                        ah11 = readerbcustb["Balance"].ToString();
-                                                        readerbcustb.Close();
-                                                        double balcust = totalpay - Convert.ToDouble(txtqtyhand.Text);
-                                                        double statbalance = Convert.ToDouble(ah11);
-                                                        double finalbalance = balcust + statbalance;
-                                                        SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtReference.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + finalbalance + "','" + PID + "')", con);
-                                                        custcmd.ExecuteNonQuery();
-                                                        SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                        SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                        if (readerAC.Read())
-                                                        {
-                                                            String FN = readerAC["Name"].ToString();
-                                                            readerAC.Close();
-                                                            con.Close();
-                                                            //Activity
-                                                            SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                            con.Open();
-                                                            cmdAc.ExecuteNonQuery();
-                                                            string money = "ETB";
-
-
-                                                            //Updating the Due Date
-                                                            SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                            SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                            if (readerup.Read())
-                                                            {
-                                                                String terms = readerup["PaymentDuePeriod"].ToString();
-                                                                readerup.Close();
-                                                                if (terms == "Monthly")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(30);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else if (terms == "Every Three Month")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(90);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else if (terms == "Every Six Month")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(180);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(365);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                //Insert into cash receipt journal
-                                                                double vatfree = due - 0.15 * due;
-                                                                SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                                SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                                DataTable dtdf = new DataTable();
-                                                                sdadf.Fill(dtdf); long nb1 = dtdf.Rows.Count + 1;
-                                                                double amount1 = Convert.ToDouble(txtqtyhand.Text) - SC;
-                                                                SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + amount1 + "','" + ah11 + "','" + nb1 + "','" + txtFSNo.Text + "','Cash')", con);
-                                                                cmdri.ExecuteNonQuery();
-                                                                string url = "rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Cash";
-                                                                SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                                cmd197h.ExecuteNonQuery();
-                                                                Response.Redirect("rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Cash");
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    Tast.Visible = false;
-                                                    lblMsg.Text = "ደንበኛው የቀደመ እዳ በመጠን " + Convert.ToDouble(dtcn.Rows[0][0].ToString()).ToString("#,##0.00") + " ብር ስላለበት እላፊ ብር " + balance.ToString("#,##0.00") + " ለእዳ ይከፈል፡፡";
-                                                    lblMsg.ForeColor = Color.Red; lblMsg.Visible = true;
-                                                }
-
+                                                SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','"+ Convert.ToDouble(txtqtyhand.Text) + "','" + -balance + "','" + txtCreditTitle.Text + "','" + DateTime.Now + "','" + txtReference.Text + "')", con);
+                                                cmdcrn.ExecuteNonQuery();
+                                                ///Credit Url Extraction
+                                                SqlCommand cmdcni = new SqlCommand("select * from tblcreditnote order by id desc", con);
+                                                SqlDataAdapter sdacni = new SqlDataAdapter(cmdcni);
+                                                DataTable dtcni = new DataTable();
+                                                sdacni.Fill(dtcni); long nbcni = Convert.ToInt64(dtcni.Rows[0][0].ToString());
+                                                ///
+                                                string crediturl = "creditnotedetails.aspx?ref2=" + nbcni + "&&cust=" + PID;
+                                                SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB'+' '+'" + Convert.ToDouble(-balance).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
+                                                cmdcn.ExecuteNonQuery();
                                             }
                                         }
-                                    }
+                                        double payment = Convert.ToDouble(txtqtyhand.Text);
+                                        SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                        DataTable dtdf = new DataTable();
+                                        sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
+                                        double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
+                                        SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb + "','" + txtFSNo.Text + "','Cash')", con);
+                                        cmdri.ExecuteNonQuery();
+                                        string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash";
+                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
 
+                                        cmd197h.ExecuteNonQuery();
+                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                        cmdAc.ExecuteNonQuery();
+                                        Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash");
+                                    }
+                                    else
+                                    {
+                                        SqlCommand cmdcn = new SqlCommand("select sum(balance) from tblcreditnote where customer='" + PID + "' and balance > 0", con);
+                                        SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
+                                        DataTable dtcn = new DataTable();
+                                        sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
+                                        if (dtcn.Rows[0][0].ToString() == null || dtcn.Rows[0][0].ToString() == "")
+                                        {
+
+                                            GeneralLedger GLCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                            GLCash.increaseDebitAccount();
+                                            //Selecting from account prefernce
+                                            GeneralLedger getAccountInfo = new GeneralLedger();
+                                            DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                            double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
+                                            double vat = Convert.ToDouble(txtqtyhand.Text) - SC - income;
+                                            income = income + SC;
+                                            GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                            GLIncome.increaseCreditAccount();
+                                            //Tax account
+                                            GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                            GLTax.increaseCreditAccount();
+                                            //Inserting to customer statement
+                                            CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                            updateStatus.UpdateStatement();
+                                            updateStatus.UpdateDueDate();
+                                            //Insert into cash receipt journal
+                                            double payment = Convert.ToDouble(txtqtyhand.Text);
+                                            SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                            SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                            DataTable dtdf = new DataTable();
+                                            sdadf.Fill(dtdf); long nb1 = dtdf.Rows.Count + 1;
+                                            double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
+                                            SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb1 + "','" + txtFSNo.Text + "','Cash')", con);
+                                            cmdri.ExecuteNonQuery();
+                                            string url = "rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Cash";
+                                            SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                            cmd197h.ExecuteNonQuery();
+                                            SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                            cmdAc.ExecuteNonQuery();
+                                            Response.Redirect("rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Cash");
+                                        }
+                                        else
+                                        {
+                                            Tast.Visible = false;
+                                            lblMsg.Text = "ደንበኛው የቀደመ እዳ በመጠን " + Convert.ToDouble(dtcn.Rows[0][0].ToString()).ToString("#,##0.00") + " ብር ስላለበት እላፊ ብር " + balance.ToString("#,##0.00") + " ለእዳ ይከፈል፡፡";
+                                            lblMsg.ForeColor = Color.Red; lblMsg.Visible = true;
+                                        }
+                                    }
                                 }
                             }
                             else
                             {
-                                SqlCommand cmdcrd = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                SqlDataReader readercrd = cmdcrd.ExecuteReader();
-                                if (readercrd.Read())
+                                BindNotes();
+                                if (balance == 0)
                                 {
-                                    double SC = 0;
-                                    string pp = readercrd["PaymentDuePeriod"].ToString();
-                                    readercrd.Close();
-                                    SqlCommand cmd2 = new SqlCommand("select * from tblrent where customer='" + PID + "'", con);
-                                    SqlDataReader reader = cmd2.ExecuteReader();
+                                    //Declare New User
+                                    //selecting from "+ddlCashorBank.SelectedItem.Text+"
+                                    GeneralLedger GLCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                    GLCash.increaseDebitAccount();
+                                    //Selecting from account prefernce
+                                    GeneralLedger getAccountInfo = new GeneralLedger();
+                                    DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                    double income = (totalpay - SC) / 1.15;
+                                    double vat = totalpay - SC - income;
+                                    income = income + SC;
 
-                                    if (reader.Read())
+                                    GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                    GLIncome.increaseCreditAccount();
+
+                                    GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                    GLTax.increaseCreditAccount();
+                                    //Inserting to customer statement
+                                    CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                    updateStatus.UpdateStatement();
+                                    updateStatus.UpdateDueDate();
+                                    //Insert into cash receipt journal
+                                    double payment = Convert.ToDouble(txtqtyhand.Text);
+                                    SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                    SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                    DataTable dtdf = new DataTable();
+                                    sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
+                                    double vatfree = totalpay - SC;
+                                    SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb + "','" + txtFSNo.Text + "','Cash')", con);
+                                    cmdri.ExecuteNonQuery();
+                                    string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash";
+                                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                    cmd197h.ExecuteNonQuery();
+                                    SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                    cmdAc.ExecuteNonQuery();
+                                    Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash");
+
+                                }
+                                else if (balance < 0)
+                                {
+                                    double newclimit = climit + balance;
+                                    SqlCommand cmdclim = new SqlCommand("Update tblCustomers set CreditLimit='" + newclimit + "' where FllName='" + PID + "'", con);
+                                    cmdclim.ExecuteNonQuery();
+                                    //Calling and Updating Accounts Receivable
+                                    GeneralLedger GlReceivable = new GeneralLedger("Accounts Receivable", PID, -balance);
+                                    GlReceivable.increaseDebitAccount();
+                                    //Calling Cash Account
+                                    GeneralLedger GlCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                    GlCash.increaseDebitAccount();
+                                    GeneralLedger getAccountInfo = new GeneralLedger();
+                                    DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                    //Crediting income and tax account
+                                    double income = (totalpay - SC) / 1.15;
+                                    double vat = totalpay - SC - income;
+                                    income = income + SC;
+                                    GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                    GLIncome.increaseCreditAccount();
+                                    GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                    GLTax.increaseCreditAccount();
+                                    CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                    updateStatus.UpdateStatement();
+                                    updateStatus.UpdateDueDate();
+
+                                    if (Checkbox2.Checked == true)
                                     {
-                                        string kc; string servicecharge; string duedates = reader["duedate"].ToString();
-                                        kc = reader["currentperiodue"].ToString(); servicecharge = reader["servicecharge"].ToString();
-                                        if (pp == "Every Three Month") { SC = Convert.ToDouble(servicecharge) * 3; }
-                                        else if (pp == "Every Six Month") { SC = Convert.ToDouble(servicecharge) * 6; }
-                                        else if (pp == "Monthly") { SC = Convert.ToDouble(servicecharge) * 1; }
-                                        else { SC = Convert.ToDouble(servicecharge) * 12; }
-                                        string totalpay1 = Convert.ToDouble(kc).ToString("#,##0.00");
-                                        double totalpay = Convert.ToDouble(kc);
-                                        reader.Close();
-                                        double balance = Convert.ToDouble(txtqtyhand.Text) - Convert.ToDouble(totalpay1);
-                                        double due = Convert.ToDouble(kc);
-                                        BindNotes();
-                                        if (balance == 0)
+                                        if (Checkbox1.Checked == true)
                                         {
-                                            //selecting from Cash at BANK
-                                            SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                            using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                            {
-                                                DataTable dtBrands2322 = new DataTable();
-                                                sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                //
-                                                if (i2 != 0)
-                                                {
-                                                    SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                    if (reader6679034.Read())
-                                                    {
-                                                        string ah12893;
-                                                        ah12893 = reader6679034["Balance"].ToString();
-                                                        reader6679034.Close();
-                                                        con.Close();
-                                                        con.Open();
-                                                        double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                        Double M1 = Convert.ToDouble(ah12893);
-                                                        Double bl1 = M1 + deb;
-                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                        cmd45.ExecuteNonQuery();
-                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                        cmd1974.ExecuteNonQuery();
-                                                    }
-                                                }
-                                            }
-                                            //Selecting from account prefernce
-                                            SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                            using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                            {
-                                                DataTable dtBrandss = new DataTable();
-                                                sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                //Selecting from Income account
-                                                SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                {
-                                                    DataTable dtBrandss2 = new DataTable();
-                                                    sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                    //
-                                                    if (iss2 != 0)
-                                                    {
-                                                        SqlDataReader readers = cmds2.ExecuteReader();
-                                                        if (readers.Read())
-                                                        {
-                                                            string ah1289;
-                                                            ah1289 = readers["Balance"].ToString();
-                                                            readers.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                            SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                            if (reader66.Read())
-                                                            {
-                                                                string ah11;
-                                                                string ah1258;
-                                                                ah11 = reader66["No"].ToString();
-                                                                ah1258 = reader66["AccountType"].ToString();
-                                                                reader66.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                Double M1 = Convert.ToDouble(ah1289);
-                                                                double income = (totalpay - SC) / 1.15;
-                                                                income = income + SC;
-                                                                Double bl1 = income + M1;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                cmd1974.ExecuteNonQuery();
-
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                //Selecting from cash acccount
-                                                SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                {
-                                                    DataTable dttax = new DataTable();
-                                                    sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                    //
-                                                    if (iss2 != 0)
-                                                    {
-                                                        SqlDataReader readers = cmdintax.ExecuteReader();
-                                                        if (readers.Read())
-                                                        {
-                                                            string ah1289;
-                                                            ah1289 = readers["Balance"].ToString();
-                                                            readers.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                            SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                            if (reader66.Read())
-                                                            {
-                                                                string ah11;
-                                                                string ah1258;
-                                                                ah11 = reader66["No"].ToString();
-                                                                ah1258 = reader66["AccountType"].ToString();
-                                                                reader66.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                Double M1 = Convert.ToDouble(ah1289);
-                                                                double vatfree = (totalpay - SC) / 1.15;
-                                                                double vat = (totalpay - SC) - vatfree;
-                                                                Double bl1 = M1 + vat;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + vat + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                cmd1974.ExecuteNonQuery();
-
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            //Inserting to customer statement
-                                            SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                            SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                            if (readerbcustb.Read())
-                                            {
-                                                string ah11;
-
-                                                ah11 = readerbcustb["Balance"].ToString();
-                                                readerbcustb.Close();
-
-                                                SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtReference.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + ah11 + "','" + PID + "')", con);
-                                                custcmd.ExecuteNonQuery();
-                                                SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                if (readerAC.Read())
-                                                {
-                                                    String FN = readerAC["Name"].ToString();
-                                                    readerAC.Close();
-                                                    con.Close();
-                                                    //Activity
-                                                    SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                    con.Open();
-                                                    cmdAc.ExecuteNonQuery();
-                                                    string money = "ETB";
-
-
-                                                    //Updating the Due Date
-                                                    SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                    SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                    if (readerup.Read())
-                                                    {
-                                                        String terms = readerup["PaymentDuePeriod"].ToString();
-                                                        readerup.Close();
-                                                        if (terms == "Monthly")
-                                                        {
-                                                            DateTime duedate = Convert.ToDateTime(duedates);
-                                                            DateTime newduedate = duedate.AddDays(30);
-                                                            SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                            cmdrent.ExecuteNonQuery();
-                                                        }
-                                                        else if (terms == "Every Three Month")
-                                                        {
-                                                            DateTime duedate = Convert.ToDateTime(duedates);
-                                                            DateTime newduedate = duedate.AddDays(90);
-                                                            SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                            cmdrent.ExecuteNonQuery();
-                                                        }
-                                                        else if (terms == "Every Six Month")
-                                                        {
-                                                            DateTime duedate = Convert.ToDateTime(duedates);
-                                                            DateTime newduedate = duedate.AddDays(180);
-                                                            SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                            cmdrent.ExecuteNonQuery();
-                                                        }
-                                                        else
-                                                        {
-                                                            DateTime duedate = Convert.ToDateTime(duedates);
-                                                            DateTime newduedate = duedate.AddDays(365);
-                                                            SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                            cmdrent.ExecuteNonQuery();
-                                                        }
-                                                        //Insert into cash receipt journal
-                                                        double vatfree = due - SC;
-                                                        SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                        DataTable dtdf = new DataTable();
-                                                        sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
-                                                        SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','" + ah11 + "','" + nb + "','" + txtFSNo.Text + "','Cash')", con);
-                                                        cmdri.ExecuteNonQuery();
-                                                        string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash";
-                                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                        cmd197h.ExecuteNonQuery();
-                                                        Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash");
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        else if (balance < 0)
-                                        {
-
-                                            //selecting from Accounts Receivable
-                                            if (Checkbox2.Checked == true)
-                                            {
-                                                SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='Accounts Receivable'", con);
-                                                using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                {
-                                                    DataTable dtBrands2322 = new DataTable();
-                                                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                    //
-                                                    if (i2 != 0)
-                                                    {
-                                                        SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                        if (reader6679034.Read())
-                                                        {
-                                                            string ah12893;
-                                                            ah12893 = reader6679034["Balance"].ToString();
-                                                            reader6679034.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            Double M1 = Convert.ToDouble(ah12893);
-                                                            double unpaid = -balance;
-                                                            Double bl1 = M1 + unpaid; ;
-                                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='Accounts Receivable'", con);
-                                                            cmd45.ExecuteNonQuery();
-                                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + unpaid + "','0','" + bl1 + "','" + DateTime.Now.Date + "','Accounts Receivable','','Accounts Receivable')", con);
-                                                            cmd1974.ExecuteNonQuery();
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            SqlCommand cmdacr = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                            using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmdacr))
-                                            {
-                                                DataTable dtBrands2322 = new DataTable();
-                                                sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                //
-                                                if (i2 != 0)
-                                                {
-                                                    SqlDataReader reader6679034 = cmdacr.ExecuteReader();
-
-                                                    if (reader6679034.Read())
-                                                    {
-                                                        string ah12893;
-                                                        ah12893 = reader6679034["Balance"].ToString();
-                                                        reader6679034.Close();
-                                                        con.Close();
-                                                        con.Open();
-                                                        double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                        Double M1 = Convert.ToDouble(ah12893);
-                                                        Double bl1 = M1 + deb;
-                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                        cmd45.ExecuteNonQuery();
-                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                        cmd1974.ExecuteNonQuery();
-                                                    }
-                                                }
-                                            }
-                                            //Selecting from account prefernce
-                                            SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                            using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                            {
-                                                DataTable dtBrandss = new DataTable();
-                                                sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                //Selecting from Income account
-                                                SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                {
-                                                    DataTable dtBrandss2 = new DataTable();
-                                                    sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                    //
-                                                    if (iss2 != 0)
-                                                    {
-                                                        SqlDataReader readers = cmds2.ExecuteReader();
-                                                        if (readers.Read())
-                                                        {
-                                                            string ah1289;
-                                                            ah1289 = readers["Balance"].ToString();
-                                                            readers.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                            SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                            if (reader66.Read())
-                                                            {
-                                                                string ah11;
-                                                                string ah1258;
-                                                                ah11 = reader66["No"].ToString();
-                                                                ah1258 = reader66["AccountType"].ToString();
-                                                                reader66.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                Double M1 = Convert.ToDouble(ah1289);
-                                                                double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                income = income + SC;
-                                                                Double bl1 = income + M1;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                cmd1974.ExecuteNonQuery();
-
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                //Selecting from cash acccount
-                                                SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                {
-                                                    DataTable dttax = new DataTable();
-                                                    sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                    //
-                                                    if (iss2 != 0)
-                                                    {
-                                                        SqlDataReader readers = cmdintax.ExecuteReader();
-                                                        if (readers.Read())
-                                                        {
-                                                            string ah1289;
-                                                            ah1289 = readers["Balance"].ToString();
-                                                            readers.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                            SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                            if (reader66.Read())
-                                                            {
-                                                                string ah11;
-                                                                string ah1258;
-                                                                ah11 = reader66["No"].ToString();
-                                                                ah1258 = reader66["AccountType"].ToString();
-                                                                reader66.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                Double M1 = Convert.ToDouble(ah1289);
-                                                                double vatfree = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                double vat = (Convert.ToDouble(txtqtyhand.Text) - SC) - vatfree;
-                                                                Double bl1 = M1 + vat;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                cmd1974.ExecuteNonQuery();
-
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            //Inserting to customer statement
-                                            SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                            SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                            if (readerbcustb.Read())
-                                            {
-                                                string ah11;
-
-                                                ah11 = readerbcustb["Balance"].ToString();
-                                                readerbcustb.Close();
-
-                                                double payment = Convert.ToDouble(txtqtyhand.Text);
-                                                double credit = due - payment;
-                                                double balancedue = Convert.ToDouble(ah11);
-                                                double unpaid = -balance;
-                                                double remain = balancedue + unpaid;
-                                                SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtReference.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + remain + "','" + PID + "')", con);
-                                                custcmd.ExecuteNonQuery();
-                                                SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                if (readerAC.Read())
-                                                {
-                                                    String FN = readerAC["Name"].ToString();
-                                                    readerAC.Close();
-                                                    con.Close();
-                                                    //Activity
-                                                    SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                    con.Open();
-                                                    cmdAc.ExecuteNonQuery();
-                                                    string money = "ETB";
-
-
-                                                    //Updating the Due Date
-                                                    SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                    SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                    if (readerup.Read())
-                                                    {
-                                                        String terms = readerup["PaymentDuePeriod"].ToString();
-                                                        readerup.Close();
-                                                        if (terms == "Monthly")
-                                                        {
-                                                            DateTime duedate = Convert.ToDateTime(duedates);
-                                                            DateTime newduedate = duedate.AddDays(30);
-                                                            SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                            cmdrent.ExecuteNonQuery();
-                                                        }
-                                                        else if (terms == "Every Three Month")
-                                                        {
-                                                            DateTime duedate = Convert.ToDateTime(duedates);
-                                                            DateTime newduedate = duedate.AddDays(90);
-                                                            SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                            cmdrent.ExecuteNonQuery();
-                                                        }
-                                                        else if (terms == "Every Six Month")
-                                                        {
-                                                            DateTime duedate = Convert.ToDateTime(duedates);
-                                                            DateTime newduedate = duedate.AddDays(180);
-                                                            SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                            cmdrent.ExecuteNonQuery();
-                                                        }
-                                                        else
-                                                        {
-                                                            DateTime duedate = Convert.ToDateTime(duedates);
-                                                            DateTime newduedate = duedate.AddDays(365);
-                                                            SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                            cmdrent.ExecuteNonQuery();
-                                                        }
-                                                        double cash = due - credit - SC;
-                                                        double cashvat = cash + cash * 0.15;
-                                                        if (Checkbox2.Checked == true)
-                                                        {
-                                                            SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + due + "','" + -balance + "','Credit for rent','" + DateTime.Now + "','" + txtReference.Text + "')", con);
-                                                            cmdcrn.ExecuteNonQuery();
-                                                            ///Credit Url Extraction
-                                                            SqlCommand cmdcni = new SqlCommand("select * from tblcreditnote order by id desc", con);
-                                                            SqlDataAdapter sdacni = new SqlDataAdapter(cmdcni);
-                                                            DataTable dtcni = new DataTable();
-                                                            sdacni.Fill(dtcni); long nbcni = Convert.ToInt64(dtcni.Rows[0][0].ToString());
-                                                            ///
-                                                            string crediturl = "creditnotedetails.aspx?ref2=" + nbcni + "&&cust=" + PID;
-                                                            SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(credit).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
-                                                            cmdcn.ExecuteNonQuery();
-                                                        }
-                                                        else
-                                                        {
-                                                            SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(credit).ToString("#,##0.00") + "'+' '+'was not recognized as credit','" + FN + "','" + PID + "','Unseen','fas fa-exclamation-circle text-white','icon-circle bg bg-danger','#','MN')", con);
-                                                            cmdcn.ExecuteNonQuery();
-                                                        }
-                                                        SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                        DataTable dtdf = new DataTable();
-                                                        sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
-                                                        string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash";
-                                                        SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + cash + "','" + ah11 + "','" + nb + "','" + txtFSNo.Text + "','Cash')", con);
-                                                        cmdri.ExecuteNonQuery();
-                                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(payment).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                        cmd197h.ExecuteNonQuery();
-                                                        Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash");
-
-                                                    }
-                                                }
-                                            }
-
+                                            GetandUpdateCredit(-balance);
+                                            ///
+                                            string crediturl = "creditnotedetails.aspx?ref2=" + ddlExistingCredit.SelectedValue + "&&cust=" + PID;
+                                            SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB'+' '+'" + Convert.ToDouble(-balance).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
+                                            cmdcn.ExecuteNonQuery();
                                         }
                                         else
                                         {
-                                            SqlCommand cmdcn = new SqlCommand("select sum(balance) from tblcreditnote where customer='" + PID + "' and balance > 0", con);
-                                            SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
-                                            DataTable dtcn = new DataTable();
-                                            sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
-                                            if (dtcn.Rows[0][0].ToString() == null || dtcn.Rows[0][0].ToString() == "")
-                                            {
-                                                SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                {
-                                                    DataTable dtBrands2322 = new DataTable();
-                                                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                    //
-                                                    if (i2 != 0)
-                                                    {
-                                                        SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                        if (reader6679034.Read())
-                                                        {
-                                                            string ah12893;
-                                                            ah12893 = reader6679034["Balance"].ToString();
-                                                            reader6679034.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                            Double M1 = Convert.ToDouble(ah12893);
-                                                            Double bl1 = M1 + deb;
-                                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                            cmd45.ExecuteNonQuery();
-                                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                            cmd1974.ExecuteNonQuery();
-                                                        }
-                                                    }
-                                                }
-                                                //Selecting from account prefernce
-                                                SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                {
-                                                    DataTable dtBrandss = new DataTable();
-                                                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                    //Selecting from Income account
-                                                    SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                    {
-                                                        DataTable dtBrandss2 = new DataTable();
-                                                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmds2.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                    income = income + SC;
-                                                                    Double bl1 = income + M1;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    //Selecting from cash acccount
-                                                    SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                    {
-                                                        DataTable dttax = new DataTable();
-                                                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmdintax.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double vatfree = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                    double vat = (Convert.ToDouble(txtqtyhand.Text) - SC) - vatfree;
-                                                                    Double bl1 = M1 + vat;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                //Inserting to customer statement
-                                                SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                                SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                if (readerbcustb.Read())
-                                                {
-                                                    string ah11;
-
-                                                    ah11 = readerbcustb["Balance"].ToString();
-                                                    readerbcustb.Close();
-                                                    double balcust = totalpay - Convert.ToDouble(txtqtyhand.Text);
-                                                    double statbalance = Convert.ToDouble(ah11);
-                                                    double finalbalance = balcust + statbalance;
-                                                    SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtReference.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + finalbalance + "','" + PID + "')", con);
-                                                    custcmd.ExecuteNonQuery();
-                                                    SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                    SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                    if (readerAC.Read())
-                                                    {
-                                                        String FN = readerAC["Name"].ToString();
-                                                        readerAC.Close();
-                                                        con.Close();
-                                                        //Activity
-                                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                        con.Open();
-                                                        cmdAc.ExecuteNonQuery();
-                                                        string money = "ETB";
-
-
-                                                        //Updating the Due Date
-                                                        SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                        SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                        if (readerup.Read())
-                                                        {
-                                                            String terms = readerup["PaymentDuePeriod"].ToString();
-                                                            readerup.Close();
-                                                            if (terms == "Monthly")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(30);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Three Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(90);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Six Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(180);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(365);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            //Insert into cash receipt journal
-                                                            double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
-                                                            SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                            SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                            DataTable dtdf = new DataTable();
-                                                            sdadf.Fill(dtdf); long nb1 = dtdf.Rows.Count + 1;
-                                                            string url = "rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Cash";
-                                                            SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','" + ah11 + "','" + nb1 + "','" + txtFSNo.Text + "','Cash')", con);
-                                                            cmdri.ExecuteNonQuery();
-                                                            SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                            cmd197h.ExecuteNonQuery();
-                                                            Response.Redirect("rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Cash");
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                Tast.Visible = false;
-                                                lblMsg.Text = "ደንበኛው የቀደመ እዳ በመጠን " + Convert.ToDouble(dtcn.Rows[0][0].ToString()).ToString("#,##0.00") + " ብር ስላለበት እላፊ ብር " + balance.ToString("#,##0.00") + " ለእዳ ይከፈል፡፡";
-                                                lblMsg.ForeColor = Color.Red; lblMsg.Visible = true;
-                                            }
+                                            SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','"+Convert.ToDouble(txtqtyhand.Text)+"','" + -balance + "','" + txtCreditTitle.Text + "','" + DateTime.Now + "','" + txtReference.Text + "')", con);
+                                            cmdcrn.ExecuteNonQuery();
+                                            ///Credit Url Extraction
+                                            SqlCommand cmdcni = new SqlCommand("select * from tblcreditnote order by id desc", con);
+                                            SqlDataAdapter sdacni = new SqlDataAdapter(cmdcni);
+                                            DataTable dtcni = new DataTable();
+                                            sdacni.Fill(dtcni); long nbcni = Convert.ToInt64(dtcni.Rows[0][0].ToString());
+                                            ///
+                                            string crediturl = "creditnotedetails.aspx?ref2=" + nbcni + "&&cust=" + PID;
+                                            SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB'+' '+'" + Convert.ToDouble(-balance).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
+                                            cmdcn.ExecuteNonQuery();
                                         }
+                                    }
+                                    double payment = Convert.ToDouble(txtqtyhand.Text);
+                                    SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                    SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                    DataTable dtdf = new DataTable();
+                                    sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
+                                    double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
+                                    SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb + "','" + txtFSNo.Text + "','Cash')", con);
+                                    cmdri.ExecuteNonQuery();
+                                    string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash";
+                                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                    cmd197h.ExecuteNonQuery();
+                                    SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+                                    cmdAc.ExecuteNonQuery();
+                                    Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Cash");
+                                }
+                                else
+                                {
+                                    SqlCommand cmdcn = new SqlCommand("select sum(balance) from tblcreditnote where customer='" + PID + "' and balance > 0", con);
+                                    SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
+                                    DataTable dtcn = new DataTable();
+                                    sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
+                                    if (dtcn.Rows[0][0].ToString() == null || dtcn.Rows[0][0].ToString() == "")
+                                    {
+
+                                        GeneralLedger GLCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                        GLCash.increaseDebitAccount();
+                                        //Selecting from account prefernce
+                                        GeneralLedger getAccountInfo = new GeneralLedger();
+                                        DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                        double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
+                                        double vat = Convert.ToDouble(txtqtyhand.Text) - SC - income;
+                                        income = income + SC;
+                                        GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                        GLIncome.increaseCreditAccount();
+                                        //Tax account
+                                        GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                        GLTax.increaseCreditAccount();
+                                        //Inserting to customer statement
+                                        CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                        updateStatus.UpdateStatement();
+                                        updateStatus.UpdateDueDate();
+                                        //Insert into cash receipt journal
+                                        double payment = Convert.ToDouble(txtqtyhand.Text);
+                                        SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                        DataTable dtdf = new DataTable();
+                                        sdadf.Fill(dtdf); long nb1 = dtdf.Rows.Count + 1;
+                                        double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
+                                        SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb1 + "','" + txtFSNo.Text + "','Cash')", con);
+                                        cmdri.ExecuteNonQuery();
+                                        string url = "rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Cash";
+                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                        cmd197h.ExecuteNonQuery();
+                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                        cmdAc.ExecuteNonQuery();
+                                        Response.Redirect("rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Cash");
+                                    }
+                                    else
+                                    {
+                                        Tast.Visible = false;
+                                        lblMsg.Text = "ደንበኛው የቀደመ እዳ በመጠን " + Convert.ToDouble(dtcn.Rows[0][0].ToString()).ToString("#,##0.00") + " ብር ስላለበት እላፊ ብር " + balance.ToString("#,##0.00") + " ለእዳ ይከፈል፡፡";
+                                        lblMsg.ForeColor = Color.Red; lblMsg.Visible = true;
                                     }
                                 }
                             }
@@ -1970,6 +957,13 @@ namespace advtech.Finance.Accounta
                 else
                 {
                     String PID = Convert.ToString(Request.QueryString["cust"]);
+                    double SC = GetServiceCharge();
+                    UserUtility getUserName = new UserUtility();
+                    string FN = getUserName.BindUser();
+                    CustomerUtil getAmount = new CustomerUtil(PID);
+                    double climit = Convert.ToDouble(getAmount.GetCustomerName.Item3);
+                    double totalpay = Convert.ToDouble(getAmount.GetCustomerRentInfo.Item2);
+                    double balance = Convert.ToDouble(txtqtyhand.Text) - totalpay;
                     String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
                     using (SqlConnection con = new SqlConnection(CS))
                     {
@@ -1982,1699 +976,345 @@ namespace advtech.Finance.Accounta
                             readerset.Close();
                             if (set == "Yes")
                             {
-                                SqlCommand cmdcrd = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                SqlDataReader readercrd = cmdcrd.ExecuteReader();
-                                if (readercrd.Read())
+
+                                if (-balance > climit && Convert.ToDouble(CashPay1.InnerText) > 0)
                                 {
 
-                                    double SC = 0;
-                                    string pp = readercrd["PaymentDuePeriod"].ToString();
-                                    string limit = readercrd["CreditLimit"].ToString();
-                                    readercrd.Close();
-                                    SqlCommand cmd2 = new SqlCommand("select * from tblrent where customer='" + PID + "'", con);
-                                    SqlDataReader reader = cmd2.ExecuteReader();
+                                    double ex = -balance;
+                                    string message = "Credit Limit Exceeded By " + ex.ToString("#,##0.00")+" Addind the existing credit "+Convert.ToDouble(CashPay1.InnerText);
+                                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "')", true);
 
-                                    if (reader.Read())
+                                }
+                                else
+                                {
+                                    BindNotes();
+                                    //Calling and updating bank account
+                                    BankOperation updateBankAccount = new BankOperation(DropDownList1.SelectedItem.Text,txtVoucher.Text,txtReference.Text,PID,Convert.ToDouble(txtqtyhand.Text));
+                                    updateBankAccount.increaseBankAccount();
+                                    if (balance == 0)
                                     {
-                                        string servicecharge; servicecharge = reader["servicecharge"].ToString();
-                                        string kc; string duedates = reader["duedate"].ToString();
-                                        kc = reader["currentperiodue"].ToString();
-                                        if (pp == "Every Three Month") { SC = Convert.ToDouble(servicecharge) * 3; }
-                                        else if (pp == "Every Six Month") { SC = Convert.ToDouble(servicecharge) * 6; }
-                                        else if (pp == "Monthly") { SC = Convert.ToDouble(servicecharge) * 1; }
-                                        else { SC = Convert.ToDouble(servicecharge) * 12; }
-                                        string totalpay1 = Convert.ToDouble(kc).ToString("#,##0.00");
-                                        double totalpay = Convert.ToDouble(kc);
-                                        reader.Close();
-                                        double balance = Convert.ToDouble(txtqtyhand.Text) - Convert.ToDouble(totalpay1);
-                                        double due = Convert.ToDouble(txtqtyhand.Text);
-                                        double climit = Convert.ToDouble(limit);
-                                        if (-balance > climit && Convert.ToDouble(CashPay1.InnerText) > 0)
+                          
+
+                                        //selecting from "+ddlCashorBank.SelectedItem.Text+"
+                                        GeneralLedger GLCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                        GLCash.increaseDebitAccount();
+                                        //Selecting from account prefernce
+                                        GeneralLedger getAccountInfo = new GeneralLedger();
+                                        DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                        double income = (totalpay - SC) / 1.15;
+                                        double vat = totalpay - SC - income;
+                                        income = income + SC;
+
+                                        GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                        GLIncome.increaseCreditAccount();
+
+                                        GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                        GLTax.increaseCreditAccount();
+                                        //Inserting to customer statement
+                                        CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                        updateStatus.UpdateStatement();
+                                        updateStatus.UpdateDueDate();
+                                        //Insert into cash receipt journal
+                                        double payment = Convert.ToDouble(txtqtyhand.Text);
+                                        SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                        DataTable dtdf = new DataTable();
+                                        sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
+                                        double vatfree = totalpay - SC;
+                                        SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb + "','" + txtFSNo.Text + "','Bank')", con);
+                                        cmdri.ExecuteNonQuery();
+                                        string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank";
+                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                        cmd197h.ExecuteNonQuery();
+                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                        cmdAc.ExecuteNonQuery();
+                                        Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank");
+
+                                    }
+                                    else if (balance < 0)
+                                    {
+                                        double newclimit = climit + balance;
+                                        SqlCommand cmdclim = new SqlCommand("Update tblCustomers set CreditLimit='" + newclimit + "' where FllName='" + PID + "'", con);
+                                        cmdclim.ExecuteNonQuery();
+                                        //Calling and Updating Accounts Receivable
+                                        GeneralLedger GlReceivable = new GeneralLedger("Accounts Receivable", PID, -balance);
+                                        GlReceivable.increaseDebitAccount();
+                                        //Calling Cash Account
+                                        GeneralLedger GlCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                        GlCash.increaseDebitAccount();
+                                        GeneralLedger getAccountInfo = new GeneralLedger();
+                                        DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                        //Crediting income and tax account
+                                        double income = (totalpay - SC) / 1.15;
+                                        double vat = totalpay - SC - income;
+                                        income = income + SC;
+                                        GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                        GLIncome.increaseCreditAccount();
+
+                                        GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                        GLTax.increaseCreditAccount();
+                                        CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                        updateStatus.UpdateStatement();
+                                        updateStatus.UpdateDueDate();
+
+                                        if (Checkbox2.Checked == true)
                                         {
-                                            double ex = -balance;
-                                            lblMsg.Text = "Credit Limit Exceeded By " + ex.ToString("#,##0.00"); lblMsg.ForeColor = Color.Red;
-                                            lblMsg.Visible = true; infoicon.Visible = true;
+                                            if (Checkbox1.Checked == true)
+                                            {
+                                                GetandUpdateCredit(-balance);
+                                                ///
+                                                string crediturl = "creditnotedetails.aspx?ref2=" + ddlExistingCredit.SelectedValue + "&&cust=" + PID;
+                                                SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB'+' '+'" + Convert.ToDouble(-balance).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
+                                                cmdcn.ExecuteNonQuery();
+                                            }
+                                            else
+                                            {
+                                                SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + Convert.ToDouble(txtqtyhand.Text) + "','" + -balance + "','" + txtCreditTitle.Text + "','" + DateTime.Now + "','" + txtReference.Text + "')", con);
+                                                cmdcrn.ExecuteNonQuery();
+                                                ///Credit Url Extraction
+                                                SqlCommand cmdcni = new SqlCommand("select * from tblcreditnote order by id desc", con);
+                                                SqlDataAdapter sdacni = new SqlDataAdapter(cmdcni);
+                                                DataTable dtcni = new DataTable();
+                                                sdacni.Fill(dtcni); long nbcni = Convert.ToInt64(dtcni.Rows[0][0].ToString());
+                                                ///
+                                                string crediturl = "creditnotedetails.aspx?ref2=" + nbcni + "&&cust=" + PID;
+                                                SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB'+' '+'" + Convert.ToDouble(-balance).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
+                                                cmdcn.ExecuteNonQuery();
+                                            }
+                                        }
+                                        double payment = Convert.ToDouble(txtqtyhand.Text);
+                                        SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                        DataTable dtdf = new DataTable();
+                                        sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
+                                        double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
+                                        SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb + "','" + txtFSNo.Text + "','Bank')", con);
+                                        cmdri.ExecuteNonQuery();
+                                        string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank";
+                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                        cmd197h.ExecuteNonQuery();
+                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                        cmdAc.ExecuteNonQuery();
+                                        Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank");
+                                    }
+                                    else
+                                    {
+                                        SqlCommand cmdcn = new SqlCommand("select sum(balance) from tblcreditnote where customer='" + PID + "' and balance > 0", con);
+                                        SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
+                                        DataTable dtcn = new DataTable();
+                                        sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
+                                        if (dtcn.Rows[0][0].ToString() == null || dtcn.Rows[0][0].ToString() == "")
+                                        {
+
+                                            GeneralLedger GLCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                            GLCash.increaseDebitAccount();
+                                            //Selecting from account prefernce
+                                            GeneralLedger getAccountInfo = new GeneralLedger();
+                                            DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                            double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
+                                            double vat = Convert.ToDouble(txtqtyhand.Text) - SC - income;
+                                            income = income + SC;
+                                            GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                            GLIncome.increaseCreditAccount();
+                                            //Tax account
+                                            GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                            GLTax.increaseCreditAccount();
+                                            //Inserting to customer statement
+                                            CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                            updateStatus.UpdateStatement();
+                                            updateStatus.UpdateDueDate();
+                                            //Insert into cash receipt journal
+                                            double payment = Convert.ToDouble(txtqtyhand.Text);
+                                            SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                            SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                            DataTable dtdf = new DataTable();
+                                            sdadf.Fill(dtdf); long nb1 = dtdf.Rows.Count + 1;
+                                            double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
+                                            SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb1 + "','" + txtFSNo.Text + "','Bank')", con);
+                                            cmdri.ExecuteNonQuery();
+                                            string url = "rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Bank";
+                                            SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                            cmd197h.ExecuteNonQuery();
+                                            SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                            cmdAc.ExecuteNonQuery();
+                                            Response.Redirect("rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Bank");
                                         }
                                         else
                                         {
-                                            if (balance == 0)
-                                            {
-
-                                                SqlCommand cmdbank = new SqlCommand("select * from tblBankAccounting where AccountName='" + DropDownList1.SelectedItem.Text + "' ", con);
-                                                SqlDataReader readerbank = cmdbank.ExecuteReader();
-
-                                                if (readerbank.Read())
-                                                {
-                                                    string bankno;
-                                                    bankno = readerbank["AccountNumber"].ToString();
-                                                    readerbank.Close();
-                                                    SqlCommand cmdbank1 = new SqlCommand("select * from tblbanktrans1 where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                    using (SqlDataAdapter sda221 = new SqlDataAdapter(cmdbank1))
-                                                    {
-                                                        string refe = Convert.ToString(txtReference.Text);
-                                                        string totalannounc = PID + " Paid through bank with ref# " + refe;
-                                                        DataTable dt1 = new DataTable();
-                                                        sda221.Fill(dt1); long j = dt1.Rows.Count;
-                                                        //
-                                                        if (j != 0)
-                                                        {
-                                                            double t = Convert.ToDouble(dt1.Rows[0][5].ToString()) + Convert.ToDouble(txtqtyhand.Text);
-                                                            SqlCommand cmdday = new SqlCommand("Update tblbanktrans1 set balance='" + t + "' where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                            cmdday.ExecuteNonQuery();
-
-                                                            SqlCommand cvb = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                            cvb.ExecuteNonQuery();
-                                                        }
-                                                        else
-                                                        {
-                                                            double t = Convert.ToDouble(txtqtyhand.Text);
-                                                            SqlCommand cvb1 = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                            cvb1.ExecuteNonQuery();
-                                                            SqlCommand b = new SqlCommand("insert into tblbanktrans1 values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                            b.ExecuteNonQuery();
-
-                                                        }
-                                                    }
-                                                    //selecting from "+ddlCashorBank.SelectedItem.Text+"
-                                                    SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                    using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                    {
-                                                        DataTable dtBrands2322 = new DataTable();
-                                                        sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                        //
-                                                        if (i2 != 0)
-                                                        {
-                                                            SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                            if (reader6679034.Read())
-                                                            {
-                                                                string ah12893;
-                                                                ah12893 = reader6679034["Balance"].ToString();
-                                                                reader6679034.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                                Double M1 = Convert.ToDouble(ah12893);
-                                                                Double bl1 = M1 + deb;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                                cmd1974.ExecuteNonQuery();
-                                                            }
-                                                        }
-                                                    }
-                                                    //Selecting from account prefernce
-                                                    SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                    using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                    {
-                                                        DataTable dtBrandss = new DataTable();
-                                                        sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                        //Selecting from Income account
-                                                        SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                        using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                        {
-                                                            DataTable dtBrandss2 = new DataTable();
-                                                            sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                            //
-                                                            if (iss2 != 0)
-                                                            {
-                                                                SqlDataReader readers = cmds2.ExecuteReader();
-                                                                if (readers.Read())
-                                                                {
-                                                                    string ah1289;
-                                                                    ah1289 = readers["Balance"].ToString();
-                                                                    readers.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                    SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                    if (reader66.Read())
-                                                                    {
-                                                                        string ah11;
-                                                                        string ah1258;
-                                                                        ah11 = reader66["No"].ToString();
-                                                                        ah1258 = reader66["AccountType"].ToString();
-                                                                        reader66.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        Double M1 = Convert.ToDouble(ah1289);
-                                                                        double income = (totalpay - SC) / 1.15;
-                                                                        income = income + SC;
-                                                                        Double bl1 = income + M1;
-                                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                        cmd45.ExecuteNonQuery();
-                                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                        cmd1974.ExecuteNonQuery();
-
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        //Selecting from cash acccount
-                                                        SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                        using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                        {
-                                                            DataTable dttax = new DataTable();
-                                                            sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                            //
-                                                            if (iss2 != 0)
-                                                            {
-                                                                SqlDataReader readers = cmdintax.ExecuteReader();
-                                                                if (readers.Read())
-                                                                {
-                                                                    string ah1289;
-                                                                    ah1289 = readers["Balance"].ToString();
-                                                                    readers.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                    SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                    if (reader66.Read())
-                                                                    {
-                                                                        string ah11;
-                                                                        string ah1258;
-                                                                        ah11 = reader66["No"].ToString();
-                                                                        ah1258 = reader66["AccountType"].ToString();
-                                                                        reader66.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        Double M1 = Convert.ToDouble(ah1289);
-                                                                        double vatfree = (totalpay - SC) / 1.15;
-                                                                        double income = (totalpay - SC) - vatfree;
-                                                                        Double bl1 = M1 + income;
-                                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                        cmd45.ExecuteNonQuery();
-                                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                        cmd1974.ExecuteNonQuery();
-
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    //Inserting to customer statement
-                                                    SqlCommand cmdreadb = new SqlCommand("select TOP 1* from tblCustomerStatement where Customer='" + PID + "'  ORDER BY CSID DESC", con);
-
-                                                    SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                    if (readerbcustb.Read())
-                                                    {
-                                                        string ah11;
-
-                                                        ah11 = readerbcustb["Balance"].ToString();
-                                                        readerbcustb.Close();
-
-                                                        SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtVoucher.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + ah11 + "','" + PID + "')", con);
-                                                        custcmd.ExecuteNonQuery();
-                                                        SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                        SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                        if (readerAC.Read())
-                                                        {
-                                                            String FN = readerAC["Name"].ToString();
-                                                            readerAC.Close();
-                                                            con.Close();
-                                                            //Activity
-                                                            SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                            con.Open();
-                                                            cmdAc.ExecuteNonQuery();
-                                                            string money = "ETB";
-
-                                                            //Updating the Due Date
-                                                            SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                            SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                            if (readerup.Read())
-                                                            {
-                                                                String terms = readerup["PaymentDuePeriod"].ToString();
-                                                                readerup.Close();
-                                                                if (terms == "Monthly")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(30);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else if (terms == "Every Three Month")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(90);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else if (terms == "Every Six Month")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(180);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(365);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                //Generating invoice if checked
-                                                                if (CheckGene.Checked == true)
-                                                                {
-                                                                    SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                                    SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                                    DataTable dtdf = new DataTable();
-                                                                    sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
-                                                                    double vatfree = due - SC;
-                                                                    SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','" + ah11 + "','" + nb + "','" + txtFSNo.Text + "','Bank')", con);
-                                                                    cmdri.ExecuteNonQuery();
-                                                                    string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank";
-                                                                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into bank account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                                    cmd197h.ExecuteNonQuery();
-                                                                    SqlCommand cmd197h2 = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into bank account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','FH')", con);
-                                                                    cmd197h2.ExecuteNonQuery();
-                                                                    SqlCommand cmdAc1 = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
-
-                                                                    cmdAc1.ExecuteNonQuery();
-                                                                    Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank");
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    if (Request.QueryString["bill"] != null)
-                                                    {
-                                                        SqlCommand cmdupbill = new SqlCommand("Update tblcustomerbill set status='Billed' where customer='" + PID + "'", con);
-                                                        cmdupbill.ExecuteNonQuery();
-                                                        SqlCommand cmd197hb = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','Your bill request has been approved','" + PID + "','" + PID + "','Unseen','fas fa-calendar text-white','icon-circle bg bg-success','','CUST')", con);
-                                                        cmd197hb.ExecuteNonQuery();
-                                                    }
-                                                }
-                                                Response.Redirect("bankstatment.aspx?ref2=" + DropDownList1.SelectedItem.Text);
-                                            }
-                                            else if (balance < 0)
-                                            {
-                                                double newclimit = climit + balance;
-                                                SqlCommand cmdclim = new SqlCommand("Update tblCustomers set CreditLimit='" + newclimit + "' where FllName='" + PID + "'", con);
-                                                cmdclim.ExecuteNonQuery();
-                                                SqlCommand cmdbank = new SqlCommand("select * from tblBankAccounting where AccountName='" + DropDownList1.SelectedItem.Text + "' ", con);
-                                                SqlDataReader readerbank = cmdbank.ExecuteReader();
-
-                                                if (readerbank.Read())
-                                                {
-                                                    string bankno;
-                                                    bankno = readerbank["AccountNumber"].ToString();
-                                                    readerbank.Close();
-                                                    string refe = Convert.ToString(txtReference.Text);
-                                                    string totalannounc = PID + " Paid through bank with ref# " + refe;
-                                                    SqlCommand cmdbank1 = new SqlCommand("select * from tblbanktrans1 where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                    using (SqlDataAdapter sda221 = new SqlDataAdapter(cmdbank1))
-                                                    {
-                                                        DataTable dt1 = new DataTable();
-                                                        sda221.Fill(dt1); long j = dt1.Rows.Count;
-                                                        //
-                                                        if (j != 0)
-                                                        {
-                                                            double t = Convert.ToDouble(dt1.Rows[0][5].ToString()) + Convert.ToDouble(txtqtyhand.Text);
-                                                            SqlCommand cmdday = new SqlCommand("Update tblbanktrans1 set balance='" + t + "' where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                            cmdday.ExecuteNonQuery();
-                                                            SqlCommand cvb = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                            cvb.ExecuteNonQuery();
-                                                        }
-                                                        else
-                                                        {
-                                                            double t = Convert.ToDouble(txtqtyhand.Text);
-                                                            SqlCommand cvb1 = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','payment through bank','" + DateTime.Now.Date + "')", con);
-                                                            cvb1.ExecuteNonQuery();
-                                                            SqlCommand b = new SqlCommand("insert into tblbanktrans1 values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','payment through bank','" + DateTime.Now.Date + "')", con);
-                                                            b.ExecuteNonQuery();
-
-                                                        }
-                                                    }
-                                                    //selecting from Accounts Receivable
-                                                    SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='Accounts Receivable'", con);
-                                                    using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                    {
-                                                        DataTable dtBrands2322 = new DataTable();
-                                                        sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                        //
-                                                        if (i2 != 0)
-                                                        {
-                                                            SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                            if (reader6679034.Read())
-                                                            {
-                                                                string ah12893;
-                                                                ah12893 = reader6679034["Balance"].ToString();
-                                                                reader6679034.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                Double M1 = Convert.ToDouble(ah12893);
-                                                                double unpaid = -balance;
-                                                                Double bl1 = M1 + unpaid; ;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='Accounts Receivable'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + unpaid + "','0','" + bl1 + "','" + DateTime.Now.Date + "','Accounts Receivable','','Accounts Receivable')", con);
-                                                                cmd1974.ExecuteNonQuery();
-                                                            }
-                                                        }
-                                                    }
-                                                    SqlCommand cmdacr = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                    using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmdacr))
-                                                    {
-                                                        DataTable dtBrands2322 = new DataTable();
-                                                        sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                        //
-                                                        if (i2 != 0)
-                                                        {
-                                                            SqlDataReader reader6679034 = cmdacr.ExecuteReader();
-
-                                                            if (reader6679034.Read())
-                                                            {
-                                                                string ah12893;
-                                                                ah12893 = reader6679034["Balance"].ToString();
-                                                                reader6679034.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                Double M1 = Convert.ToDouble(ah12893);
-                                                                Double bl1 = M1 + Convert.ToDouble(txtqtyhand.Text); ;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + txtqtyhand.Text + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                                cmd1974.ExecuteNonQuery();
-                                                            }
-                                                        }
-                                                    }
-                                                    //Selecting from account prefernce
-                                                    SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                    using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                    {
-                                                        DataTable dtBrandss = new DataTable();
-                                                        sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                        //Selecting from Income account
-                                                        SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                        using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                        {
-                                                            DataTable dtBrandss2 = new DataTable();
-                                                            sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                            //
-                                                            if (iss2 != 0)
-                                                            {
-                                                                SqlDataReader readers = cmds2.ExecuteReader();
-                                                                if (readers.Read())
-                                                                {
-                                                                    string ah1289;
-                                                                    ah1289 = readers["Balance"].ToString();
-                                                                    readers.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                    SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                    if (reader66.Read())
-                                                                    {
-                                                                        string ah11;
-                                                                        string ah1258;
-                                                                        ah11 = reader66["No"].ToString();
-                                                                        ah1258 = reader66["AccountType"].ToString();
-                                                                        reader66.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        Double M1 = Convert.ToDouble(ah1289);
-                                                                        double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                        income = income + SC;
-                                                                        Double bl1 = income + M1;
-                                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                        cmd45.ExecuteNonQuery();
-                                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                        cmd1974.ExecuteNonQuery();
-
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        //Selecting from cash acccount
-                                                        SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                        using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                        {
-                                                            DataTable dttax = new DataTable();
-                                                            sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                            //
-                                                            if (iss2 != 0)
-                                                            {
-                                                                SqlDataReader readers = cmdintax.ExecuteReader();
-                                                                if (readers.Read())
-                                                                {
-                                                                    string ah1289;
-                                                                    ah1289 = readers["Balance"].ToString();
-                                                                    readers.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                    SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                    if (reader66.Read())
-                                                                    {
-                                                                        string ah11;
-                                                                        string ah1258;
-                                                                        ah11 = reader66["No"].ToString();
-                                                                        ah1258 = reader66["AccountType"].ToString();
-                                                                        reader66.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        Double M1 = Convert.ToDouble(ah1289);
-                                                                        double vatfree = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                        double income = (Convert.ToDouble(txtqtyhand.Text) - SC) - vatfree;
-                                                                        Double bl1 = M1 + income;
-                                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                        cmd45.ExecuteNonQuery();
-                                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                        cmd1974.ExecuteNonQuery();
-
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    //Inserting to customer statement
-                                                    SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                                    SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                    if (readerbcustb.Read())
-                                                    {
-                                                        string ah11;
-
-                                                        ah11 = readerbcustb["Balance"].ToString();
-                                                        readerbcustb.Close();
-                                                        double payment = Convert.ToDouble(txtqtyhand.Text);
-                                                        double credit = due - payment;
-                                                        double balancedue = Convert.ToDouble(ah11);
-                                                        double unpaid = -balance;
-                                                        double remain = balancedue + unpaid;
-                                                        SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtVoucher.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + remain + "','" + PID + "')", con);
-                                                        custcmd.ExecuteNonQuery();
-                                                        SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                        SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                        if (readerAC.Read())
-                                                        {
-                                                            String FN = readerAC["Name"].ToString();
-                                                            readerAC.Close();
-                                                            con.Close();
-                                                            //Activity
-                                                            SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                            con.Open();
-                                                            cmdAc.ExecuteNonQuery();
-                                                            string money = "ETB";
-
-                                                            //Updating the Due Date
-                                                            SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                            SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                            if (readerup.Read())
-                                                            {
-                                                                String terms = readerup["PaymentDuePeriod"].ToString();
-                                                                readerup.Close();
-                                                                if (terms == "Monthly")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(30);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else if (terms == "Every Three Month")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(90);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else if (terms == "Every Six Month")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(180);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(365);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                double cash = due - credit - SC;
-                                                                if (Checkbox2.Checked == true)
-                                                                {
-                                                                    SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + due + "','" + -balance + "','Credit for rent','" + DateTime.Now + "','" + txtReference.Text + "')", con);
-                                                                    cmdcrn.ExecuteNonQuery();
-                                                                    ///Credit Url Extraction
-                                                                    SqlCommand cmdcni = new SqlCommand("select * from tblcreditnote order by id desc", con);
-                                                                    SqlDataAdapter sdacni = new SqlDataAdapter(cmdcni);
-                                                                    DataTable dtcni = new DataTable();
-                                                                    sdacni.Fill(dtcni); long nbcni = Convert.ToInt64(dtcni.Rows[0][0].ToString());
-                                                                    ///
-                                                                    string crediturl = "creditnotedetails.aspx?ref2=" + nbcni + "&&cust=" + PID;
-                                                                    SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(credit).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
-                                                                    cmdcn.ExecuteNonQuery();
-                                                                }
-                                                                else
-                                                                {
-                                                                    SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(credit).ToString("#,##0.00") + "'+' '+'was not recognized as credit','" + FN + "','" + PID + "','Unseen','fas fa-exclamation-circle text-white','icon-circle bg bg-danger','#','MN')", con);
-                                                                    cmdcn.ExecuteNonQuery();
-                                                                }
-                                                                if (CheckGene.Checked == true)
-                                                                {
-                                                                    SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                                    SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                                    DataTable dtdf = new DataTable();
-                                                                    sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
-                                                                    SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + cash + "','" + ah11 + "','" + nb + "','" + txtFSNo.Text + "','Bank')", con);
-                                                                    cmdri.ExecuteNonQuery();
-                                                                    string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank";
-                                                                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(payment).ToString("#,##0.00") + "'+' '+'Deposited into bank account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                                    cmd197h.ExecuteNonQuery();
-                                                                    SqlCommand cmd197h3 = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(payment).ToString("#,##0.00") + "'+' '+'Deposited into bank account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','FH')", con);
-                                                                    cmd197h3.ExecuteNonQuery();
-                                                                    Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank");
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    if (Request.QueryString["bill"] != null)
-                                                    {
-                                                        SqlCommand cmdupbill = new SqlCommand("Update tblcustomerbill set status='Billed' where customer='" + PID + "'", con);
-                                                        cmdupbill.ExecuteNonQuery();
-                                                        SqlCommand cmd197hb = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','Your bill request has been approved','" + PID + "','" + PID + "','Unseen','fas fa-calendar text-white','icon-circle bg bg-success','','CUST')", con);
-                                                        cmd197hb.ExecuteNonQuery();
-                                                    }
-                                                }
-                                                Response.Redirect("bankstatment.aspx?ref2=" + DropDownList1.SelectedItem.Text);
-                                            }
-                                            //Or record the payment as overpayment
-                                            else
-                                            {
-                                                SqlCommand cmdcn = new SqlCommand("select sum(balance) from tblcreditnote where customer='" + PID + "' and balance > 0", con);
-                                                SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
-                                                DataTable dtcn = new DataTable();
-                                                sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
-                                                if (dtcn.Rows[0][0].ToString() == null || dtcn.Rows[0][0].ToString() == "")
-                                                {
-                                                    SqlCommand cmdbank = new SqlCommand("select * from tblBankAccounting where AccountName='" + DropDownList1.SelectedItem.Text + "' ", con);
-                                                    SqlDataReader readerbank = cmdbank.ExecuteReader();
-
-                                                    if (readerbank.Read())
-                                                    {
-                                                        string bankno;
-                                                        bankno = readerbank["AccountNumber"].ToString();
-                                                        readerbank.Close();
-                                                        string refe = Convert.ToString(txtReference.Text);
-                                                        string totalannounc = PID + " Paid through bank with ref# " + refe;
-                                                        SqlCommand cmdbank1 = new SqlCommand("select * from tblbanktrans1 where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                        using (SqlDataAdapter sda221 = new SqlDataAdapter(cmdbank1))
-                                                        {
-
-                                                            DataTable dt1 = new DataTable();
-                                                            sda221.Fill(dt1); long j = dt1.Rows.Count;
-                                                            //
-                                                            if (j != 0)
-                                                            {
-                                                                double t = Convert.ToDouble(dt1.Rows[0][5].ToString()) + Convert.ToDouble(txtqtyhand.Text);
-                                                                SqlCommand cmdday = new SqlCommand("Update tblbanktrans1 set balance='" + t + "' where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                                cmdday.ExecuteNonQuery();
-                                                                SqlCommand cvb = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                                cvb.ExecuteNonQuery();
-                                                            }
-                                                            else
-                                                            {
-                                                                double t = Convert.ToDouble(txtqtyhand.Text);
-                                                                SqlCommand cvb1 = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                                cvb1.ExecuteNonQuery();
-                                                                SqlCommand b = new SqlCommand("insert into tblbanktrans1 values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                                b.ExecuteNonQuery();
-
-                                                            }
-                                                        }
-                                                        SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                        using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                        {
-                                                            DataTable dtBrands2322 = new DataTable();
-                                                            sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                            //
-                                                            if (i2 != 0)
-                                                            {
-                                                                SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                                if (reader6679034.Read())
-                                                                {
-                                                                    string ah12893;
-                                                                    ah12893 = reader6679034["Balance"].ToString();
-                                                                    reader6679034.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                                    Double M1 = Convert.ToDouble(ah12893);
-                                                                    Double bl1 = M1 + deb;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-                                                                }
-                                                            }
-                                                        }
-                                                        //Selecting from account prefernce
-                                                        SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                        using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                        {
-                                                            DataTable dtBrandss = new DataTable();
-                                                            sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                            //Selecting from Income account
-                                                            SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                            using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                            {
-                                                                DataTable dtBrandss2 = new DataTable();
-                                                                sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                                //
-                                                                if (iss2 != 0)
-                                                                {
-                                                                    SqlDataReader readers = cmds2.ExecuteReader();
-                                                                    if (readers.Read())
-                                                                    {
-                                                                        string ah1289;
-                                                                        ah1289 = readers["Balance"].ToString();
-                                                                        readers.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                        SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                        if (reader66.Read())
-                                                                        {
-                                                                            string ah11;
-                                                                            string ah1258;
-                                                                            ah11 = reader66["No"].ToString();
-                                                                            ah1258 = reader66["AccountType"].ToString();
-                                                                            reader66.Close();
-                                                                            con.Close();
-                                                                            con.Open();
-                                                                            Double M1 = Convert.ToDouble(ah1289);
-                                                                            double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                            income = income + SC;
-                                                                            Double bl1 = income + M1;
-                                                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                            cmd45.ExecuteNonQuery();
-                                                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                            cmd1974.ExecuteNonQuery();
-
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                            //Selecting from cash acccount
-                                                            SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                            using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                            {
-                                                                DataTable dttax = new DataTable();
-                                                                sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                                //
-                                                                if (iss2 != 0)
-                                                                {
-                                                                    SqlDataReader readers = cmdintax.ExecuteReader();
-                                                                    if (readers.Read())
-                                                                    {
-                                                                        string ah1289;
-                                                                        ah1289 = readers["Balance"].ToString();
-                                                                        readers.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                        SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                        if (reader66.Read())
-                                                                        {
-                                                                            string ah11;
-                                                                            string ah1258;
-                                                                            ah11 = reader66["No"].ToString();
-                                                                            ah1258 = reader66["AccountType"].ToString();
-                                                                            reader66.Close();
-                                                                            con.Close();
-                                                                            con.Open();
-                                                                            Double M1 = Convert.ToDouble(ah1289);
-                                                                            double vatfree = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                            double vat = (Convert.ToDouble(txtqtyhand.Text) - SC) - vatfree;
-                                                                            Double bl1 = M1 + vat;
-                                                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                            cmd45.ExecuteNonQuery();
-                                                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                            cmd1974.ExecuteNonQuery();
-
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        //Inserting to customer statement
-                                                        SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                                        SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                        if (readerbcustb.Read())
-                                                        {
-                                                            string ah11;
-
-                                                            ah11 = readerbcustb["Balance"].ToString();
-                                                            readerbcustb.Close();
-                                                            double balcust = totalpay - Convert.ToDouble(txtqtyhand.Text);
-                                                            double statbalance = Convert.ToDouble(ah11);
-                                                            double finalbalance = balcust + statbalance;
-                                                            SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtReference.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + finalbalance + "','" + PID + "')", con);
-                                                            custcmd.ExecuteNonQuery();
-                                                            SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                            SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                            if (readerAC.Read())
-                                                            {
-                                                                String FN = readerAC["Name"].ToString();
-                                                                readerAC.Close();
-                                                                con.Close();
-                                                                //Activity
-                                                                SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                                con.Open();
-                                                                cmdAc.ExecuteNonQuery();
-                                                                string money = "ETB";
-
-
-                                                                //Updating the Due Date
-                                                                SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                                SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                                if (readerup.Read())
-                                                                {
-                                                                    String terms = readerup["PaymentDuePeriod"].ToString();
-                                                                    readerup.Close();
-                                                                    if (terms == "Monthly")
-                                                                    {
-                                                                        DateTime duedate = Convert.ToDateTime(duedates);
-                                                                        DateTime newduedate = duedate.AddDays(30);
-                                                                        SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                        cmdrent.ExecuteNonQuery();
-                                                                    }
-                                                                    else if (terms == "Every Three Month")
-                                                                    {
-                                                                        DateTime duedate = Convert.ToDateTime(duedates);
-                                                                        DateTime newduedate = duedate.AddDays(90);
-                                                                        SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                        cmdrent.ExecuteNonQuery();
-                                                                    }
-                                                                    else if (terms == "Every Six Month")
-                                                                    {
-                                                                        DateTime duedate = Convert.ToDateTime(duedates);
-                                                                        DateTime newduedate = duedate.AddDays(180);
-                                                                        SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                        cmdrent.ExecuteNonQuery();
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        DateTime duedate = Convert.ToDateTime(duedates);
-                                                                        DateTime newduedate = duedate.AddDays(365);
-                                                                        SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                        cmdrent.ExecuteNonQuery();
-                                                                    }
-                                                                    //Insert into cash receipt journal
-                                                                    double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
-                                                                    SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                                    SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                                    DataTable dtdf = new DataTable();
-                                                                    sdadf.Fill(dtdf); long nb1 = dtdf.Rows.Count + 1;
-                                                                    SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','" + ah11 + "','" + nb1 + "','" + txtFSNo.Text + "','Bank')", con);
-                                                                    cmdri.ExecuteNonQuery();
-                                                                    string url = "rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Bank";
-                                                                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                                    cmd197h.ExecuteNonQuery();
-                                                                    Response.Redirect("rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Bank");
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    Response.Redirect("bankstatment.aspx?ref2=" + DropDownList1.SelectedItem.Text);
-                                                }
-                                                else
-                                                {
-                                                    Tast.Visible = false;
-                                                    lblMsg.Text = "ደንበኛው የቀደመ እዳ በመጠን " + Convert.ToDouble(dtcn.Rows[0][0].ToString()).ToString("#,##0.00") + " ብር ስላለበት እላፊ ብር " + balance.ToString("#,##0.00") + " ለእዳ ይከፈል፡፡";
-                                                    lblMsg.ForeColor = Color.Red; lblMsg.Visible = true;
-                                                }
-                                            }
-
+                                            Tast.Visible = false;
+                                            lblMsg.Text = "ደንበኛው የቀደመ እዳ በመጠን " + Convert.ToDouble(dtcn.Rows[0][0].ToString()).ToString("#,##0.00") + " ብር ስላለበት እላፊ ብር " + balance.ToString("#,##0.00") + " ለእዳ ይከፈል፡፡";
+                                            lblMsg.ForeColor = Color.Red; lblMsg.Visible = true;
                                         }
                                     }
-
                                 }
-
                             }
                             else
                             {
-                                SqlCommand cmdcrd = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                SqlDataReader readercrd = cmdcrd.ExecuteReader();
-                                if (readercrd.Read())
+                                BindNotes();
+                                BankOperation updateBankAccount = new BankOperation(DropDownList1.SelectedItem.Text, txtVoucher.Text, txtReference.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                updateBankAccount.increaseBankAccount();
+                                if (balance == 0)
                                 {
+                                    //Declare New User
+                                    //selecting from "+ddlCashorBank.SelectedItem.Text+"
+                                    GeneralLedger GLCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                    GLCash.increaseDebitAccount();
+                                    //Selecting from account prefernce
+                                    GeneralLedger getAccountInfo = new GeneralLedger();
+                                    DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                    double income = (totalpay - SC) / 1.15;
+                                    double vat = totalpay - SC - income;
+                                    income = income + SC;
 
-                                    double SC = 0;
-                                    string pp = readercrd["PaymentDuePeriod"].ToString(); readercrd.Close();
-                                    SqlCommand cmd2 = new SqlCommand("select * from tblrent where customer='" + PID + "'", con);
-                                    SqlDataReader reader = cmd2.ExecuteReader();
+                                    GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                    GLIncome.increaseCreditAccount();
 
-                                    if (reader.Read())
+                                    GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                    GLTax.increaseCreditAccount();
+                                    //Inserting to customer statement
+                                    CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                    updateStatus.UpdateStatement();
+                                    updateStatus.UpdateDueDate();
+                                    //Insert into cash receipt journal
+                                    double payment = Convert.ToDouble(txtqtyhand.Text);
+                                    SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                    SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                    DataTable dtdf = new DataTable();
+                                    sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
+                                    double vatfree = totalpay - SC;
+                                    SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb + "','" + txtFSNo.Text + "','Bank')", con);
+                                    cmdri.ExecuteNonQuery();
+                                    string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank";
+                                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                    cmd197h.ExecuteNonQuery();
+                                    SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                    cmdAc.ExecuteNonQuery();
+                                    Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank");
+
+                                }
+                                else if (balance < 0)
+                                {
+                                    double newclimit = climit + balance;
+                                    SqlCommand cmdclim = new SqlCommand("Update tblCustomers set CreditLimit='" + newclimit + "' where FllName='" + PID + "'", con);
+                                    cmdclim.ExecuteNonQuery();
+                                    //Calling and Updating Accounts Receivable
+                                    GeneralLedger GlReceivable = new GeneralLedger("Accounts Receivable", PID, -balance);
+                                    GlReceivable.increaseDebitAccount();
+                                    //Calling Cash Account
+                                    GeneralLedger GlCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                    GlCash.increaseDebitAccount();
+                                    GeneralLedger getAccountInfo = new GeneralLedger();
+                                    DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                    //Crediting income and tax account
+                                    double income = (totalpay - SC) / 1.15;
+                                    double vat = totalpay - SC - income;
+                                    income = income + SC;
+                                    GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                    GLIncome.increaseCreditAccount();
+                                    GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                    GLTax.increaseCreditAccount();
+                                    CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                    updateStatus.UpdateStatement();
+                                    updateStatus.UpdateDueDate();
+
+                                    if (Checkbox2.Checked == true)
                                     {
-                                        string servicecharge; servicecharge = reader["servicecharge"].ToString();
-                                        string kc; string duedates = reader["duedate"].ToString();
-                                        kc = reader["currentperiodue"].ToString();
-                                        reader.Close();
-                                        string totalpay1 = Convert.ToDouble(kc).ToString("#,##0.00");
-                                        double totalpay = Convert.ToDouble(kc);
-                                        if (pp == "Every Three Month") { SC = Convert.ToDouble(servicecharge) * 3; }
-                                        else if (pp == "Every Six Month") { SC = Convert.ToDouble(servicecharge) * 6; }
-                                        else if (pp == "Monthly") { SC = Convert.ToDouble(servicecharge) * 1; }
-                                        else { SC = Convert.ToDouble(servicecharge) * 12; }
-                                        double balance = Convert.ToDouble(txtqtyhand.Text) - Convert.ToDouble(totalpay1);
-                                        double due = Convert.ToDouble(txtqtyhand.Text);
-                                        if (balance == 0)
+                                        if (Checkbox1.Checked == true)
                                         {
-
-                                            SqlCommand cmdbank = new SqlCommand("select * from tblBankAccounting where AccountName='" + DropDownList1.SelectedItem.Text + "' ", con);
-                                            SqlDataReader readerbank = cmdbank.ExecuteReader();
-
-                                            if (readerbank.Read())
-                                            {
-                                                string bankno;
-                                                bankno = readerbank["AccountNumber"].ToString();
-                                                readerbank.Close();
-                                                SqlCommand cmdbank1 = new SqlCommand("select * from tblbanktrans1 where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                using (SqlDataAdapter sda221 = new SqlDataAdapter(cmdbank1))
-                                                {
-                                                    DataTable dt1 = new DataTable();
-                                                    sda221.Fill(dt1); long j = dt1.Rows.Count;
-                                                    //
-                                                    string refe = Convert.ToString(txtReference.Text);
-                                                    string totalannounc = PID + " Paid through bank with ref# " + refe;
-                                                    if (j != 0)
-                                                    {
-                                                        double t = Convert.ToDouble(dt1.Rows[0][5].ToString()) + Convert.ToDouble(txtqtyhand.Text);
-                                                        SqlCommand cmdday = new SqlCommand("Update tblbanktrans1 set balance='" + t + "' where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                        cmdday.ExecuteNonQuery();
-                                                        SqlCommand cvb = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                        cvb.ExecuteNonQuery();
-                                                    }
-                                                    else
-                                                    {
-                                                        double t = Convert.ToDouble(txtqtyhand.Text);
-                                                        SqlCommand cvb1 = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                        cvb1.ExecuteNonQuery();
-                                                        SqlCommand b = new SqlCommand("insert into tblbanktrans1 values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                        b.ExecuteNonQuery();
-
-                                                    }
-                                                }
-                                                //selecting from "+ddlCashorBank.SelectedItem.Text+"
-                                                SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                {
-                                                    DataTable dtBrands2322 = new DataTable();
-                                                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                    //
-                                                    if (i2 != 0)
-                                                    {
-                                                        SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                        if (reader6679034.Read())
-                                                        {
-                                                            string ah12893;
-                                                            ah12893 = reader6679034["Balance"].ToString();
-                                                            reader6679034.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                            Double M1 = Convert.ToDouble(ah12893);
-                                                            Double bl1 = M1 + deb;
-                                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                            cmd45.ExecuteNonQuery();
-                                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                            cmd1974.ExecuteNonQuery();
-                                                        }
-                                                    }
-                                                }
-                                                //Selecting from account prefernce
-                                                SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                {
-                                                    DataTable dtBrandss = new DataTable();
-                                                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                    //Selecting from Income account
-                                                    SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                    {
-                                                        DataTable dtBrandss2 = new DataTable();
-                                                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmds2.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double income = (totalpay - SC) / 1.15;
-                                                                    income += SC;
-                                                                    Double bl1 = income + M1;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    //Selecting from cash acccount
-                                                    SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                    {
-                                                        DataTable dttax = new DataTable();
-                                                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmdintax.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double vatfree = (totalpay - SC) / 1.15;
-                                                                    double vat = (totalpay - SC) - vatfree;
-                                                                    Double bl1 = M1 + vat;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                //Inserting to customer statement
-                                                SqlCommand cmdreadb = new SqlCommand("select * from tblCustomerStatement where Customer='" + PID + "'  ORDER BY CSID DESC", con);
-
-                                                SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                if (readerbcustb.Read())
-                                                {
-                                                    string ah11;
-
-                                                    ah11 = readerbcustb["Balance"].ToString();
-                                                    readerbcustb.Close();
-
-                                                    SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtVoucher.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + ah11 + "','" + PID + "')", con);
-                                                    custcmd.ExecuteNonQuery();
-                                                    SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                    SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                    if (readerAC.Read())
-                                                    {
-                                                        String FN = readerAC["Name"].ToString();
-                                                        readerAC.Close();
-                                                        con.Close();
-                                                        //Activity
-                                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                        con.Open();
-                                                        cmdAc.ExecuteNonQuery();
-                                                        string money = "ETB";
-
-                                                        //Updating the Due Date
-                                                        SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                        SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                        if (readerup.Read())
-                                                        {
-                                                            String terms = readerup["PaymentDuePeriod"].ToString();
-                                                            readerup.Close();
-                                                            if (terms == "Monthly")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(30);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Three Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(90);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Six Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(180);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(365);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            //Generating invoice if checked
-                                                            if (CheckGene.Checked == true)
-                                                            {
-                                                                SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                                SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                                DataTable dtdf = new DataTable();
-                                                                sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
-                                                                double vatfree = due - SC;
-                                                                SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','" + ah11 + "','" + nb + "','" + txtFSNo.Text + "','Bank')", con);
-                                                                cmdri.ExecuteNonQuery();
-                                                                string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank";
-                                                                SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into bank account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                                cmd197h.ExecuteNonQuery();
-                                                                SqlCommand cmd197h2 = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into bank account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','FH')", con);
-                                                                cmd197h2.ExecuteNonQuery();
-                                                                SqlCommand cmdAc1 = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
-
-                                                                cmdAc1.ExecuteNonQuery();
-                                                                Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank");
-                                                            }
-                                                            if (Request.QueryString["bill"] != null)
-                                                            {
-                                                                SqlCommand cmdupbill = new SqlCommand("Update tblcustomerbill set status='Billed' where customer='" + PID + "'", con);
-                                                                cmdupbill.ExecuteNonQuery();
-                                                                SqlCommand cmd197hb = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','Your bill request has been approved','" + PID + "','" + PID + "','Unseen','fas fa-calendar text-white','icon-circle bg bg-success','','CUST')", con);
-                                                                cmd197hb.ExecuteNonQuery();
-                                                            }
-
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            Response.Redirect("bankstatment.aspx?ref2=" + DropDownList1.SelectedItem.Text);
-                                        }
-                                        else if (balance < 0)
-                                        {
-                                            SqlCommand cmdbank = new SqlCommand("select * from tblBankAccounting where AccountName='" + DropDownList1.SelectedItem.Text + "' ", con);
-                                            SqlDataReader readerbank = cmdbank.ExecuteReader();
-
-                                            if (readerbank.Read())
-                                            {
-                                                string bankno;
-                                                bankno = readerbank["AccountNumber"].ToString();
-                                                readerbank.Close();
-                                                SqlCommand cmdbank1 = new SqlCommand("select * from tblbanktrans1 where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                using (SqlDataAdapter sda221 = new SqlDataAdapter(cmdbank1))
-                                                {
-                                                    string refe = Convert.ToString(txtReference.Text);
-                                                    string totalannounc = PID + " Paid through bank with ref# " + refe;
-                                                    DataTable dt1 = new DataTable();
-                                                    sda221.Fill(dt1); long j = dt1.Rows.Count;
-                                                    //
-                                                    if (j != 0)
-                                                    {
-                                                        double t = Convert.ToDouble(dt1.Rows[0][5].ToString()) + Convert.ToDouble(txtqtyhand.Text);
-                                                        SqlCommand cmdday = new SqlCommand("Update tblbanktrans1 set balance='" + t + "' where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                        cmdday.ExecuteNonQuery();
-                                                        SqlCommand cvb = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                        cvb.ExecuteNonQuery();
-                                                    }
-                                                    else
-                                                    {
-                                                        double t = Convert.ToDouble(txtqtyhand.Text);
-                                                        SqlCommand cvb1 = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                        cvb1.ExecuteNonQuery();
-                                                        SqlCommand b = new SqlCommand("insert into tblbanktrans1 values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                        b.ExecuteNonQuery();
-
-                                                    }
-                                                }
-                                                //selecting from Accounts Receivable
-                                                SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='Accounts Receivable'", con);
-                                                using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                {
-                                                    DataTable dtBrands2322 = new DataTable();
-                                                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                    //
-                                                    if (i2 != 0)
-                                                    {
-                                                        SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                        if (reader6679034.Read())
-                                                        {
-                                                            string ah12893;
-                                                            ah12893 = reader6679034["Balance"].ToString();
-                                                            reader6679034.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            Double M1 = Convert.ToDouble(ah12893);
-                                                            double unpaid = -balance;
-                                                            Double bl1 = M1 + unpaid; ;
-                                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='Accounts Receivable'", con);
-                                                            cmd45.ExecuteNonQuery();
-                                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + unpaid + "','0','" + bl1 + "','" + DateTime.Now.Date + "','Accounts Receivable','','Accounts Receivable')", con);
-                                                            cmd1974.ExecuteNonQuery();
-                                                        }
-                                                    }
-                                                }
-                                                SqlCommand cmdacr = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmdacr))
-                                                {
-                                                    DataTable dtBrands2322 = new DataTable();
-                                                    sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                    //
-                                                    if (i2 != 0)
-                                                    {
-                                                        SqlDataReader reader6679034 = cmdacr.ExecuteReader();
-
-                                                        if (reader6679034.Read())
-                                                        {
-                                                            string ah12893;
-                                                            ah12893 = reader6679034["Balance"].ToString();
-                                                            reader6679034.Close();
-                                                            con.Close();
-                                                            con.Open();
-                                                            Double M1 = Convert.ToDouble(ah12893);
-                                                            Double bl1 = M1 + Convert.ToDouble(txtqtyhand.Text); ;
-                                                            SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                            cmd45.ExecuteNonQuery();
-                                                            SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + txtqtyhand.Text + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                            cmd1974.ExecuteNonQuery();
-                                                        }
-                                                    }
-                                                }
-                                                //Selecting from account prefernce
-                                                SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                {
-                                                    DataTable dtBrandss = new DataTable();
-                                                    sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                    //Selecting from Income account
-                                                    SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                    {
-                                                        DataTable dtBrandss2 = new DataTable();
-                                                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmds2.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                    income += SC;
-                                                                    Double bl1 = income + M1;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    //Selecting from cash acccount
-                                                    SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                    using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                    {
-                                                        DataTable dttax = new DataTable();
-                                                        sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                        //
-                                                        if (iss2 != 0)
-                                                        {
-                                                            SqlDataReader readers = cmdintax.ExecuteReader();
-                                                            if (readers.Read())
-                                                            {
-                                                                string ah1289;
-                                                                ah1289 = readers["Balance"].ToString();
-                                                                readers.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                if (reader66.Read())
-                                                                {
-                                                                    string ah11;
-                                                                    string ah1258;
-                                                                    ah11 = reader66["No"].ToString();
-                                                                    ah1258 = reader66["AccountType"].ToString();
-                                                                    reader66.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    Double M1 = Convert.ToDouble(ah1289);
-                                                                    double vatfree = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                    double vat = (Convert.ToDouble(txtqtyhand.Text) - SC) - vatfree;
-                                                                    Double bl1 = M1 + vat;
-                                                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                    cmd45.ExecuteNonQuery();
-                                                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                    cmd1974.ExecuteNonQuery();
-
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                //Inserting to customer statement
-                                                SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                                SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                if (readerbcustb.Read())
-                                                {
-                                                    string ah11;
-
-                                                    ah11 = readerbcustb["Balance"].ToString();
-                                                    readerbcustb.Close();
-                                                    double payment = Convert.ToDouble(txtqtyhand.Text);
-                                                    double credit = due - payment;
-                                                    double balancedue = Convert.ToDouble(ah11);
-                                                    double unpaid = -balance;
-                                                    double remain = balancedue + unpaid;
-                                                    SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtVoucher.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + remain + "','" + PID + "')", con);
-                                                    custcmd.ExecuteNonQuery();
-                                                    SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                    SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                    if (readerAC.Read())
-                                                    {
-                                                        String FN = readerAC["Name"].ToString();
-                                                        readerAC.Close();
-                                                        con.Close();
-                                                        //Activity
-                                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                        con.Open();
-                                                        cmdAc.ExecuteNonQuery();
-                                                        string money = "ETB";
-
-
-                                                        //Updating the Due Date
-                                                        SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                        SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                        if (readerup.Read())
-                                                        {
-                                                            String terms = readerup["PaymentDuePeriod"].ToString();
-                                                            readerup.Close();
-                                                            if (terms == "Monthly")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(30);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Three Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(90);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else if (terms == "Every Six Month")
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(180);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            else
-                                                            {
-                                                                DateTime duedate = Convert.ToDateTime(duedates);
-                                                                DateTime newduedate = duedate.AddDays(365);
-                                                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                cmdrent.ExecuteNonQuery();
-                                                            }
-                                                            double cash = due - credit - SC;
-                                                            if (Checkbox2.Checked == true)
-                                                            {
-                                                                SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + due + "','" + -balance + "','Credit for rent','" + DateTime.Now + "','" + txtReference.Text + "')", con);
-                                                                cmdcrn.ExecuteNonQuery();
-                                                                ///Credit Url Extraction
-                                                                SqlCommand cmdcni = new SqlCommand("select * from tblcreditnote order by id desc", con);
-                                                                SqlDataAdapter sdacni = new SqlDataAdapter(cmdcni);
-                                                                DataTable dtcni = new DataTable();
-                                                                sdacni.Fill(dtcni); long nbcni = Convert.ToInt64(dtcni.Rows[0][0].ToString());
-                                                                ///
-                                                                string crediturl = "creditnotedetails.aspx?ref2=" + nbcni + "&&cust=" + PID + "&&paymentmode=Bank";
-                                                                SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(credit).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
-                                                                cmdcn.ExecuteNonQuery();
-                                                            }
-                                                            else
-                                                            {
-                                                                SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(credit).ToString("#,##0.00") + "'+' '+'was not recognized as credit','" + FN + "','" + PID + "','Unseen','fas fa-exclamation-circle text-white','icon-circle bg bg-danger','#','MN')", con);
-                                                                cmdcn.ExecuteNonQuery();
-                                                            }
-                                                            if (CheckGene.Checked == true)
-                                                            {
-                                                                SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                                SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                                DataTable dtdf = new DataTable();
-                                                                sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
-                                                                SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + cash + "','" + ah11 + "','" + nb + "','" + txtFSNo.Text + "','Bank')", con);
-                                                                cmdri.ExecuteNonQuery();
-                                                                string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank";
-                                                                SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(payment).ToString("#,##0.00") + "'+' '+'Deposited into bank account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                                cmd197h.ExecuteNonQuery();
-                                                                SqlCommand cmd197h3 = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(payment).ToString("#,##0.00") + "'+' '+'Deposited into bank account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','FH')", con);
-                                                                cmd197h3.ExecuteNonQuery();
-                                                                Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank");
-                                                            }
-                                                            if (Request.QueryString["bill"] != null)
-                                                            {
-                                                                SqlCommand cmdupbill = new SqlCommand("Update tblcustomerbill set status='Billed' where customer='" + PID + "'", con);
-                                                                cmdupbill.ExecuteNonQuery();
-                                                                SqlCommand cmd197hb = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','Your bill request has been approved','" + PID + "','" + PID + "','Unseen','fas fa-calendar text-white','icon-circle bg bg-success','','CUST')", con);
-                                                                cmd197hb.ExecuteNonQuery();
-                                                            }
-
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            Response.Redirect("bankstatment.aspx?ref2=" + DropDownList1.SelectedItem.Text);
+                                            GetandUpdateCredit(-balance);
+                                            ///
+                                            string crediturl = "creditnotedetails.aspx?ref2=" + ddlExistingCredit.SelectedValue + "&&cust=" + PID;
+                                            SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB'+' '+'" + Convert.ToDouble(-balance).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
+                                            cmdcn.ExecuteNonQuery();
                                         }
                                         else
                                         {
-                                            SqlCommand cmdcn = new SqlCommand("select sum(balance) from tblcreditnote where customer='" + PID + "' and balance > 0", con);
-                                            SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
-                                            DataTable dtcn = new DataTable();
-                                            sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
-                                            if (dtcn.Rows[0][0].ToString() == null || dtcn.Rows[0][0].ToString() == "")
-                                            {
-                                                SqlCommand cmdbank = new SqlCommand("select * from tblBankAccounting where AccountName='" + DropDownList1.SelectedItem.Text + "' ", con);
-                                                SqlDataReader readerbank = cmdbank.ExecuteReader();
-
-                                                if (readerbank.Read())
-                                                {
-                                                    string bankno;
-                                                    bankno = readerbank["AccountNumber"].ToString();
-                                                    readerbank.Close();
-                                                    SqlCommand cmdbank1 = new SqlCommand("select * from tblbanktrans1 where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                    using (SqlDataAdapter sda221 = new SqlDataAdapter(cmdbank1))
-                                                    {
-                                                        string refe = Convert.ToString(txtReference.Text);
-                                                        string totalannounc = PID + " Paid through bank with ref# " + refe;
-                                                        DataTable dt1 = new DataTable();
-                                                        sda221.Fill(dt1); long j = dt1.Rows.Count;
-                                                        //
-                                                        if (j != 0)
-                                                        {
-                                                            double t = Convert.ToDouble(dt1.Rows[0][5].ToString()) + Convert.ToDouble(txtqtyhand.Text);
-                                                            SqlCommand cmdday = new SqlCommand("Update tblbanktrans1 set balance='" + t + "' where account='" + DropDownList1.SelectedItem.Text + "'", con);
-                                                            cmdday.ExecuteNonQuery();
-                                                            SqlCommand cvb = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                            cvb.ExecuteNonQuery();
-                                                        }
-                                                        else
-                                                        {
-                                                            double t = Convert.ToDouble(txtqtyhand.Text);
-                                                            SqlCommand cvb1 = new SqlCommand("insert into tblbanktrans values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                            cvb1.ExecuteNonQuery();
-                                                            SqlCommand b = new SqlCommand("insert into tblbanktrans1 values('" + txtVoucher.Text + "','" + txtVoucher.Text + "','" + txtqtyhand.Text + "','0','" + t + "','" + DropDownList1.SelectedItem.Text + "','','" + totalannounc + "','" + DateTime.Now.Date + "')", con);
-                                                            b.ExecuteNonQuery();
-
-                                                        }
-                                                    }
-                                                    SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                    using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                                                    {
-                                                        DataTable dtBrands2322 = new DataTable();
-                                                        sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                                                        //
-                                                        if (i2 != 0)
-                                                        {
-                                                            SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                                                            if (reader6679034.Read())
-                                                            {
-                                                                string ah12893;
-                                                                ah12893 = reader6679034["Balance"].ToString();
-                                                                reader6679034.Close();
-                                                                con.Close();
-                                                                con.Open();
-                                                                double deb = Convert.ToDouble(txtqtyhand.Text);
-                                                                Double M1 = Convert.ToDouble(ah12893);
-                                                                Double bl1 = M1 + deb;
-                                                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlCashorBank.SelectedItem.Text + "'", con);
-                                                                cmd45.ExecuteNonQuery();
-                                                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','" + deb + "','0','" + bl1 + "','" + DateTime.Now.Date + "','" + ddlCashorBank.SelectedItem.Text + "','','Cash')", con);
-                                                                cmd1974.ExecuteNonQuery();
-                                                            }
-                                                        }
-                                                    }
-                                                    //Selecting from account prefernce
-                                                    SqlCommand cmds = new SqlCommand("select * from tblaccountinfo", con);
-                                                    using (SqlDataAdapter sdas = new SqlDataAdapter(cmds))
-                                                    {
-                                                        DataTable dtBrandss = new DataTable();
-                                                        sdas.Fill(dtBrandss); long iss = dtBrandss.Rows.Count;
-                                                        //Selecting from Income account
-                                                        SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                        using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                                                        {
-                                                            DataTable dtBrandss2 = new DataTable();
-                                                            sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                                                            //
-                                                            if (iss2 != 0)
-                                                            {
-                                                                SqlDataReader readers = cmds2.ExecuteReader();
-                                                                if (readers.Read())
-                                                                {
-                                                                    string ah1289;
-                                                                    ah1289 = readers["Balance"].ToString();
-                                                                    readers.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-
-                                                                    SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                                                    if (reader66.Read())
-                                                                    {
-                                                                        string ah11;
-                                                                        string ah1258;
-                                                                        ah11 = reader66["No"].ToString();
-                                                                        ah1258 = reader66["AccountType"].ToString();
-                                                                        reader66.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        Double M1 = Convert.ToDouble(ah1289);
-                                                                        double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                        income += SC;
-                                                                        Double bl1 = income + M1;
-                                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "', Credit='" + income + "', Debit='', Explanation='Credit Sales', Date='" + DateTime.Now.Date + "' where Account='" + dtBrandss.Rows[0][1].ToString() + "'", con);
-                                                                        cmd45.ExecuteNonQuery();
-                                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + income + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][1].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                        cmd1974.ExecuteNonQuery();
-
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        //Selecting from cash acccount
-                                                        SqlCommand cmdintax = new SqlCommand("select * from tblGeneralLedger2 where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                        using (SqlDataAdapter sdatax = new SqlDataAdapter(cmdintax))
-                                                        {
-                                                            DataTable dttax = new DataTable();
-                                                            sdatax.Fill(dttax); long iss2 = dttax.Rows.Count;
-                                                            //
-                                                            if (iss2 != 0)
-                                                            {
-                                                                SqlDataReader readers = cmdintax.ExecuteReader();
-                                                                if (readers.Read())
-                                                                {
-                                                                    string ah1289;
-                                                                    ah1289 = readers["Balance"].ToString();
-                                                                    readers.Close();
-                                                                    con.Close();
-                                                                    con.Open();
-                                                                    SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-
-                                                                    SqlDataReader reader66 = cmdintax.ExecuteReader();
-
-                                                                    if (reader66.Read())
-                                                                    {
-                                                                        string ah11;
-                                                                        string ah1258;
-                                                                        ah11 = reader66["No"].ToString();
-                                                                        ah1258 = reader66["AccountType"].ToString();
-                                                                        reader66.Close();
-                                                                        con.Close();
-                                                                        con.Open();
-                                                                        Double M1 = Convert.ToDouble(ah1289);
-                                                                        double vatfree = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
-                                                                        double vat = (Convert.ToDouble(txtqtyhand.Text) - SC) - vatfree;
-                                                                        Double bl1 = M1 + vat;
-                                                                        SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + dtBrandss.Rows[0][4].ToString() + "'", con);
-                                                                        cmd45.ExecuteNonQuery();
-                                                                        SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + PID + "','','0','" + vat + "','" + bl1 + "','" + DateTime.Now + "','" + dtBrandss.Rows[0][4].ToString() + "','" + ah11 + "','" + ah1258 + "')", con);
-                                                                        cmd1974.ExecuteNonQuery();
-
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    //Inserting to customer statement
-                                                    SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + PID + "' ORDER BY CSID DESC", con);
-
-                                                    SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                                                    if (readerbcustb.Read())
-                                                    {
-                                                        string ah11;
-
-                                                        ah11 = readerbcustb["Balance"].ToString();
-                                                        readerbcustb.Close();
-                                                        double balcust = totalpay - Convert.ToDouble(txtqtyhand.Text);
-                                                        double statbalance = Convert.ToDouble(ah11);
-                                                        double finalbalance = balcust + statbalance;
-                                                        SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtReference.Text + "','','" + totalpay + "','" + txtqtyhand.Text + "','" + finalbalance + "','" + PID + "')", con);
-                                                        custcmd.ExecuteNonQuery();
-                                                        SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                                                        SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                                                        if (readerAC.Read())
-                                                        {
-                                                            String FN = readerAC["Name"].ToString();
-                                                            readerAC.Close();
-                                                            con.Close();
-                                                            //Activity
-                                                            SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentstatus1.aspx')", con);
-                                                            con.Open();
-                                                            cmdAc.ExecuteNonQuery();
-                                                            string money = "ETB";
-
-
-                                                            //Updating the Due Date
-                                                            SqlCommand cmdup = new SqlCommand("select * from tblCustomers where FllName='" + PID + "'", con);
-                                                            SqlDataReader readerup = cmdup.ExecuteReader();
-
-                                                            if (readerup.Read())
-                                                            {
-                                                                String terms = readerup["PaymentDuePeriod"].ToString();
-                                                                readerup.Close();
-                                                                if (terms == "Monthly")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(30);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else if (terms == "Every Three Month")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(90);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else if (terms == "Every Six Month")
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(180);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                else
-                                                                {
-                                                                    DateTime duedate = Convert.ToDateTime(duedates);
-                                                                    DateTime newduedate = duedate.AddDays(365);
-                                                                    SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + PID + "'", con);
-                                                                    cmdrent.ExecuteNonQuery();
-                                                                }
-                                                                //Insert into cash receipt journal
-                                                                double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
-                                                                SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
-                                                                SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
-                                                                DataTable dtdf = new DataTable();
-                                                                sdadf.Fill(dtdf); long nb1 = dtdf.Rows.Count + 1;
-                                                                SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','" + ah11 + "','" + nb1 + "','" + txtFSNo.Text + "','Bank')", con);
-                                                                cmdri.ExecuteNonQuery();
-                                                                string url = "rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Bank";
-                                                                SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + money + "'+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
-                                                                cmd197h.ExecuteNonQuery();
-                                                                Response.Redirect("rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Bank");
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                Response.Redirect("bankstatment.aspx?ref2=" + DropDownList1.SelectedItem.Text);
-                                            }
-                                            else
-                                            {
-                                                Tast.Visible = false;
-                                                lblMsg.Text = "ደንበኛው የቀደመ እዳ በመጠን " + Convert.ToDouble(dtcn.Rows[0][0].ToString()).ToString("#,##0.00") + " ብር ስላለበት እላፊ ብር " + balance.ToString("#,##0.00") + " ለእዳ ይከፈል፡፡";
-                                                lblMsg.ForeColor = Color.Red; lblMsg.Visible = true;
-                                            }
+                                            SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + Convert.ToDouble(txtqtyhand.Text) + "','" + -balance + "','" + txtCreditTitle.Text + "','" + DateTime.Now + "','" + txtReference.Text + "')", con);
+                                            cmdcrn.ExecuteNonQuery();
+                                            ///Credit Url Extraction
+                                            SqlCommand cmdcni = new SqlCommand("select * from tblcreditnote order by id desc", con);
+                                            SqlDataAdapter sdacni = new SqlDataAdapter(cmdcni);
+                                            DataTable dtcni = new DataTable();
+                                            sdacni.Fill(dtcni); long nbcni = Convert.ToInt64(dtcni.Rows[0][0].ToString());
+                                            ///
+                                            string crediturl = "creditnotedetails.aspx?ref2=" + nbcni + "&&cust=" + PID;
+                                            SqlCommand cmdcn = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB'+' '+'" + Convert.ToDouble(-balance).ToString("#,##0.00") + "'+' '+'Issued as credit into Accounts Receivable account','" + FN + "','" + PID + "','Unseen','fas fa-info text-white','icon-circle bg bg-warning','" + crediturl + "','MN')", con);
+                                            cmdcn.ExecuteNonQuery();
                                         }
+                                    }
+                                    double payment = Convert.ToDouble(txtqtyhand.Text);
+                                    SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                    SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                    DataTable dtdf = new DataTable();
+                                    sdadf.Fill(dtdf); long nb = dtdf.Rows.Count + 1;
+                                    double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
+                                    SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb + "','" + txtFSNo.Text + "','Bank')", con);
+                                    cmdri.ExecuteNonQuery();
+                                    string url = "rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank";
+                                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                    cmd197h.ExecuteNonQuery();
+                                    SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+                                    cmdAc.ExecuteNonQuery();
+                                    Response.Redirect("rentinvoicereport.aspx?id=" + nb + "&&cust=" + PID + "&&paymentmode=Bank");
+                                }
+                                else
+                                {
+                                    SqlCommand cmdcn = new SqlCommand("select sum(balance) from tblcreditnote where customer='" + PID + "' and balance > 0", con);
+                                    SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
+                                    DataTable dtcn = new DataTable();
+                                    sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
+                                    if (dtcn.Rows[0][0].ToString() == null || dtcn.Rows[0][0].ToString() == "")
+                                    {
+
+                                        GeneralLedger GLCash = new GeneralLedger(ddlCashorBank.SelectedItem.Text, PID, Convert.ToDouble(txtqtyhand.Text));
+                                        GLCash.increaseDebitAccount();
+                                        //Selecting from account prefernce
+                                        GeneralLedger getAccountInfo = new GeneralLedger();
+                                        DataTable dtBrandss = getAccountInfo.GetAccountInfo();
+                                        double income = (Convert.ToDouble(txtqtyhand.Text) - SC) / 1.15;
+                                        double vat = Convert.ToDouble(txtqtyhand.Text) - SC - income;
+                                        income = income + SC;
+                                        GeneralLedger GLIncome = new GeneralLedger(dtBrandss.Rows[0][1].ToString(), PID, income);
+                                        GLIncome.increaseCreditAccount();
+                                        //Tax account
+                                        GeneralLedger GLTax = new GeneralLedger(dtBrandss.Rows[0][4].ToString(), PID, vat);
+                                        GLTax.increaseCreditAccount();
+                                        //Inserting to customer statement
+                                        CustomerUtil updateStatus = new CustomerUtil(PID, txtReference.Text, txtqtyhand.Text, totalpay.ToString());
+                                        updateStatus.UpdateStatement();
+                                        updateStatus.UpdateDueDate();
+                                        //Insert into cash receipt journal
+                                        double payment = Convert.ToDouble(txtqtyhand.Text);
+                                        SqlCommand cmddf = new SqlCommand("select * from tblrentreceipt", con);
+                                        SqlDataAdapter sdadf = new SqlDataAdapter(cmddf);
+                                        DataTable dtdf = new DataTable();
+                                        sdadf.Fill(dtdf); long nb1 = dtdf.Rows.Count + 1;
+                                        double vatfree = Convert.ToDouble(txtqtyhand.Text) - SC;
+                                        SqlCommand cmdri = new SqlCommand("insert into tblrentreceipt values('" + PID + "','" + txtReference.Text + "','" + DateTime.Now.Date + "','0','" + vatfree + "','','" + nb1 + "','" + txtFSNo.Text + "','Bank')", con);
+                                        cmdri.ExecuteNonQuery();
+                                        string url = "rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Bank";
+                                        SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','ETB '+' '+'" + Convert.ToDouble(txtqtyhand.Text).ToString("#,##0.00") + "'+' '+'Deposited into " + ddlCashorBank.SelectedItem.Text + " account','" + FN + "','" + PID + "','Unseen','fas fa-donate text-white','icon-circle bg bg-success','" + url + "','MN')", con);
+
+                                        cmd197h.ExecuteNonQuery();
+                                        SqlCommand cmdAc = new SqlCommand("insert into tblActivity values('" + DateTime.Now + "','Payment Received','Payment received from customer','" + PID + "','Payment received from'+' '+'<b>" + PID + "</b>'+' '+'Was Recorded','" + FN + "','rentinvoicereport.aspx?date=" + String.Format("{0:yyyy-MM-dd}", DateTime.Now.Date) + "&&cust=" + PID + "')", con);
+
+                                        cmdAc.ExecuteNonQuery();
+                                        Response.Redirect("rentinvoicereport.aspx?id=" + nb1 + "&&cust=" + PID + "&&paymentmode=Bank");
+                                    }
+                                    else
+                                    {
+                                        Tast.Visible = false;
+                                        lblMsg.Text = "ደንበኛው የቀደመ እዳ በመጠን " + Convert.ToDouble(dtcn.Rows[0][0].ToString()).ToString("#,##0.00") + " ብር ስላለበት እላፊ ብር " + balance.ToString("#,##0.00") + " ለእዳ ይከፈል፡፡";
+                                        lblMsg.ForeColor = Color.Red; lblMsg.Visible = true;
                                     }
                                 }
                             }
@@ -3687,30 +1327,97 @@ namespace advtech.Finance.Accounta
         {
             ReferenceFinder RF = new ReferenceFinder(txtReference.Text);
             bool IsReferenceFound = RF.FindReferenceNumber();
-
-
-            if (ddlCashorBank.SelectedItem.Text == "Cash at Bank")
+            bool isFound = CheckFSNumber();
+            if (isFound == true)
             {
-                if (IsReferenceFound == true)
-                {
-                    string message = "Reference Number Already Exist";
-                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
-                }
-                else
-                {
-                    BindBankPay();
-                }
+                string message = "FS Number Already Exist. Please increase the current FS Number by 1.";
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
             }
             else
             {
-                if (IsReferenceFound == true)
+                if (ddlCashorBank.SelectedItem.Text == "Cash at Bank")
                 {
-                    string message = "Reference Number Already Exist";
-                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
+                    if (IsReferenceFound == true)
+                    {
+                        string message = "Reference Number Already Exist";
+                        ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');window.location.reload;", true);
+                    }
+                    else
+                    {
+                        if (Checkbox1.Checked == true)
+                        {
+                            if (ddlExistingCredit.Items.Count == 0)
+                            {
+                                string message = "There is not any existing credit to merge with!";
+                                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');window.location.reload;", true);
+                            }
+                            else
+                            {
+                                BindBankPay();
+                            }
+                        }
+                        if (Checkbox2.Checked == true)
+                        {
+                            if (Checkbox1.Checked == false)
+                            {
+                                if (txtCreditTitle.Text == "")
+                                {
+                                    string message = "Please Put New Credit Title!";
+                                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');window.location.reload;", true);
+                                }
+                                else
+                                {
+                                    BindBankPay();
+                                }
+                            }
+                        }
+                        if (Checkbox2.Checked == false && Checkbox1.Checked == false)
+                        {
+                            BindBankPay();
+                        }
+                    }
                 }
                 else
                 {
-                    BindCashPay();
+                    if (IsReferenceFound == true)
+                    {
+                        string message = "Reference Number Already Exist";
+                        ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');window.location.reload;", true);
+                    }
+                    else
+                    {
+                        if (Checkbox1.Checked == true)
+                        {
+                            if (ddlExistingCredit.Items.Count == 0)
+                            {
+                                string message = "There is not any existing credit to merge with!";
+                                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');window.location.reload;", true);
+                            }
+                            else
+                            {
+                                BindCashPay();
+                            }
+                        }
+                        if (Checkbox2.Checked == true)
+                        {
+                            if (Checkbox1.Checked == false)
+                            {
+                                if (txtCreditTitle.Text == "")
+                                {
+                                    string message = "Please Put New Credit Title!";
+                                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');window.location.reload;", true);
+                                }
+                                else
+                                {
+                                    BindCashPay();
+                                }
+                            }
+                        }
+                        if (Checkbox2.Checked == false && Checkbox1.Checked == false)
+                        {
+                            BindCashPay();
+                        }
+                    }
                 }
             }
         }
