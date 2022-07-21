@@ -172,9 +172,9 @@
                                         <span id="Dec" runat="server" class="mx-bar2 small text-gray-bg-gray-600"></span>
                                         <div class="dropdown-divider"></div>
                                         <div class="row" id="AnalyticsDiv" runat="server">
-                                            <div class="col-2">
+                                            <div class="col-1">
                                             </div>
-                                            <div class="col-8">
+                                            <div class="col-10">
 
                                                 <asp:Repeater ID="Repeater1" runat="server" OnItemDataBound="Repeater1_ItemDataBound">
 
@@ -184,7 +184,7 @@
                                                             <thead>
                                                                 <tr>
 
-                                                                    <th scope="col" class="text-gray-900 text-left">Date</th>
+                                                                    <th scope="col" class="text-gray-900 text-left">Title</th>
                                                                     <th scope="col" class="text-gray-900">Credit# </th>
                                                                     <th scope="col" class="text-gray-900">Invoice Amount</th>
                                                                     <th scope="col" class="text-gray-900  text-right">Credit Balance</th>
@@ -199,7 +199,7 @@
                                                     <ItemTemplate>
                                                         <tr>
                                                             <td class="text-gray-900  text-left">
-                                                                <%# Eval("date", "{0: dd/MM/yyyy}")%>
+                                                                <%# Eval("Notes")%>
                                                             </td>
                                                             <td class="text-primary">
                                                                 <asp:Literal ID="Literal1" runat="server"></asp:Literal>
@@ -236,11 +236,13 @@
 
 
                                             </div>
-                                            <div class="col-2">
+                                            <div class="col-1">
                                             </div>
                                         </div>
                                         <main role="main" id="main2" runat="server">
-
+                                            <script>
+            
+                                            </script>
                                             <div class="starter-template">
                                                 <center>
 
@@ -281,7 +283,7 @@
                                     <div class="input-group-prepend ">
                                         <span class="input-group-text">ETB</span>
                                     </div>
-                                    <asp:TextBox ID="txtqtyhand" ClientIDMode="Static" data-toggle="tooltip" title="Service charge will be automatically deducted. Do not deduct the service charge manually." class="form-control form-control-sm" runat="server"></asp:TextBox>
+                                    <asp:TextBox ID="txtqtyhand" ClientIDMode="Static" class="form-control form-control-sm" runat="server"></asp:TextBox>
                                 </div>
                             </div>
 
@@ -292,6 +294,12 @@
                             <label for="username" class="form-label small text-gray-900 font-weight-bold">Reference</label>
                             <div class="input-group has-validation">
                                 <asp:TextBox ID="txtReference" required="true" class="form-control form-control-sm" runat="server"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <div class="custom-control mt-2  custom-checkbox ">
+                                <input type="checkbox" class="custom-control-input" id="Checkbox3" checked="true" runat="server" clientidmode="Static" />
+                                <label class="custom-control-label mt-1 small text-gray-900 " for="Checkbox3">Deduct Service Charge</label>
                             </div>
                         </div>
                         <div class="col-sm-12">
@@ -334,16 +342,34 @@
                         </div>
 
 
-                        <div class="col-12">
-
                             <div class="col-12">
                                 <div class="custom-control mb-1  custom-checkbox ">
                                     <input type="checkbox" class="custom-control-input" id="Checkbox2" runat="server" clientidmode="Static" />
                                     <label class="custom-control-label mt-1 small text-gray-900 " for="Checkbox2">Bind Credit</label>
+                                    <br />
+                                    <div id="MergeDiv"  style="display: none">
+                                        <input type="checkbox" class="custom-control-input mx-3"  id="Checkbox1" runat="server" clientidmode="Static" />
+                                        <label id="CheckBoxLebel" class="custom-control-label mt-1 small text-gray-900 " for="Checkbox1">Merge Credit</label>
+                                    </div>
+
                                 </div>
+   
+                            </div>
+                        <div class="col-sm-12" id="creditNotes" style="display:none">
+                            <label for="username" class="form-label small text-gray-900 font-weight-bold">New Credit Title</label>
+                            <div class="input-group has-validation">
+                                <asp:TextBox ID="txtCreditTitle" placeholder="eg. Service Charge Credit" class="form-control ddlborder form-control-sm" runat="server"></asp:TextBox>
                             </div>
                         </div>
+                        <div class="col-sm-12" id="ExistingCredit" style="display: none">
+                            <label for="username" class="form-label small text-gray-900 font-weight-bold">Existing Credit Title</label>
+                            <div class="input-group has-validation">
 
+                                <asp:DropDownList ID="ddlExistingCredit" ClientIDMode="Static"  CssClass="form-control ddlborder form-control-sm" runat="server">
+                                   
+                                </asp:DropDownList>
+                            </div>
+                        </div>
 
                     </div>
                     <center>
@@ -377,9 +403,22 @@
         </main>
 
     </div>
+    
+    <script>
+            $('#Checkbox2').click(function () {
+                
+                $("#creditModal").toggle(this.checked);
+                $("#creditNotes").toggle(this.checked);
+                $("#MergeDiv").toggle(this.checked);
+            });
+    </script>
 
-
-
+    <script>
+            $('#Checkbox1').click(function () {
+                $("#ExistingCredit").toggle(this.checked);
+                $("#creditNotes").toggle(this.unchecked);
+            });
+    </script>
 
     <script type="text/javascript">
             $(function () {
