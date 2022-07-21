@@ -594,7 +594,7 @@
 
                                                             <tr>
                                                                 <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold border border-bottom text-right text-gray-900 ">Grand Total:</span></td>
-                                                                <td class="text-right"><span id="Total" class="text-gray-900 font-weight-bold text-gray-900" runat="server"></span></td>
+                                                                <td class="text-right"><span id="Total" class="text-gray-900 font-weight-bold text-gray-900" runat="server">0.00</span></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>

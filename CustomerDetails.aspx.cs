@@ -631,7 +631,7 @@ namespace advtech.Finance.Accounta
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmdcn = new SqlCommand("select TOP 1 * from tblCustomerStatement where customer='" + PID + "'  ORDER BY CSID DESC", con);
+                SqlCommand cmdcn = new SqlCommand("select sum(InvAmount) as inv, sum(Payment) as payment from tblCustomerStatement where customer='" + PID + "'", con);
                 SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
                 DataTable dtcn = new DataTable();
                 sdacn.Fill(dtcn); int nb = dtcn.Rows.Count;
@@ -641,14 +641,9 @@ namespace advtech.Finance.Accounta
                 }
                 else
                 {
-                    if (Convert.ToDouble(dtcn.Rows[0][6].ToString()) < 0)
-                    {
-                        OverPayAmount.InnerText = Convert.ToDouble(-Convert.ToDouble(dtcn.Rows[0][6].ToString())).ToString("#,##0.00");
-                    }
-                    else
-                    {
-                        OverPayAmount.InnerText = "0.00";
-                    }
+                    double balance = Convert.ToDouble(dtcn.Rows[0][0].ToString()) - Convert.ToDouble(dtcn.Rows[0][1].ToString());
+                    if(balance < 0) { balance = -balance; }
+                    OverPayAmount.InnerText = (balance).ToString("#,##0.00");
                 }
             }
         }

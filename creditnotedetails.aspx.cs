@@ -95,7 +95,9 @@ namespace advtech.Finance.Accounta
                     string balance;
                     balance = reader["balance"].ToString();
                     string refe = reader["ref"].ToString();
+                    string notes = reader["Notes"].ToString();
                     Ref.InnerText = refe;
+                    Notes.InnerText = notes;
                     RedInv.HRef = "rentinvoicereport.aspx?search=i-" + refe;
                     txtCash.Text = Convert.ToDouble(balance).ToString("#,##0.00");
                     txtCash1.Text = Convert.ToDouble(balance).ToString("#,##0.00");
@@ -751,46 +753,6 @@ namespace advtech.Finance.Accounta
                 }
             }
         }
-        private void BindCustomerStatement(string customer, string CN, double writeoff)
-        {
-            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-            using (SqlConnection con = new SqlConnection(CS))
-            {
-                con.Open();
-                SqlCommand cmdreadb = new SqlCommand("select TOP 1 * from tblCustomerStatement  where Customer='" + customer + "' ORDER BY CSID DESC", con);
-                SqlDataReader readerbcustb = cmdreadb.ExecuteReader();
-
-                if (readerbcustb.Read())
-                {
-                    string bala;
-                    string custEx = "Credit Writte of for credit number " + CN;
-                    bala = readerbcustb["Balance"].ToString();
-                    readerbcustb.Close();
-                    double newbalance = Convert.ToDouble(bala) - writeoff;
-                    SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + custEx + "','','0','" + writeoff + "','" + newbalance + "','" + customer + "')", con);
-                    custcmd.ExecuteNonQuery();
-                }
-            }
-        }
-        private string BindUser()
-        {
-            string user = "";
-            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-            using (SqlConnection con = new SqlConnection(CS))
-            {
-                con.Open();
-                SqlCommand cmd2AC = new SqlCommand("select * from Users where Username='" + Session["USERNAME"].ToString() + "'", con);
-                SqlDataReader readerAC = cmd2AC.ExecuteReader();
-
-                if (readerAC.Read())
-                {
-                    String FN = readerAC["Name"].ToString();
-                    readerAC.Close();
-                    user += FN;
-                }
-            }
-            return user;
-        }
         protected void WriteOff(object sender, EventArgs e)
         {
             if (ddlExpense.SelectedItem.Text == "-Select-")
@@ -809,84 +771,25 @@ namespace advtech.Finance.Accounta
                 ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
             }
             else
-            {
+            {                 
                 String PID = Convert.ToString(Request.QueryString["cust"]);
-                String PID2 = Convert.ToString(Request.QueryString["ref2"]);
+                String PID2 = Convert.ToString(Request.QueryString["ref2"]);  
+                string explanation = "Receivable written off from " + PID + " with credit number " + PID2;
                 double writeoff_amount = Convert.ToDouble(txtWriteOffAmount.Text);
+                GeneralLedger GLWriteOff = new GeneralLedger(ddlExpense.SelectedItem.Text,explanation,writeoff_amount);
+                GLWriteOff.increaseDebitAccount();
+                //Removing from Accounts Receivabel
+                GeneralLedger GLAR = new GeneralLedger(ddlExpense.SelectedItem.Text, explanation, writeoff_amount);
+                GLAR.decreaseDebitAccount();
+                UserUtility getUserName = new UserUtility();
+                string FN = getUserName.BindUser();
+                CustomerUtil updateStatus = new CustomerUtil(PID, PID2, writeoff_amount.ToString());
+                updateStatus.DcreaseStatementWriteOff();
                 String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
                 using (SqlConnection con = new SqlConnection(CS))
                 {
                     con.Open();
                     //selecting from Accounts Receivable
-                    SqlCommand cmd19012 = new SqlCommand("select * from tblGeneralLedger2 where Account='Accounts Receivable'", con);
-                    using (SqlDataAdapter sda2222 = new SqlDataAdapter(cmd19012))
-                    {
-                        DataTable dtBrands2322 = new DataTable();
-                        sda2222.Fill(dtBrands2322); long i2 = dtBrands2322.Rows.Count;
-                        //
-                        if (i2 != 0)
-                        {
-                            SqlDataReader reader6679034 = cmd19012.ExecuteReader();
-
-                            if (reader6679034.Read())
-                            {
-                                string ah12893;
-                                ah12893 = reader6679034["Balance"].ToString();
-                                reader6679034.Close();
-                                con.Close();
-                                con.Open();
-                                string explanation = "Receivable written off from " + PID + " with credit number " + PID2;
-                                Double M1 = Convert.ToDouble(ah12893);
-                                Double bl1 = M1 - writeoff_amount;
-                                SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='Accounts Receivable'", con);
-                                cmd45.ExecuteNonQuery();
-                                SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + explanation + "','','0','" + writeoff_amount + "','" + bl1 + "','" + DateTime.Now.Date + "','Accounts Receivable','','Accounts Receivable')", con);
-                                cmd1974.ExecuteNonQuery();
-                            }
-                        }
-                    }
-
-                    SqlCommand cmds2 = new SqlCommand("select * from tblGeneralLedger2 where Account='" + ddlExpense.SelectedItem.Text + "'", con);
-                    using (SqlDataAdapter sdas2 = new SqlDataAdapter(cmds2))
-                    {
-                        DataTable dtBrandss2 = new DataTable();
-                        sdas2.Fill(dtBrandss2); long iss2 = dtBrandss2.Rows.Count;
-                        //
-                        if (iss2 != 0)
-                        {
-                            SqlDataReader readers = cmds2.ExecuteReader();
-                            if (readers.Read())
-                            {
-                                string ah1289;
-                                ah1289 = readers["Balance"].ToString();
-                                readers.Close();
-                                con.Close();
-                                con.Open();
-                                SqlCommand cmd166 = new SqlCommand("select * from tblLedgAccTyp where Name='" + ddlExpense.SelectedItem.Text + "'", con);
-
-                                SqlDataReader reader66 = cmd166.ExecuteReader();
-
-                                if (reader66.Read())
-                                {
-
-                                    string ah1258;
-
-                                    ah1258 = reader66["AccountType"].ToString();
-                                    reader66.Close();
-                                    con.Close();
-                                    con.Open();
-                                    string explanation = "Write off from " + PID + " with credit number " + PID2;
-                                    Double M1 = Convert.ToDouble(ah1289);
-                                    Double bl1 = writeoff_amount + M1;
-                                    SqlCommand cmd45 = new SqlCommand("Update tblGeneralLedger2 set Balance='" + bl1 + "' where Account='" + ddlExpense.SelectedItem.Text + "'", con);
-                                    cmd45.ExecuteNonQuery();
-                                    SqlCommand cmd1974 = new SqlCommand("insert into tblGeneralLedger values('" + explanation + "','','" + writeoff_amount + "','0','" + bl1 + "','" + DateTime.Now + "','" + ddlExpense.SelectedItem.Text + "','','" + ah1258 + "')", con);
-                                    cmd1974.ExecuteNonQuery();
-
-                                }
-                            }
-                        }
-                    }
                     double newbalance = 0;
                     double bal = Convert.ToDouble(balance.InnerText);
                     double amount = Convert.ToDouble(txtWriteOffAmount.Text);
@@ -900,11 +803,10 @@ namespace advtech.Finance.Accounta
                     }
                     SqlCommand cmd_creddit = new SqlCommand("Update tblcreditnote set balance='" + newbalance + "' where id='" + PID2 + "'", con);
                     cmd_creddit.ExecuteNonQuery();
-                    BindCustomerStatement(PID, PID2, amount);
                     string url = "creditnotedetails.aspx" + "?ref2=" + PID2 + "&&cust=" + PID;
                     string money = "ETB";
                     string text = money + amount.ToString("#,##0.00") + " Writte off for credit number #" + PID2;
-                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + text + "','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-trash text-white','icon-circle bg bg-danger','" + url + "','MN')", con);
+                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + text + "','" + FN + "','" + FN + "','Unseen','fas fa-trash text-white','icon-circle bg bg-danger','" + url + "','MN')", con);
                     cmd197h.ExecuteNonQuery();
                     Response.Redirect("creditnotedetails.aspx" + "?ref2=" + PID2 + "&&cust=" + PID);
                 }

@@ -336,7 +336,7 @@
 
                         <span id="status_indicator" runat="server"></span>
                         <a id="RedInv" data-toggle="tooltip" title="Invoice Reference" target="_blank" runat="server"><span class="badge text-white mx-2" id="Ref" runat="server" style="background-color:#b14cb2"></span></a>
-
+                        <span id="Notes" class="mx-2 badge badge-counter badge-info" data-toggle="tooltip" title="Credit Title" runat="server"></span>
                     </div>
                     <div class="col-7 text-right ">
                         <a class="btn btn-primary mr-2 btn-circle btn-sm" id="modalwriteoff" visible="false" runat="server" href="#" data-toggle="modal" data-target="#exampleModalShopAreaChange" title="Write off credit">

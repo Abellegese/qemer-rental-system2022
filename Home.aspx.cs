@@ -81,36 +81,8 @@ namespace advtech.Finance.Accounta
                         {
                             DataTable dtc = new DataTable();
                             sdac.Fill(dtc);
-
-                            if (dtc.Rows[0]["PaymentDuePeriod"].ToString() == "Monthly")
-                            {
-                                DateTime duedate = Convert.ToDateTime(dt.Rows[j]["duedate"].ToString());
-                                DateTime newduedate = duedate.AddDays(30);
-                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + dt.Rows[j]["customer"].ToString() + "'", con);
-                                cmdrent.ExecuteNonQuery();
-                            }
-                            else if (dtc.Rows[0]["PaymentDuePeriod"].ToString() == "Every Three Month")
-                            {
-                                DateTime duedate = Convert.ToDateTime(dt.Rows[j]["duedate"].ToString());
-                                DateTime newduedate = duedate.AddDays(90);
-                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + dt.Rows[j]["customer"].ToString() + "'", con);
-                                cmdrent.ExecuteNonQuery();
-                            }
-                            else if (dtc.Rows[0]["PaymentDuePeriod"].ToString() == "Every Six Month")
-                            {
-                                DateTime duedate = Convert.ToDateTime(dt.Rows[j]["duedate"].ToString());
-                                DateTime newduedate = duedate.AddDays(180);
-                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + dt.Rows[j]["customer"].ToString() + "'", con);
-                                cmdrent.ExecuteNonQuery();
-                            }
-                            else
-                            {
-                                DateTime duedate = Convert.ToDateTime(dt.Rows[j]["duedate"].ToString());
-                                DateTime newduedate = duedate.AddDays(365);
-                                SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + dt.Rows[j]["customer"].ToString() + "'", con);
-                                cmdrent.ExecuteNonQuery();
-                            }
-
+                            CustomerUtil updateDueDate = new CustomerUtil(dt.Rows[j]["customer"].ToString());
+                            updateDueDate.UpdateDueDate();
                         }
                     }
                 }

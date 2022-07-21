@@ -1660,7 +1660,7 @@ namespace advtech.Finance.Accounta
                                 }
                                 else
                                 {
-                                    lblDescription.Text = "[" + Convert.ToDouble(inc).ToString("#,##0.0") + "]" + " amount get debited.";
+                                    lblDescription.Text = "[" + Convert.ToDouble(inc).ToString("#,##0.0") + "]" + " amount get increased.";
                                     lblStstus.Text = "Account Increased";
                                     lblStstus.Attributes.Add("class", "h6 font-weight-light text-primary");
                                 }
@@ -1691,9 +1691,6 @@ namespace advtech.Finance.Accounta
             {
                 if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
                 {
-
-                    ///////////////////////////////////////
-                    ///Duplicate Version
 
 
                 }

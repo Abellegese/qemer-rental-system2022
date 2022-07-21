@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Web.Services;
 using System.Web.UI.WebControls;
 
 namespace advtech.Finance.Accounta
@@ -2191,6 +2192,18 @@ namespace advtech.Finance.Accounta
             {
                 string message = "Please Select Date or Reference Number!!";
                 ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');", true);
+            }
+        }
+        [WebMethod]
+        public static void InsertToSpecialLetter(string letterContent)
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cvb = new SqlCommand("insert into tblSpecialLetter values(N'" + letterContent + "')", con);
+                cvb.ExecuteNonQuery();
+                
             }
         }
     }

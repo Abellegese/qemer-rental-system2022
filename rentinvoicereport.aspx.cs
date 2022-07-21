@@ -49,7 +49,7 @@ namespace advtech.Finance.Accounta
                     }
                     bindPM();
                     bind_footer(); bindInvExistence(); bindPaymentstatus();
-                    NumberToWord();
+                    NumberToWord(); 
                 }
             }
             else

@@ -980,6 +980,7 @@
 <script src="../../asset/js/bootstrap.bundle.min.js"></script>
 <script src="../../asset/js/jquery.easing.min.js"></script>
 <script src="../../asset/js/sb-admin-2.js"></script>
+
 <script type="text/javascript">
                 $(function () {
                     $("#mssg [id*=chkHeader1]").click(function () {

@@ -13,7 +13,22 @@
             return false;
         }
     </script>
-    
+    <style type="text/css">
+   .tox-statusbar__branding
+	{
+		display:none;
+	}
+	
+	.tox-notification__body
+	{
+		display:none;
+	}
+	
+	.tox-notifications-container
+	{
+		display:none;
+	}
+    </style>
 
     <script type="text/javascript">
         window.addEventListener('load', (event) => {
@@ -49,7 +64,24 @@
             transform: rotate(-45deg);
         }
     </style>
+
     <title>Notice Letter</title>
+    <script src="https://cdn.tiny.cloud/1/jvjf5ya7jggxhoovivd3w4jce92a4z405yj0gpwivw8pmut6/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: 'textarea#editor2',
+            browser_spellcheck: true,
+            contextmenu: true,
+            plugins: [
+                'a11ychecker', 'advlist', 'advcode', 'advtable', 'autolink', 'checklist', 'export',
+                'lists', 'link', 'image', 'charmap', 'preview', 'anchor', 'searchreplace', 'visualblocks',
+                'powerpaste', 'fullscreen', 'formatpainter', 'insertdatetime', 'media', 'table', 'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | formatpainter casechange blocks | bold italic backcolor | ' +
+                'alignleft aligncenter alignright alignjustify | ' +
+                'bullist numlist checklist outdent indent | removeformat | a11ycheck code table help'
+        });
+    </script>
     <script>
 
         var uri = 'http://localhost/api/let';
@@ -116,9 +148,22 @@
             }
         }
     </script>
+
+    <script>
+        function GetSystemStatus() {
+            document.getElementById("editor").innerText = "Fifth Avenue, New York City";
+        }
+    </script>
+    <script>
+        var x = getElementById("editor2").innerHTML;
+        function getValues() {
+            alert(x);
+        }
+    </script>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <asp:ScriptManager ID='ScriptManager1' runat='server' EnablePageMethods='true' />
     <div class="container-fluid pl-3 pr-3">
         <div class="modal fade" id="ModalBody" tabindex="-1" role="dialog" aria-labelledby="MHeader" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
@@ -1045,18 +1090,15 @@
             <div class="modal-dialog modal-sm" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h6 class="modal-title text-gray-900" id="exampleModalLabel4">Reset Content</h6>
+                        <h6 class="modal-title text-gray-900" id="exampleModalLabel4"><span class="fas fa-reply mr-2 " style="color: #d46fe8"></span>Reset Content</h6>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="row mb-3">
+                        <div class="row mb-1">
                             <div class="col-md-12">
-                                <label class="text-danger small text-center">The text content will be returned back to its original content.</label>
-
-                                <hr />
-
+                                <label class="text-dark small text-center">The text content will be returned back to its original content.</label>
                             </div>
                         </div>
 
@@ -1073,6 +1115,8 @@
                 </div>
             </div>
         </div>
+
+        
 
         <div class="modal fade" id="CustomLetter" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="exampleModalLongTitle3" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
@@ -1272,8 +1316,35 @@
                 </div>
             </div>
         </div>
-        <asp:ScriptManager ID="ScriptManager1" runat="server">
-        </asp:ScriptManager>
+        <div class="modal fade" id="ModalCreateSpecialLetter" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel4" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title text-gray-900" id="exampleModalLabel4"><span class="fas fa-file mr-2 " style="color: #d46fe8"></span>Create Special Letter</h6>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                            <div class="row mb-1">
+
+                                <div class="col-md-12">
+                                    <textarea id="editor2"></textarea>
+
+
+                                </div>
+                            </div>
+                            <button onclick="getValues()"  type="button" id="letterSubmit" style="background-color: #d46fe8" class="btn btn-sm text-uppercase text-white"><span class="fas fa-save mr-2 text-white "></span>Create Special Letter</button>
+
+                    </div>
+                    <center>
+                        <div class="modal-footer">
+                        </div>
+
+                    </center>
+                </div>
+            </div>
+        </div>
 
         <div class="row">
             <div class="col-12">
@@ -1292,44 +1363,18 @@
                                     <span id="counter" runat="server">0</span>
 
                                 </a>
-                                <span class="badge badge-danger">Unpaid Customer(s)</span>
+                                <span class="badge text-uppercase text-white" style="background-color:#9d469d">Customer</span>
 
                                 <span class="badge badge-info mx-3" visible="false" id="periodSpan" runat="server"></span>
                                 <span class="badge text-white text-uppercase" style="background-color: #8a2b9d" visible="false" id="letterType" runat="server"></span>
 
                             </div>
                             <div class="col-6 text-right">
-                                <button type="button" style="background-color: #9867a1;" id="ShowReference" class="mr-2 btn btn-sm btn-circle" data-toggle="modal" data-target="#ModalReference">
-                                    <div>
-                                        <i class="fas fa-hashtag text-white font-weight-bold" data-toggle="tooltip" title="Bind Recorded Letter"></i>
-                                        <span></span>
-                                    </div>
-                                </button>
-                                <button type="button" style="background-color: #9867a1;" runat="server" id="Button3" class="mr-2 btn btn-sm btn-circle" data-toggle="modal" data-target="#CustomLetter">
-                                    <div>
-                                        <i class="fas fa-book-open text-white font-weight-bold" data-toggle="tooltip" title="Custom Letter"></i>
-                                        <span></span>
-                                    </div>
-                                </button>
-                                <button type="button" style="background-color: #9d469d;" runat="server" id="Button2" class="mr-2 btn btn-sm btn-circle" data-toggle="modal" data-target="#ModalHeader">
-                                    <div>
-                                        <i class="fas fa-edit text-white font-weight-bold" data-toggle="tooltip" title="Customize Header and Footer Content"></i>
-                                        <span></span>
-                                    </div>
-                                </button>
-                                <button type="button" style="background-color: #ff00bb;" runat="server" id="Spvb" class="mr-2 btn btn-sm btn-circle" data-toggle="modal" data-target="#ModalBody">
-                                    <div>
-                                        <i class="fas fa-edit text-white font-weight-bold" data-toggle="tooltip" title="Customize Body Content"></i>
-                                        <span></span>
-                                    </div>
-                                </button>
-                                <button type="button" runat="server" id="Button1" class="mr-2 btn btn-sm btn-warning btn-circle" data-toggle="modal" data-target="#ModalReset">
-                                    <div>
-                                        <i class="fas fa-reply text-white font-weight-bold" data-toggle="tooltip" title="Reset text content"></i>
-                                        <span></span>
-                                    </div>
-                                </button>
-                                <button type="button" runat="server" id="Sp2" class="mr-2 btn btn-sm btn-warning btn-circle" data-toggle="modal" data-target="#exampleModal4">
+
+
+
+                                      <div class="dropdown no-arrow">
+                                                                      <button type="button" runat="server" id="Sp2" class="mr-2 btn btn-sm btn-warning btn-circle" data-toggle="modal" data-target="#exampleModal4">
                                     <div>
                                         <i data-toggle="tooltip" title="Generate Letter" class="fas fa-calendar-check text-white font-weight-bold"></i>
                                         <span></span>
@@ -1344,7 +1389,30 @@
 
                                     </div>
                                 </button>
+                                          <button class="btn btn-light btn-circle mx-2 dropdown-toggle" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 
+                                              <a class="nav-link btn btn-sm" data-toggle="tooltip" data-placement="bottom" title="Options">
+                                                  <div>
+                                                      <i class="fas fa-caret-down text-danger"></i>
+
+                                                  </div>
+                                              </a>
+
+                                          </button>
+
+
+                                          <div class="dropdown-menu  dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                                              <div class="dropdown-header text-gray-900">Letter Option:</div>
+                                               <a href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#CustomLetter" id="A2" runat="server"><span class="fas fa-book-open mr-2 " style="color: #d46fe8"></span>Create Custom Letter</a>
+                                               <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalReference" id="LR" runat="server"><span class="fas fa-filter mr-2 " style="color: #d46fe8"></span>Filter Letter Record</a>
+                                               <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalBody" id="LR1" runat="server"><span class="fas fa-edit mr-2 " style="color: #d46fe8"></span>Customize Body</a>
+                                               <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalHeader" id="LR2" runat="server"><span class="fas fa-edit mr-2 " style="color: #d46fe8"></span>Customize Header and Footer</a>
+                                               <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalReset" id="LR3" runat="server"><span class="fas fa-reply mr-2 " style="color: #d46fe8"></span>Reset Content</a>
+                                                                                              <hr/>
+                                               <a href="#" class="dropdown-item  text-gray-900  text-danger" data-toggle="modal" data-target="#ModalCreateSpecialLetter" id="LR4" runat="server"><span class="fas fa-file mr-2 " style="color: #d46fe8"></span>Create Special Letter</a>
+                                               <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalReset" id="LR5" runat="server"><span class="fas fa-spinner mr-2 " style="color: #d46fe8"></span>Generate Special Letter</a>
+                                          </div>
+                                      </div>
 
                             </div>
                         </div>
@@ -1360,9 +1428,6 @@
                                         <ItemTemplate>
                                             <div>
                                                 <div class="card-header text-black bg-white font-weight-bold">
-
-
-
                                                     <div class="row ">
                                                         <div class="col-4 text-left">
                                                             <img class="" src="../../asset/Brand/gh.jpg" alt="" width="110" <%#bind_logo_visibility() %>>
@@ -2263,4 +2328,5 @@
             }
         }
     </script>
+
 </asp:Content>

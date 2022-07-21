@@ -320,7 +320,7 @@ namespace advtech.Finance.Accounta
                 CustomerUtil CustomerInfo = new CustomerUtil(name);
                 string getCustomerName = CustomerInfo.GetCustomerName.Item1;
                 string terms = CustomerInfo.GetCustomerName.Item2;
-                string duedates = CustomerInfo.GetCustomerRentInfo;
+                string duedates = CustomerInfo.GetCustomerRentInfo.Item1;
                 DateTime today = DateTime.Now.Date;
                 DateTime duedate1 = Convert.ToDateTime(duedates);
                 TimeSpan t = duedate1 - today;
@@ -328,39 +328,10 @@ namespace advtech.Finance.Accounta
                 dayleft = t.TotalDays.ToString();
                 if (Convert.ToInt32(dayleft) < 15)
                 {
-                    if (terms == "Monthly")
-                    {
-                        DateTime duedate = Convert.ToDateTime(duedates);
-                        DateTime newduedate = duedate.AddDays(30);
-                        SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + getCustomerName + "'", con);
-                        cmdrent.ExecuteNonQuery();
-                    }
-                    else if (terms == "Every Three Month")
-                    {
-                        DateTime duedate = Convert.ToDateTime(duedates);
-                        DateTime newduedate = duedate.AddDays(90);
-                        SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + getCustomerName + "'", con);
-                        cmdrent.ExecuteNonQuery();
-                    }
-                    else if (terms == "Every Six Month")
-                    {
-                        DateTime duedate = Convert.ToDateTime(duedates);
-                        DateTime newduedate = duedate.AddDays(180);
-                        SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + getCustomerName + "'", con);
-                        cmdrent.ExecuteNonQuery();
-                    }
-                    else
-                    {
-                        DateTime duedate = Convert.ToDateTime(duedates);
-                        DateTime newduedate = duedate.AddDays(365);
-                        SqlCommand cmdrent = new SqlCommand("Update tblrent set duedate='" + newduedate + "' where customer='" + getCustomerName + "'", con);
-                        cmdrent.ExecuteNonQuery();
-                    }
+                    CustomerUtil updateDuedate = new CustomerUtil();
                     string explanation = getCustomerName + " due date updated successfully ";
                     SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','"+explanation+"','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-calendar text-white','icon-circle bg bg-success','#','MN')", con);
                     cmd197h.ExecuteNonQuery();
-                    string message = "The customer marked as paid successfully!";
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('" + message + "');", true);
                 }
                 else
                 {
