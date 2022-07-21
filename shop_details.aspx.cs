@@ -607,7 +607,7 @@ namespace advtech.Finance.Accounta
                                                 SqlCommand cmdre2 = new SqlCommand("Update tblCustomers set shop='" + PID + "', location='" + location + "', area='" + areatotal + "', price='" + price + "' where shop='" + PID + "'", con);
                                                 cmdre2.ExecuteNonQuery();
                                                 //Updating the shop table to be occupied
-                                                SqlCommand cmd4551 = new SqlCommand("Update tblshop set area='" + areatotal + "' where shopno='" + PID + "'", con);
+                                                SqlCommand cmd4551 = new SqlCommand("Update tblshop set area='" + areatotal + "',monthlyprice='"+price+"' where shopno='" + PID + "'", con);
                                                 cmd4551.ExecuteNonQuery();
                                                 SqlCommand cmd455 = new SqlCommand("Update tblshop set status='SUSPENDED',rate='',location='',monthlyprice='',area='' where shopno='" + ddlMergedShop.SelectedItem.Text + "'", con);
                                                 cmd455.ExecuteNonQuery();
