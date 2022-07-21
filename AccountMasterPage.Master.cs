@@ -311,35 +311,6 @@ namespace advtech.Finance.Accounta
             }
             return user;
         }
-        private void MakeCustomerasPaid(string name)
-        {
-            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-            using (SqlConnection con = new SqlConnection(CS))
-            {
-                con.Open();
-                CustomerUtil CustomerInfo = new CustomerUtil(name);
-                string getCustomerName = CustomerInfo.GetCustomerName.Item1;
-                string terms = CustomerInfo.GetCustomerName.Item2;
-                string duedates = CustomerInfo.GetCustomerRentInfo.Item1;
-                DateTime today = DateTime.Now.Date;
-                DateTime duedate1 = Convert.ToDateTime(duedates);
-                TimeSpan t = duedate1 - today;
-                string dayleft = "";
-                dayleft = t.TotalDays.ToString();
-                if (Convert.ToInt32(dayleft) < 15)
-                {
-                    CustomerUtil updateDuedate = new CustomerUtil();
-                    string explanation = getCustomerName + " due date updated successfully ";
-                    SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','"+explanation+"','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-calendar text-white','icon-circle bg bg-success','#','MN')", con);
-                    cmd197h.ExecuteNonQuery();
-                }
-                else
-                {
-                    string message = "The customer due date is not reached!";
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('" + message + "');", true);
-                }
-            }
-        }
         private void bindStockRequest()
         {
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -481,7 +452,6 @@ namespace advtech.Finance.Accounta
                 else if (getfirstvalue.ToLower() == "m-")
                 {
                     string name = Convert.ToString(txtCustomer.Text).Substring(2);
-                    MakeCustomerasPaid(name);
                 }
                 else
                 {
