@@ -104,7 +104,7 @@ namespace advtech.Finance.Accounta
                 using (SqlConnection con = new SqlConnection(CS))
                 {
                     con.Open();
-                    SqlCommand cmd2 = new SqlCommand("select SUM(Balance) Balance from tblcreditnote where customer='" + PID + "'", con);
+                    SqlCommand cmd2 = new SqlCommand("select SUM(Balance) Balance from tblcreditnote where customer='" + PID + "' and balance > 0", con);
 
                     using (SqlDataAdapter sd = new SqlDataAdapter(cmd2))
                     {

@@ -17,15 +17,16 @@
             content:'Raksym Trading PLC';
             align-content:center;
             justify-content:center;
-            opacity:0.2;
-            z-index:-1;
+            opacity:0.7;
+            z-index:1;
             transform:rotate(-45deg);
+            position:relative;
         }
     </style>
 <title>Credit statement</title>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <div class="container-fluid pl-3 pr-3">
+    <div class="container-fluid pl-3 pr-3" style="position:absolute;">
 
     <!-- Navbar -->
 
@@ -110,7 +111,7 @@
                   
                          <h6  class="text-gray-900 font-weight-bold text-left mb-3">ውድ ደንበኛ</h6>
                            
-                               <p class="h5  text-gray-900 mb-4" style="text-align: justify; text-indent: 0px; line-height: 23px;">
+                               <p class="h5  text-gray-900 mb-4" style="text-align: justify; text-indent: 0px; line-height: 40px;">
 
 
                        ድርጅታችን ላይ ያለበዎት እዳ የክፍያ ቀኑን ስላለፈ ፤ ይህ እርስዎን ማስታወሻ ደብዳቤ ነው፡፡ ድርጅታችን ላይ የተመዘገበው የእዳ መጠን ብር  <span class="font-weight-bold h6 text-gray-900" id="TotalReceivable" runat="server"></span> እንዳለበዎት ያሳያል፡፡ ከታች ያለውን ዝርዝር በማጣቀስ፡፡
@@ -167,6 +168,9 @@
                   </FooterTemplate>
                                                      
            </asp:Repeater>
+                                     <center>
+                                         <h1 class="water h1  font-weight-bolder" style="font-size: 60px" id="WaterMarkOname" runat="server"></h1>
+                                     </center>
                                 <p class="h5  text-gray-900 mb-xl-5" style="text-align: justify; line-height: 23px; height:100px">እስካሁን ያለዎትን ጥሩ የክፍያ ሁኔታ አገናዝበን ፤ እርስዎም በርስዎ በኩል መርመረው በቶሎ እንዲያሳውቁን ስንል በትህትና እንጠይቃለን፡፡</p>
                                      
      
@@ -194,9 +198,7 @@
                                              </div>
                                          </div>
                                      </div>
-                                     <center>
-                                         <h1 class="water h1  font-weight-bolder" style="font-size: 60px" id="WaterMarkOname" runat="server"></h1>
-                                     </center>
+
                                  </div>
 
                                 </div>
