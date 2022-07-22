@@ -59,7 +59,7 @@
             content: 'Raksym Trading PLC';
             align-content: center;
             justify-content: center;
-            opacity: 0.2;
+            opacity: 0.6;
             z-index: -1;
             transform: rotate(-45deg);
         }
