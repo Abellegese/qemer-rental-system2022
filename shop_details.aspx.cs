@@ -14,9 +14,9 @@ namespace advtech.Finance.Accounta
         string str;
         SqlCommand com;
         SqlDataAdapter sqlda;
-#pragma warning disable CS0169 // The field 'shop_details.ds' is never used
+        #pragma warning disable CS0169 // The field 'shop_details.ds' is never used
         DataSet ds;
-#pragma warning restore CS0169 // The field 'shop_details.ds' is never used
+        #pragma warning restore CS0169 // The field 'shop_details.ds' is never used
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["USERNAME"] != null)
@@ -661,12 +661,14 @@ namespace advtech.Finance.Accounta
             {
                 String PID = Convert.ToString(Request.QueryString["ref2"]);
                 String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
-                double total = Convert.ToDouble(txtUpdatePrice.Text) * Convert.ToDouble(area.InnerText);
+                double total = Convert.ToDouble(txtUpdatePrice.Text) * Convert.ToDouble(area.InnerText); 
+                
                 using (SqlConnection con = new SqlConnection(CS))
                 {
+                    con.Open();
                     if (Status.InnerText == "Occupied")
                     {
-                        con.Open();
+                       
                         SqlCommand cmd2 = new SqlCommand("Update tblCustomers set  price='" + total + "' where shop='" + PID + "'", con);
                         cmd2.ExecuteNonQuery();
                         SqlCommand cmd4 = new SqlCommand("select * from tblCustomers where shop='" + PID + "'", con);
@@ -737,7 +739,7 @@ namespace advtech.Finance.Accounta
                             }
                         }
                         SqlCommand cmd = new SqlCommand("Update tblshop set  monthlyprice='" + total + "',rate='" + Convert.ToDouble(txtUpdatePrice.Text) + "' where shopno='" + PID + "'", con);
-                        con.Open();
+
                         cmd.ExecuteNonQuery();
                         Response.Redirect("shop_details.aspx?ref2=" + PID);
                     }
@@ -749,7 +751,6 @@ namespace advtech.Finance.Accounta
                     else
                     {
                         SqlCommand cmd = new SqlCommand("Update tblshop set  monthlyprice='" + total + "',rate='" + Convert.ToDouble(txtUpdatePrice.Text) + "' where shopno='" + PID + "'", con);
-                        con.Open();
                         cmd.ExecuteNonQuery();
                         Response.Redirect("shop_details.aspx?ref2=" + PID);
                     }
