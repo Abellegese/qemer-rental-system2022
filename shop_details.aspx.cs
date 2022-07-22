@@ -373,12 +373,16 @@ namespace advtech.Finance.Accounta
                         }
                         else
                         {
+                            //Updating the shop table to be occupied
+                            double total, total2; double price;
+                            price = Convert.ToDouble(rate) * newarea;
+                            SqlCommand cmd4551 = new SqlCommand("Update tblshop set area='" + newarea + "',monthlyprice='" + price + "' where shopno='" + PID + "'", con);
+                            cmd4551.ExecuteNonQuery();
                             SqlCommand cmdcust = new SqlCommand("select * from tblCustomers where shop='" + PID + "'", con);
                             SqlDataReader readerscust = cmdcust.ExecuteReader();
                             if (readerscust.Read())
                             {
-                                double total, total2; double price;
-                                price = Convert.ToDouble(rate) * newarea;
+
                                 String pp = readerscust["PaymentDuePeriod"].ToString();
                                 String SC = readerscust["servicesharge"].ToString(); readerscust.Close();
                                 //Calculate total due amount of the current shops
@@ -407,9 +411,7 @@ namespace advtech.Finance.Accounta
                                 cmdre.ExecuteNonQuery();
                                 SqlCommand cmdre2 = new SqlCommand("Update tblCustomers set shop='" + PID + "', location='" + location + "', area='" + newarea + "', price='" + price + "' where shop='" + PID + "'", con);
                                 cmdre2.ExecuteNonQuery();
-                                //Updating the shop table to be occupied
-                                SqlCommand cmd4551 = new SqlCommand("Update tblshop set area='" + newarea + "',monthlyprice='" + price + "' where shopno='" + PID + "'", con);
-                                cmd4551.ExecuteNonQuery();
+
                                 if (ddlSHopExpand.SelectedItem.Text != "-Select shop-")
                                 {
                                     double newarea2;
@@ -483,8 +485,9 @@ namespace advtech.Finance.Accounta
 
                                     cmdAc.ExecuteNonQuery();
                                 }
-                                Response.Redirect("shop_details.aspx?ref2=" + PID);
+                                
                             }
+                            Response.Redirect("shop_details.aspx?ref2=" + PID);
                         }
                     }
                     else
@@ -571,16 +574,24 @@ namespace advtech.Finance.Accounta
 
                                         if (readershop1.Read())
                                         {
-
                                             String areamerge = readershop1["area"].ToString();
                                             readershop1.Close();
+                                            double total; double areatotal;
+                                            areatotal = Convert.ToDouble(areamerge) + Convert.ToDouble(area);
+                                            price = Convert.ToDouble(rate) * areatotal;
+                                            //Updating the shop table to be occupied
+                                            SqlCommand cmd4551 = new SqlCommand("Update tblshop set area='" + areatotal + "',monthlyprice='" + price + "' where shopno='" + PID + "'", con);
+                                            cmd4551.ExecuteNonQuery();
+                                            SqlCommand cmd455 = new SqlCommand("Update tblshop set status='SUSPENDED',rate='',location='',monthlyprice='',area='' where shopno='" + ddlMergedShop.SelectedItem.Text + "'", con);
+                                            cmd455.ExecuteNonQuery();
+                                            string action = "Shop get merged with shop number-" + ddlMergedShop.SelectedItem.Text;
+                                            SqlCommand cmdAc = new SqlCommand("insert into tblShopActivity values('" + action + "','" + FN + "',getdate(),'badge badge-warning','SHOP MERGED','" + PID + "')", con);
+                                            cmdAc.ExecuteNonQuery();
                                             SqlCommand cmdcust = new SqlCommand("select * from tblCustomers where shop='" + PID + "'", con);
                                             SqlDataReader readerscust = cmdcust.ExecuteReader();
                                             if (readerscust.Read())
                                             {
-                                                double total; double areatotal;
-                                                areatotal = Convert.ToDouble(areamerge) + Convert.ToDouble(area);
-                                                price = Convert.ToDouble(rate) * areatotal;
+
                                                 String pp = readerscust["PaymentDuePeriod"].ToString();
                                                 String SC = readerscust["servicesharge"].ToString(); readerscust.Close();
                                                 //Calculate total due amount of the current shops
@@ -606,14 +617,6 @@ namespace advtech.Finance.Accounta
                                                 cmdre.ExecuteNonQuery();
                                                 SqlCommand cmdre2 = new SqlCommand("Update tblCustomers set shop='" + PID + "', location='" + location + "', area='" + areatotal + "', price='" + price + "' where shop='" + PID + "'", con);
                                                 cmdre2.ExecuteNonQuery();
-                                                //Updating the shop table to be occupied
-                                                SqlCommand cmd4551 = new SqlCommand("Update tblshop set area='" + areatotal + "',monthlyprice='"+price+"' where shopno='" + PID + "'", con);
-                                                cmd4551.ExecuteNonQuery();
-                                                SqlCommand cmd455 = new SqlCommand("Update tblshop set status='SUSPENDED',rate='',location='',monthlyprice='',area='' where shopno='" + ddlMergedShop.SelectedItem.Text + "'", con);
-                                                cmd455.ExecuteNonQuery();
-                                                string action = "Shop get merged with shop number-" + ddlMergedShop.SelectedItem.Text;
-                                                SqlCommand cmdAc = new SqlCommand("insert into tblShopActivity values('" + action + "','" + FN + "',getdate(),'badge badge-warning','SHOP MERGED','" + PID + "')", con);
-                                                cmdAc.ExecuteNonQuery();
                                                 Response.Redirect("shop_details.aspx?ref2=" + PID);
                                             }
                                         }
