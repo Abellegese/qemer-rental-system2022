@@ -21,9 +21,10 @@ namespace advtech.Finance.Accounta
             {
                 if (!IsPostBack)
                 {
+                    bindsearch();
                     bindqty(); bindoverpayment(); bindcredit();
                     BindNotesContent(); bindbankaccount();
-                    BindBrandsRptr2(); ShowDataIncreaseMonthly(); bindsearch();
+                    BindBrandsRptr2(); ShowDataIncreaseMonthly(); 
                     bindSC(); bindFSnumber(); bindDueDate();
                     bindCreditTitle();
                 }
@@ -96,20 +97,13 @@ namespace advtech.Finance.Accounta
                 SqlDataReader readervb = cmd2vb.ExecuteReader();
                 if (readervb.Read())
                 {
-                    if (ddlExistingCredit.Items.Count == 0)
-                    {
-                        string message = "There is not any existing credit to merge with!";
-                        ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('" + message + "');",true);
-                    }
-                    else
-                    {
-                        string existingBalance;
-                        existingBalance = readervb["Balance"].ToString();
-                        double newBalance = newCredit + Convert.ToDouble(existingBalance);
-                        SqlCommand cmd = new SqlCommand("Update tblcreditnote set Balance='" + newBalance + "'  where id='" + ddlExistingCredit.SelectedValue + "'", con);
-                        cmd.ExecuteNonQuery();
-                    }
+                    string existingBalance;
+                    existingBalance = readervb["Balance"].ToString();readervb.Close();
+                    double newBalance = newCredit + Convert.ToDouble(existingBalance);
+                    SqlCommand cmd = new SqlCommand("Update tblcreditnote set Balance='" + newBalance + "'  where id='" + ddlExistingCredit.SelectedValue + "'", con);
+                    cmd.ExecuteNonQuery();
                 }
+                
             }
         }
         private void bindDueDate()
@@ -481,7 +475,7 @@ namespace advtech.Finance.Accounta
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmdcn = new SqlCommand("select TOP 1 * from tblCustomerStatement where customer='" + PID + "'  ORDER BY CSID DESC", con);
+                SqlCommand cmdcn = new SqlCommand("select sum(InvAmount),sum(Payment)  from tblCustomerStatement where customer='" + PID + "'", con);
                 SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
                 DataTable dtcn = new DataTable();
                 sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
@@ -491,11 +485,13 @@ namespace advtech.Finance.Accounta
                 }
                 else
                 {
-                    if (Convert.ToDouble(dtcn.Rows[0][6].ToString()) < 0)
+                    double overpaid = Convert.ToDouble(dtcn.Rows[0][0].ToString()) - Convert.ToDouble(dtcn.Rows[0][1].ToString());
+                    if (overpaid < 0)
                     {
+                       
 
-                        OverPayAmount.InnerText = Convert.ToDouble(-Convert.ToDouble(dtcn.Rows[0][6].ToString())).ToString("#,##0.00");
-                        double expamount = Convert.ToDouble(txtqtyhand.Text) + Convert.ToDouble(dtcn.Rows[0][6].ToString()) + bindcredit1();
+                        OverPayAmount.InnerText = (-overpaid).ToString("#,##0.00");
+                        double expamount = Convert.ToDouble(txtqtyhand.Text) - overpaid + bindcredit1();
                         if (expamount < 0)
                         {
                             ExpecAmount.InnerText = "0.00";

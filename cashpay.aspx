@@ -361,7 +361,7 @@
                                 <asp:TextBox ID="txtCreditTitle" placeholder="eg. Service Charge Credit" class="form-control ddlborder form-control-sm" runat="server"></asp:TextBox>
                             </div>
                         </div>
-                        <div class="col-sm-12" id="ExistingCredit" style="display: none">
+                        <div class="col-sm-12 mb-4" id="ExistingCredit" style="display: none">
                             <label for="username" class="form-label small text-gray-900 font-weight-bold">Existing Credit Title</label>
                             <div class="input-group has-validation">
 
