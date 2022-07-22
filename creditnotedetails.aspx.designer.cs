@@ -330,6 +330,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl CN3;
 
         /// <summary>
+        /// CreditTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl CreditTitle;
+
+        /// <summary>
         /// oname control.
         /// </summary>
         /// <remarks>
