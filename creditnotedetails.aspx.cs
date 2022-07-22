@@ -98,6 +98,7 @@ namespace advtech.Finance.Accounta
                     string notes = reader["Notes"].ToString();
                     Ref.InnerText = refe;
                     Notes.InnerText = notes;
+                    CreditTitle.InnerText = notes;
                     RedInv.HRef = "rentinvoicereport.aspx?search=i-" + refe;
                     txtCash.Text = Convert.ToDouble(balance).ToString("#,##0.00");
                     txtCash1.Text = Convert.ToDouble(balance).ToString("#,##0.00");

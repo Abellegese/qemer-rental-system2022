@@ -37,7 +37,7 @@
             content: 'Raksym Trading PLC';
             align-content: center;
             justify-content: center;
-            opacity: 0.2;
+            opacity: 0.6;
             z-index: -1;
             transform: rotate(-35deg);
         }
@@ -325,7 +325,7 @@
 
 
                 <div class="row">
-                    <div class="col-5 text-left ">
+                    <div class="col-9 text-left ">
 
                         <a class="btn btn-light btn-circle" id="buttonback" runat="server" href="creditnote.aspx" data-toggle="tooltip" data-placement="bottom" title="Back to credit notes">
 
@@ -335,10 +335,10 @@
                         <span class="badge badge-light mr-2" id="CRNo" runat="server" style="color: #ff00bb"></span>
 
                         <span id="status_indicator" runat="server"></span>
-                        <a id="RedInv" data-toggle="tooltip" title="Invoice Reference" target="_blank" runat="server"><span class="badge text-white mx-2" id="Ref" runat="server" style="background-color:#b14cb2"></span></a>
+                        <a id="RedInv" data-toggle="tooltip" title="Initial Invoice Reference" target="_blank" runat="server"><span class="badge text-white mx-2" id="Ref" runat="server" style="background-color:#b14cb2"></span></a>
                         <span id="Notes" class="mx-2 badge badge-counter badge-info" data-toggle="tooltip" title="Credit Title" runat="server"></span>
                     </div>
-                    <div class="col-7 text-right ">
+                    <div class="col-3 text-right ">
                         <a class="btn btn-primary mr-2 btn-circle btn-sm" id="modalwriteoff" visible="false" runat="server" href="#" data-toggle="modal" data-target="#exampleModalShopAreaChange" title="Write off credit">
 
                             <span class="fa fa-trash text-white"></span>
@@ -379,9 +379,9 @@
                 <asp:Label ID="lblError" runat="server"></asp:Label>
                 <asp:Label ID="lblMsg" runat="server"></asp:Label>
                 <div class="row mt-5">
-                    <div class="col-2">
+                    <div class="col-1">
                     </div>
-                    <div class="col-8 text-gray-800">
+                    <div class="col-10 text-gray-800">
                         <div class="row border-bottom">
                             <div class="col-md-4 text-left">
                                 <img class="" src="../../asset/Brand/gh.jpg" alt="" width="110" height="80">
@@ -390,6 +390,7 @@
 
                                 <h4 class="text-gray-900 font-weight-bold">CREDIT NOTE</h4>
                                 <h5 class="text-gray-900 font-weight-bold">CN#-<span id="CN3" runat="server"></span></h5>
+                                <h5 id="CreditTitle" class="text-gray-900 text-uppercase border-bottom border-top border-dark font-weight-bold" runat="server"></h5>
                             </div>
 
                         </div>
@@ -436,7 +437,7 @@
                         </center>
                     </div>
 
-                    <div class="col-2">
+                    <div class="col-1">
                     </div>
 
                 </div>
