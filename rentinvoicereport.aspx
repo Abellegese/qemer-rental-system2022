@@ -19,15 +19,18 @@
     </script>
     <script type="text/javascript">
         window.addEventListener('load', (event) => {
+
             var x = document.getElementById("myDIV5f");
             x.style.display = "none";
         });
     </script>
     <style>
         .water {
-            opacity: 0.2;
-            z-index: -1;
+            opacity: 0.6;
+            z-index: 1;
             transform: rotate(-45deg);
+            position:absolute;
+       
         }
     </style>
 </asp:Content>
@@ -47,9 +50,9 @@
 
         </div>
     </div>
-    <div class="container-fluid pr-3 pl-3" id="container" runat="server">
+    <div class="container-fluid pr-3 pl-3" style="position: absolute;" id="container" runat="server">
         <!-- Table -->
-
+        <asp:ScriptManager ID='ScriptManager1' runat='server' EnablePageMethods='true' />
 
         <div class="modal fade" id="exampleModalLongService" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle3" aria-hidden="true">
             <div class="modal-dialog modal-sm" role="document">
@@ -157,7 +160,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h5 class="modal-title" id="H1">Filter Record</h5>
+                        <h6 class="modal-title text-gray-900 small font-weight-bold" id="exampleModalLabel4"><span class="fas fa-filter mr-2" style="color: #ff00bb"></span>Filter Notice Letter</h6>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -167,13 +170,13 @@
 
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label class="font-weight-bold">From<span class="text-danger">*</span></label>
+                                    <label class="font-weight-bold small text-gray-900">From<span class="text-danger">*</span></label>
 
 
                                     <br />
                                     <div class="form-group mb-0">
                                         <div class="input-group input-group-alternative">
-                                            <asp:TextBox ID="txtDatefrom" class="form-control " TextMode="Date" runat="server"></asp:TextBox>
+                                            <asp:TextBox ID="txtDatefrom" class="form-control form-control-sm" TextMode="Date" runat="server"></asp:TextBox>
 
 
                                         </div>
@@ -182,13 +185,13 @@
                             </div>
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label class="font-weight-bold">To<span class="text-danger">*</span></label>
+                                    <label class="font-weight-bold  small text-gray-900">To<span class="text-danger">*</span></label>
 
 
                                     <br />
                                     <div class="form-group mb-0">
                                         <div class="input-group input-group-alternative">
-                                            <asp:TextBox ID="txtDateto" class="form-control " TextMode="Date" runat="server"></asp:TextBox>
+                                            <asp:TextBox ID="txtDateto" class="form-control  form-control-sm" TextMode="Date" runat="server"></asp:TextBox>
 
                                         </div>
                                     </div>
@@ -339,7 +342,7 @@
                         <a id="Link" runat="server">
                             <span class="badge badge-success " id="PaymensStatus" runat="server"></span>
                         </a>
-                        <button type="button" runat="server" id="Spvb" class="mr-2 btn btn-sm btn-default btn-circle" data-toggle="modal" data-target="#ModalHeader">
+                        <button type="button" runat="server" id="Spvb" class="mr-2 btn btn-sm btn-default btn-circle" visible="false" data-toggle="modal" data-target="#ModalHeader">
                             <div>
                                 <i class="fas fa-cog fa-2x font-weight-bold" style="color: #b868bb;" data-toggle="tooltip" title="Customize Invoice"></i>
                                 <span></span>
@@ -440,28 +443,28 @@
                     <asp:Label ID="lblMsg" runat="server"></asp:Label>
 
 
-                    <div class="row mt-1" id="MarginDiv" runat="server">
+                    <div class="row" id="MarginDiv" runat="server">
                         <div class="col-1" id="left">
                         </div>
                         <div class="col-10 mt-3   text-gray-900" id="middle">
                             <div id="con1" runat="server">
                                 <div class="row mx-2 mr-2">
-                                    <div class="col-md-6  text-left">
+                                    <div class="col-md-6  text-left" style="color:black">
                                         <img class="" src="../../asset/Brand/gh.jpg" alt="" id="LogoImage" runat="server" />
                                         <div class="row">
-                                            <div class="col-md-12 border-top border-dark">
-                                                <span class="text-gray-900  text-uppercase font-weight-bold" id="HeaderRaks" runat="server">Raksym trading plc</span>
+                                            <div class="col-md-12">
+                                                <span class="text-uppercase font-weight-bold border-bottom border-dark border-top" id="HeaderRaks" runat="server">Raksym trading plc</span>
                                                 <br />
                                                 <div id="Body1" runat="server">
-                                                    <span class="fas fa-address-book mb-2 text-gray-500 mr-1"></span><span class="  text-uppercase  font-weight-bold text-gray-900 mt-1" id="CompAddress" runat="server"></span>
+                                                    <span style="color: black" class="fas fa-address-book mb-2  mr-1"></span><span class="  text-uppercase  font-weight-bold  mt-1" id="CompAddress" runat="server"></span>
                                                     <br />
-                                                    <span class="fas fa-phone mb-2 text-gray-500 mr-1"></span><span class="  text-uppercase   font-weight-bold text-gray-900 mt-1" id="Contact" runat="server"></span>
+                                                    <span style="color: black" class="fas fa-phone mb-2 mr-1"></span><span class="  text-uppercase   font-weight-bold mt-1" id="Contact" runat="server"></span>
                                                     <br />
-                                                    <span id="VT" runat="server" class="border-top mb-2 mt-1">VENDOR TIN<span class="fas border-top m-1 fa-hashtag text-gray-300 ml-1"></span><span id="VendorTIN" runat="server"></span></span>
+                                                    <span style="color: black" id="VT" runat="server" class="border-top mb-2 mt-1">VENDOR TIN<span class="fas border-top m-1 fa-hashtag  ml-1"></span><span id="VendorTIN" runat="server"></span></span>
                                                     <br />
-                                                    <span id="VendorVatRegSpan" contenteditable="true"  runat="server" width="200px">Vat Reg. Number<span class="fas fa-hashtag text-gray-300 ml-1"></span><span id="VendorVatRegNumber" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
+                                                    <span style="color: black" id="VendorVatRegSpan" contenteditable="true" runat="server" width="200px">Vat Reg. Number<span class="fas fa-hashtag  ml-1"></span><span id="VendorVatRegNumber" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
                                                     <br />
-                                                    <span class="  text-gray-900 border-top border-bottom font-weight-bold" id="RefTag" runat="server"></span>
+                                                    <span style="color: black" class="border-top border-bottom font-weight-bold" id="RefTag" runat="server"></span>
 
                                                 </div>
                                             </div>
@@ -474,16 +477,17 @@
 
                                     <div class="col-md-6 text-right">
 
-                                        <span class=" text-uppercase text-gray-900 border-bottom border-dark font-weight-bold" id="HeaderInv" runat="server"></span><br />
+                                        <span style="color: black" class=" text-uppercase border-bottom border-dark font-weight-bold" id="HeaderInv" runat="server"></span><br />
                                         <span id="invocenumber" runat="server"></span>
                                         <div id="Body2" runat="server">
                                             <span id="BindShop" runat="server" visible="false">
-                                                <span class="text-gray-900 " style="height: 100px">To: </span><span style="height: 100px" class=" mx-2 text-gray-900 font-weight-bold font-italic" id="Name" runat="server"></span>
-                                                [<span class="text-gray-900 text-uppercase font-weight-bold mt-3">Shop No: </span><span class="text-gray-900 text-uppercase mx-1 font-weight-bold mt-3" id="ShopNo" runat="server"></span>]
+                                                <span style="height: 100px;color:black" contenteditable="true">To: </span><span style="height: 100px" contenteditable="true" class=" mx-2 font-weight-bold font-italic" id="Name" runat="server"></span>
+                                                <span style="height: 100px" contenteditable="true" class=" mx-2 font-weight-bold font-italic" id="CustomerCompany" runat="server"></span>
+                                                [<span style="color:black" class="text-uppercase font-weight-bold mt-3">Shop No: </span><span class="text-uppercase mx-1 font-weight-bold mt-3" id="ShopNo" runat="server"></span>]
                                                 <br />
-                                                <span id="CustomerTIN" visible="false" runat="server" width="200px">CUSTOMER TIN<span class="fas fa-hashtag text-gray-300 ml-1"></span><span id="TINNUMBER" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
+                                                <span id="CustomerTIN" style="color: black" visible="false" runat="server" width="200px">CUSTOMER TIN<span class="fas fa-hashtag  ml-1"></span><span id="TINNUMBER" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
                                                 <br />
-                                                <span id="CustVatRegNumberSpan" visible="false" contenteditable="true" runat="server" width="200px">Vat Reg. Number<span class="fas fa-hashtag text-gray-300 ml-1"></span><span id="CustVatRegNumber" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
+                                                <span id="CustVatRegNumberSpan" style="color: black" visible="false" contenteditable="true" runat="server" width="200px">Vat Reg. Number<span class="fas fa-hashtag ml-1"></span><span id="CustVatRegNumber" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
 
                                             </span>
                                             <br />
@@ -492,28 +496,29 @@
                                             <h4><span class="text-uppercase text-gray-900 font-weight-bold " id="FSno" contenteditable="true" runat="server"></span><span id="Span3" runat="server"></span></h4>
                                             <h6 id="dateDiv" runat="server" visible="false"><span class="text-uppercase text-gray-900 font-weight-bold mr-1" id="Span1"  runat="server">Date:</span><span id="dateSpan" runat="server"></span></h6>
                                             <span id="PayMode" visible="true" runat="server" class="mt-2 border-top border-bottom border-dark"><i class=" fas fa-dollar-sign text-dark "></i><span class="mx-1"><span class="font-weight-bold   text-uppercase">Payment Mode:</span> <span id="PaymentMode" class="  text-uppercase" runat="server"></span></span></span>
-
-                                            <h6 title="print date" id="printdate" runat="server"></h6>
-                                            <span id="datFrom1" runat="server" class="mb-1 border-bottom border-top text-gray-900 font-weight-bold"></span><span id="tomiddle" class="mb-1 mr-2 ml-2 border-bottom border-top text-gray-900 font-weight-bold" runat="server">To</span><span id="datTo" class="mb-1 text-gray-900 border-bottom border-top font-weight-bold" runat="server"></span>
+                                            <br />
+                                            <span title="print date" id="printdate" class="h5" runat="server"></span>
+                                            <span id="datFrom1" runat="server" class=" border-bottom border-top text-gray-900 font-weight-bold"></span><span id="tomiddle" class=" mr-2 ml-2 border-bottom border-top text-gray-900 font-weight-bold" runat="server">To</span><span id="datTo" class="mb-1 text-gray-900 border-bottom border-top font-weight-bold" runat="server"></span>
 
                                             <br />
 
                                         </div>
                                     </div>
                                 </div>
-                                <div id="conw" runat="server">
+                                <div id="conw" runat="server" style="color: black">
                                     <div class="card-body border-none">
                                         <asp:Repeater ID="Repeater1" runat="server" OnItemCommand="Repeater1_ItemCommand">
 
                                             <HeaderTemplate>
 
-                                                <table class="table align-items-center table-sm table-bordered border-dark">
+                                                <table class="table align-items-center table-sm table-bordered border-dark" style="color: black">
                                                     <thead class="thead-dark ">
                                                         <tr>
                                                             <th scope="col" class="">Item #</th>                      
                                                             <th scope="col" class="" <%#bindDescriptionColVisibility() %>>Decription</th>
                                                             <th scope="col" class="" <%#bindInvoiceDateVisibility() %>>Customer</th>
-                                      
+                                                            <th scope="col" class=" text-center" <%#bindInvoiceDateVisibility() %>>FS#</th>
+                                                            <th scope="col" class="text-center" <%#bindInvoiceDateVisibility() %>>TIN#</th>
                                                             <th scope="col" class="text-left text-white " <%#bindInvoiceDateVisibility() %>>
                                                                 <asp:LinkButton ID="LinkButton3" CssClass="text-white" runat="server" CommandName="date">Invoice Date</asp:LinkButton></th>
                                                             <th scope="col" class=" text-center">Quantity</th>
@@ -534,26 +539,34 @@
                                                         <asp:Label ID="lblSC" runat="server" Visible="false" Text='<%# Eval("vatfree")%>'></asp:Label>
 
                                                     </td>
-                                                    <td scope="col" class="small text-gray-900" contenteditable="true" <%#bindDescriptionColVisibility() %>>Rent Service</td>
+                                                    <td scope="col"  contenteditable="true" <%#bindDescriptionColVisibility() %>>Rent Service</td>
                                                     <td class="text-primary text-left" <%#bindInvoiceDateVisibility() %>>
                                                         <a href="rentinvoicereport.aspx?id= <%# Eval("id2")%>&&cust=<%# Eval("customer")%>&&paymentmode=<%# Eval("payment_mode")%>" data-toggle="tooltip" data-placement="top" title="<%# Eval("customer")%> details">
-                                                           <asp:Label ID="lblCust" runat="server" Text='<%# Eval("customer")%>'></asp:Label></a>
+                                                           <asp:Label ID="lblCust" runat="server" Text='<%# GetTinNumberandCompany(Eval("customer").ToString()).Item2 %>'></asp:Label></a>
 
+                                                    </td>                                                    
+                                                    <td class="text-center" contenteditable="true" <%#bindInvoiceDateVisibility() %>>
+                                                        <span><%# Eval("fsno") %></span>
                                                     </td>
-                                                    <td class="text-gray-900 text-left" <%#bindInvoiceDateVisibility() %>>
+                                                    <td class="text-center" contenteditable="true" <%#bindInvoiceDateVisibility() %>>
+                                                        <span><%# GetTinNumberandCompany(Eval("customer").ToString()).Item1 %></span>
+                                                    </td>
+                                                    <td class="text-left" <%#bindInvoiceDateVisibility() %>>
                                                         <%# Eval("date", "{0: MMMM dd,yyyy}")%>
                        
                     
-                                                    </td>
-                                                    <td class="text-gray-900 text-center" contenteditable="true">
+                                                    </td>                                                    
+
+                                                    <td class="text-center" contenteditable="true">
                                                       <span>1</span>
                                                     </td>
-                                                    <td class="text-gray-900 text-center" contenteditable="true">
+
+                                                    <td class=" text-center" contenteditable="true">
                                                         <asp:Label ID="lblcatminus" Visible="true" runat="server" Text='<%# ((Convert.ToDouble(Eval("paid"))-Convert.ToDouble(Eval("vatfree")))/1.15).ToString("#,##0.00") %>'></asp:Label>
 
                                                     </td>
                   
-                                                    <td class="text-gray-900 text-right" contenteditable="true">
+                                                    <td class="text-right" contenteditable="true">
                                                         <asp:Label ID="Label2" Visible="true" runat="server" Text='<%# ((Convert.ToDouble(Eval("paid"))-Convert.ToDouble(Eval("vatfree")))/1.15).ToString("#,##0.00") %>'></asp:Label>
 
                                                     </td>
@@ -565,9 +578,13 @@
               </table>
                                             </FooterTemplate>
                                         </asp:Repeater>
+                                        <center>
+                                            <h5 id="RaksTDiv" runat="server" class="water text-gray-900   font-weight-bolder mx-lg-5" style="padding-right: 0px; padding-left: 300px; font-size: 70px;" visible="false">ATTACHMENT</h5>
 
+                                        </center>
                                         <div class="row" id="TotalRow" runat="server">
-                                            <div class="col-md-8 text-left">
+           
+                                            <div class="col-md-8 text-left" style="z-index:2">
                                                 <div id="amoundInWordsDiv" runat="server" visible="false"><span class="text-gray-900 h6 text-uppercase mr-1 border-bottom border-dark">Amount in words: </span><h6 class="text-uppercase font-weight-bold text-gray-900" id="AmountInWords" runat="server"></h6></div>
                                                 <p class="small text-gray-900 font-weight-bold border-top">* Invalid without Fiscal or Refund Receipt</p>
 
@@ -579,22 +596,22 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-4 mt-1">
+                                            <div class="col-md-4 mt-1" style="z-index: 2;color:black" >
                                                 <div class="form-group">
-                                                    <table class="table table-sm table-bordered  ">
+                                                    <table class="table table-sm table-bordered  " style="color:black">
                                                         <tbody>
                                                             <tr>
-                                                                <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right text-gray-900">Sub-Total:</span></td>
-                                                                <td class="text-right"><span id="VATfree" class="text-gray-900 font-weight-bold text-gray-900" runat="server"></span></td>
+                                                                <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right">Sub-Total:</span></td>
+                                                                <td class="text-right"><span id="VATfree" class=" font-weight-bold " runat="server"></span></td>
                                                             </tr>
                                                             <tr>
-                                                                <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right text-gray-900 ">VAT(15%):</span></td>
-                                                                <td class="text-right"><span id="VAT" class="text-gray-900 font-weight-bold text-gray-900" runat="server"></span></td>
+                                                                <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right">VAT(15%):</span></td>
+                                                                <td class="text-right"><span id="VAT" class=" font-weight-bold" runat="server"></span></td>
                                                             </tr>
 
                                                             <tr>
-                                                                <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold border border-bottom text-right text-gray-900 ">Grand Total:</span></td>
-                                                                <td class="text-right"><span id="Total" class="text-gray-900 font-weight-bold text-gray-900" runat="server">0.00</span></td>
+                                                                <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold border border-bottom text-right">Grand Total:</span></td>
+                                                                <td class="text-right"><span id="Total" class="font-weight-bold" runat="server">0.00</span></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -602,11 +619,10 @@
                                                 </div>
 
                                             </div>
+
                                         </div>
                                         <div class="row " id="NotesDiv" runat="server" visible="false">
-                                            <center>
-                                                <h5 id="RaksTDiv" runat="server" class="water   font-weight-bolder mx-lg-5" style="padding-right: 0px; padding-left: 300px; font-size: 70px;" visible="false">ATTACHMENT</h5>
-                                            </center>
+ 
                                             <div class="col-md-7 text-left font-italic font-weight-bold">
                                                 <span class="border-bottom mb-2">Prepared By:_________________________</span><br />
                                                 <br />
@@ -617,7 +633,7 @@
                                                 <br />
                                                 <span class=" text-right">Signature_________________________</span>
                                             </div>
-      
+
                                         </div>
                                     </div>
 
@@ -951,9 +967,10 @@
                                     </div>
                                 </div>
                                 <div class="card-body border-left border-danger">
-                                    <h6 class="text-gray-900 small mb-3">Edit Body Section</h6>
+                           
                                     <div class="row">
                                         <div class="col-6">
+                                            <h6 class="text-gray-900 small mb-3">Edit Body Section</h6>
                                             <div class="form-group">
 
                                                 <div class="input-group input-group-alternative">
@@ -972,11 +989,17 @@
                                             </div>
 
                                         </div>
+                                        <div class="col-6">
+                                            <h6 class="text-gray-900 small mb-3">Watermark Opacity(<asp:Label ID="lblOpacity" class="text-danger" ClientIDMode="Static" runat="server" Text="Label"></asp:Label>)</h6>
+                                            <div class="form-group">
+                                                <input type="range" class="custom-range" min="0" max="1" step="0.1"  id="customRange5">
+                                            </div>
+                                        </div>
 
                                     </div>
                                 </div>
                                 <div class="card-body border-left border-danger">
-                                    <h6 class="text-gray-900 small mb-3">Logo Visibility</h6>
+                                    <h6 class="text-gray-900 small mb-3">Logo Visibility & Size</h6>
                                     <div class="row">
                                         <div class="col-1">
                                             <div class="custom-control mb-2 custom-checkbox font-weight-300">
@@ -1010,19 +1033,27 @@
                                 <div class="card-body border-left border-secondary">
 
                                     <div class="row">
-                                        <div class="col-5">
-                                            <h6 class="text-gray-900 small mb-3">Credit balance Visibility</h6>
+                                        <div class="col-4">
+                                            <h6 class="text-gray-900 small mb-3">Credit balance</h6>
                                             <div class="custom-control mb-2 custom-checkbox font-weight-300">
                                                 <input type="checkbox" class="custom-control-input" id="creditCheck" runat="server" clientidmode="Static" />
                                                 <label class="custom-control-label small text-danger font-weight-bolder" for="creditCheck">Visible</label>
                                             </div>
 
                                         </div>
-                                        <div class="col-5">
-                                            <h6 class="text-gray-900 small mb-3">Watermark Visibility</h6>
+                                        <div class="col-4">
+                                            <h6 class="text-gray-900 small mb-3">Watermark</h6>
                                             <div class="custom-control mb-2 custom-checkbox font-weight-300">
                                                 <input type="checkbox" class="custom-control-input" id="waterCheck" runat="server" clientidmode="Static" />
                                                 <label class="custom-control-label small text-danger font-weight-bolder" for="waterCheck">Visible</label>
+                                            </div>
+
+                                        </div>
+                                        <div class="col-4">
+                                            <h6 class="text-gray-900 small mb-3">Has company Name</h6>
+                                            <div class="custom-control mb-2 custom-checkbox font-weight-300">
+                                                <input type="checkbox" class="custom-control-input" id="companyCheck" runat="server" clientidmode="Static" />
+                                                <label class="custom-control-label small text-danger font-weight-bolder" for="companyCheck">Yes</label>
                                             </div>
 
                                         </div>
@@ -1035,12 +1066,19 @@
                                     <div id="myDIV5f" class="spinner-border text-danger spinner-border-sm  mr-4 mt-2" role="status">
                                         <span class="sr-only">Loading.ffrfyyrg..</span>
                                     </div>
-                                    <asp:Button ID="btnCustomizeSave" runat="server" class="btn btn-sm btn-success " OnClick="btnCustomizeSave_Click" OnClientClick="myFunctionshop1()" Text="Save Changes" />
+                                    <asp:Button ID="btnCustomizeSave" runat="server" class="btn btn-sm btn-success " OnClick="btnCustomizeSave_Click" OnClientClick="myFunctionshop1();UpdateOpacity1();" Text="Save Changes" />
 
 
                                 </div>
 
-                            </center>
+                            </center>                                        
+                            <script type="text/javascript">
+                                var slider = document.getElementById("customRange5");
+                                var txtAm = document.getElementById("<%=lblOpacity.ClientID%>");
+                                slider.oninput = function () {
+                                    txtAm.innerText = this.value;
+                                }
+                            </script>
                         </div>
                     </div>
                 </div>
@@ -1066,10 +1104,10 @@
                     middle.className = "col-2";
                 }
             }
-        </script>
+                                                            </script>
         <script src="../../asset/js/JSPrintManager.js"></script>
         <script src="../../asset/js/bluebird.min.js"></script>
-        <script src="../../asset/js/jquery-3.2.1.slim.min.js"></script>
+       <script src="../../asset/js/jquery-3.2.1.slim.min.js"></script>
         <script>
             function myFunctionshop1() {
                 var x = document.getElementById("myDIV5f");
@@ -1190,6 +1228,18 @@
             }
 
         </script>
-
+        <script>
+            function UpdateOpacity1() {
+                
+                PageMethods.UpdateOpacity(document.getElementById("<%=lblOpacity.ClientID%>").innerText);
+            }
+        </script>
+        <script>
+            $(document).ready(function () {
+                var txtAm = document.getElementById("<%=lblOpacity.ClientID%>");
+                var slider = document.getElementById("customRange5");
+                slider.value = txtAm.innerText;
+            });
+        </script>
     </div>
 </asp:Content>

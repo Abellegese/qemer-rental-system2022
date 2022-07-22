@@ -42,6 +42,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl container;
 
         /// <summary>
+        /// ScriptManager1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.ScriptManager ScriptManager1;
+
+        /// <summary>
         /// btnUncollected control.
         /// </summary>
         /// <remarks>
@@ -492,6 +501,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl Name;
 
         /// <summary>
+        /// CustomerCompany control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl CustomerCompany;
+
+        /// <summary>
         /// ShopNo control.
         /// </summary>
         /// <remarks>
@@ -690,6 +708,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.Repeater Repeater1;
 
         /// <summary>
+        /// RaksTDiv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl RaksTDiv;
+
+        /// <summary>
         /// TotalRow control.
         /// </summary>
         /// <remarks>
@@ -778,15 +805,6 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl NotesDiv;
-
-        /// <summary>
-        /// RaksTDiv control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl RaksTDiv;
 
         /// <summary>
         /// main2 control.
@@ -1140,6 +1158,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.TextBox txtBodyFontSize;
 
         /// <summary>
+        /// lblOpacity control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOpacity;
+
+        /// <summary>
         /// logoCheck control.
         /// </summary>
         /// <remarks>
@@ -1174,6 +1201,15 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox waterCheck;
+
+        /// <summary>
+        /// companyCheck control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox companyCheck;
 
         /// <summary>
         /// btnCustomizeSave control.

@@ -11,6 +11,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using SelectPdf;
+using System.Web.Services;
 
 namespace advtech.Finance.Accounta
 {
@@ -34,7 +35,7 @@ namespace advtech.Finance.Accounta
                     bindsearch();
                     ViewState["Column"] = "date";
                     ViewState["Sortorder"] = "DESC";
-
+                    
                     bindcompany(); bindstatus(); InvNoBinding.Visible = false;
 
                     RefTag.Visible = false; datTo.Visible = false; datFrom1.Visible = false; tomiddle.Visible = false;
@@ -49,7 +50,8 @@ namespace advtech.Finance.Accounta
                     }
                     bindPM();
                     bind_footer(); bindInvExistence(); bindPaymentstatus();
-                    NumberToWord(); 
+                    NumberToWord();  GetOpacity();
+                    printdate.InnerText = "As of "+DateTime.Now.ToString("MMM dd, yyyy");
                 }
             }
             else
@@ -57,6 +59,34 @@ namespace advtech.Finance.Accounta
                 Response.Redirect("~/Login/LogIn1.aspx");
             }
 
+        }
+        [WebMethod]
+        public static void UpdateOpacity(string opacity)
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmdf = new SqlCommand("update tblCustomizeLetterMarigin set opacity='" + opacity + "'", con);
+                cmdf.ExecuteNonQuery();
+            }
+        }
+        protected Tuple<string,string> GetTinNumberandCompany(string customerName)
+        {
+            string tin = string.Empty;string companyName = string.Empty;
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmdcrd = new SqlCommand("select * from tblCustomers where FllName='" + customerName + "'", con);
+                SqlDataReader readercrd = cmdcrd.ExecuteReader();
+                if (readercrd.Read())
+                {
+                    tin = readercrd["TIN"].ToString();
+                    companyName = readercrd["CompanyName"].ToString();
+                }
+            }
+            return Tuple.Create(tin,companyName);
         }
         protected string bindInvoiceDateVisibility()
         {
@@ -161,6 +191,7 @@ namespace advtech.Finance.Accounta
                     string Address2 = readercrd["addresscust"].ToString();
                     string TIN = readercrd["TIN"].ToString();
                     string vatRegNumber = readercrd["vatregnumber"].ToString();
+                    CustomerCompany.InnerText = readercrd["CompanyName"].ToString();
                     readercrd.Close();
                     if (Address2 == "" || Address2 == null) { Address.InnerText = "-         -"; DupAddress.InnerText = "-         -"; }
                     else { Address.InnerText = Address2; DupAddress.InnerText = Address2; }
@@ -307,7 +338,6 @@ namespace advtech.Finance.Accounta
                 }
             }
         }
-
         private void bindTotals()
         {
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -440,23 +470,13 @@ namespace advtech.Finance.Accounta
                     str = "select * from tblrentreceipt  where date between '" + txtDatefrom.Text + "' and '" + txtDateto.Text + "'";
                     com = new SqlCommand(str, con);
                     sqlda = new SqlDataAdapter(com);
-                    ds = new DataSet();
-                    sqlda.Fill(ds, "ID");
-                    PagedDataSource Pds1 = new PagedDataSource();
-                    Pds1.DataSource = ds.Tables[0].DefaultView;
-                    Pds1.AllowPaging = true;
-                    Pds1.PageSize = 80;
-                    Pds1.CurrentPageIndex = CurrentPage;
-                    Label1.Text = "Showing Page: " + (CurrentPage + 1).ToString() + " of " + Pds1.PageCount.ToString();
-                    btnPrevious.Enabled = !Pds1.IsFirstPage;
-                    btnNext.Enabled = !Pds1.IsLastPage;
-                    Repeater1.DataSource = Pds1;
+                    DataTable dt = new DataTable();
+                    sqlda.Fill(dt);
+                    Repeater1.DataSource = dt;
                     Repeater1.DataBind();
-
                 }
             }
         }
-
         protected void Button2_Click(object sender, EventArgs e)
         {
             SqlConnection con = new SqlConnection(strConnString);
@@ -525,6 +545,8 @@ namespace advtech.Finance.Accounta
                 btnDeleteAll.Visible = false;
                 amoundInWordsDiv.Visible = true;
                 dateDiv.Visible = true;
+                printdate.Visible = false;
+                Spvb.Visible = true;
                 String PID = Convert.ToString(Request.QueryString["cust"]);
                 String PID2 = Convert.ToString(Request.QueryString["id"]); InvNoBinding.InnerText = "INV# -" + PID2;
                 InvoiceBadge.InnerText = "INV# -" + PID2;
@@ -1621,7 +1643,7 @@ namespace advtech.Finance.Accounta
         }
         protected void bind_logo_visibility()
         {
-            string text = ""; string credit = ""; string water = "";
+            string text = ""; string credit = ""; string water = "";string isComp = "";
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
             {
@@ -1634,6 +1656,7 @@ namespace advtech.Finance.Accounta
                     text = reader["visibility"].ToString();
                     credit = reader["credit_balance_visibility"].ToString();
                     water = reader["watermark"].ToString();
+                    isComp = reader["isCompanyBased"].ToString();
                     //Logo
                     if (text == "True") { LogoImage.Visible = true; logoCheck.Checked = true; }
                     else { LogoImage.Visible = false; logoCheck.Checked = false; }
@@ -1643,6 +1666,9 @@ namespace advtech.Finance.Accounta
                     //WaterMark Div
                     if (water == "True") { RaksTDiv.Visible = true; RaksTDiv2.Visible = true; waterCheck.Checked = true; }
                     else { RaksTDiv.Visible = false; RaksTDiv2.Visible = false; waterCheck.Checked = false; }
+                    if (isComp == "True") { companyCheck.Checked = true; Name.Visible = false;CustomerCompany.Visible = true; }
+                    else { companyCheck.Checked = false; Name.Visible = true; CustomerCompany.Visible = false; }
+
                 }
             }
         }
@@ -1683,7 +1709,7 @@ namespace advtech.Finance.Accounta
                 con.Open();
                 SqlCommand cmdf = new SqlCommand("update tblCustomizeLetterMarigin set invheaderfs='" + txtFontsize.Text + "',invheaderlh='" + txtLineHeight.Text + "',invbodyfs='" + txtBodyFontSize.Text + "'" +
                     ",invlogosize='" + txtLogoSize.Text + "',visibility='" + return_checkbox_logo_visibility() + "'" +
-                    ",margin='" + txtMarigin.Text + "',invoice_name='" + txtInvoiceName.Text + "',credit_balance_visibility='" + return_checkbox_credit_visibility() + "',watermark='" + return_checkbox_water_visibility() + "'", con);
+                    ",margin='" + txtMarigin.Text + "',invoice_name='" + txtInvoiceName.Text + "',credit_balance_visibility='" + return_checkbox_credit_visibility() + "',watermark='" + return_checkbox_water_visibility() + "',isCompanyBased='"+companyCheck.Checked+"'", con);
                 cmdf.ExecuteNonQuery();
                 Response.Redirect("rentinvoicereport.aspx?id=" + PID + "&&cust=" + PID2);
             }
@@ -1697,6 +1723,22 @@ namespace advtech.Finance.Accounta
                 SqlCommand cmdreb1 = new SqlCommand("delete tblrentreceipt", con);
                 cmdreb1.ExecuteNonQuery();
                 Response.Redirect("rentinvoicereport.aspx");
+            }
+        }
+        private void GetOpacity()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("select * from tblCustomizeLetterMarigin", con);
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    string opacity = reader["opacity"].ToString();
+                    lblOpacity.Text = opacity;
+                    RaksTDiv.Style.Add("opacity",opacity);
+                }
             }
         }
     }
