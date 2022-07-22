@@ -634,7 +634,7 @@ namespace advtech.Finance.Accounta
                 SqlCommand cmdcn = new SqlCommand("select sum(InvAmount) as inv, sum(Payment) as payment from tblCustomerStatement where customer='" + PID + "'", con);
                 SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
                 DataTable dtcn = new DataTable();
-                sdacn.Fill(dtcn); int nb = dtcn.Rows.Count;
+                sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
                 if (nb == 0)
                 {
 
