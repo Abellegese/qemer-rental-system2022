@@ -96,6 +96,24 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.Button btnDueDateUpdate;
 
         /// <summary>
+        /// txtDateCash control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtDateCash;
+
+        /// <summary>
+        /// CashDueDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox CashDueDate;
+
+        /// <summary>
         /// btnBulkCashPayment control.
         /// </summary>
         /// <remarks>
@@ -121,6 +139,24 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox CheckGene;
+
+        /// <summary>
+        /// BankDueDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox BankDueDate;
+
+        /// <summary>
+        /// txtDateBank control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtDateBank;
 
         /// <summary>
         /// btnBankPayment control.
