@@ -479,7 +479,7 @@ namespace advtech.Finance.Accounta
                 SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
                 DataTable dtcn = new DataTable();
                 sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
-                if (nb == 0)
+                if (nb == 0 || dtcn.Rows[0][0].ToString()==null || dtcn.Rows[0][0].ToString()=="")
                 {
 
                 }
