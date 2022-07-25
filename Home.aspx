@@ -51,9 +51,6 @@
     <script>
             function MarkasPaid() {
                 PageMethods.MakeCustomerAsPaid(Success);
-
- 
-       
             }
             function Success(result) {
                 alert("The customer successfully Marked as paid");
