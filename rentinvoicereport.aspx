@@ -542,7 +542,7 @@
                                                     <td scope="col"  contenteditable="true" <%#bindDescriptionColVisibility() %>>Rent Service</td>
                                                     <td class="text-primary text-left" <%#bindInvoiceDateVisibility() %>>
                                                         <a href="rentinvoicereport.aspx?id= <%# Eval("id2")%>&&cust=<%# Eval("customer")%>&&paymentmode=<%# Eval("payment_mode")%>" data-toggle="tooltip" data-placement="top" title="<%# Eval("customer")%> details">
-                                                           <asp:Label ID="lblCust" runat="server" Text='<%# GetTinNumberandCompany(Eval("customer").ToString()).Item2 %>'></asp:Label></a>
+                                                           <asp:Label ID="lblCust" runat="server" Text='<%# Eval("customer") %>'></asp:Label></a>
 
                                                     </td>                                                    
                                                     <td class="text-center" contenteditable="true" <%#bindInvoiceDateVisibility() %>>
