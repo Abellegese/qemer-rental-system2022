@@ -60,7 +60,7 @@
             align-content: center;
             justify-content: center;
             opacity: 0.6;
-            z-index: -1;
+            z-index: 1;
             transform: rotate(-45deg);
         }
     </style>
@@ -164,7 +164,7 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <asp:ScriptManager ID='ScriptManager1' runat='server' EnablePageMethods='true' />
-    <div class="container-fluid pl-3 pr-3">
+    <div class="container-fluid pl-3 pr-3" style="position:absolute;">
         <div class="modal fade" id="ModalBody" tabindex="-1" role="dialog" aria-labelledby="MHeader" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
@@ -1059,6 +1059,11 @@
                                     <asp:ListItem>ግንቦት እስከ ሐምሌ</asp:ListItem>
 
 
+                                    <asp:ListItem>ሚያዚያ እስከ ሰኔ</asp:ListItem>
+                                    <asp:ListItem>ሐምሌ እስከ መስከረም</asp:ListItem>
+                                    <asp:ListItem>ጥቅምት እስከ ታህሳስ</asp:ListItem>
+                                    <asp:ListItem>ጥር እስከ መጋቢት</asp:ListItem>
+
                                 </asp:DropDownList>
                                 <hr />
                                 <div class="custom-control mb-2 custom-checkbox font-weight-300">
@@ -1366,7 +1371,7 @@
                                 <span class="badge text-uppercase text-white" style="background-color:#9d469d">Customer</span>
 
                                 <span class="badge badge-info mx-3" visible="false" id="periodSpan" runat="server"></span>
-                                <span class="badge text-white text-uppercase" style="background-color: #8a2b9d" visible="false" id="letterType" runat="server"></span>
+                                <span class="badge text-white text-uppercase" style="background-color:#48ac4d" visible="false" id="letterType" runat="server"></span>
 
                             </div>
                             <div class="col-6 text-right">
@@ -1450,25 +1455,25 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div style="margin-top: 20px">
+                                                    <div style="margin-top: 20px;color:black">
                                                         <div class="row  ">
-                                                            <div class="col-md-12 text-right">
-                                                                <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# GetLetterRecordedData().Item1 %></h6>
-                                                                <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetLetterRecordedData().Item2 %></h6>
+                                                            <div class="col-md-12 text-right" style="color:black">
+                                                                <h6 class="mb-2 font-weight-bolder">Date/ቀን፡- <%# GetLetterRecordedData().Item1 %></h6>
+                                                                <h6 class=" font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetLetterRecordedData().Item2 %></h6>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="row  ">
                                                         <div class="col-md-12 text-left">
-                                                            <h5 class="mb-2 text-gray-900" contenteditable="true" translate="yes" <%#bind_headline() %>>ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
-                                                            <h5 class="text-gray-900" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                            <h5 contenteditable="true" translate="yes" <%#bind_headline() %>>ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                            <h5  <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="card-body " <%#bind_borderbottom() %>>
                                                     <center>
-                                                        <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#GetLetterRecordedData().Item5 %></span>
+                                                        <span <%#bind_headgudayu() %> contenteditable="true" ><%#GetLetterRecordedData().Item5 %></span>
                                                     </center>
                                                     <p class="text-gray-900" style="text-align: justify;" contenteditable="true">
 
@@ -1516,13 +1521,13 @@
                                                         <div <%#bind_text_alignment() %>>
 
                                                             <a href="#" class="btn btn-default btn-sm" data-toggle="modal" data-target="#ModalHeader">
-                                                                <span class="text-gray-900" id="headtext" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
+                                                                <span id="headtext" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
                                                             </a>
                                                         </div>
 
                                                     </div>
-                                                    <div class="text-gray-900" <%# bind_border_all()%>>
-                                                        <div class="row  mb-3 text-gray-900" <%#bind_address() %>>
+                                                    <div  <%# bind_border_all()%>>
+                                                        <div class="row " <%#bind_address() %>>
                                                             <div class="col-md-6 text-left">
                                                                 <span translate="no">Ethiopia:-Addis Abeba</span>
                                                             </div>
@@ -1531,27 +1536,27 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div style="margin-top: 20px">
+                                                    <div style="margin-top: 20px;color:black">
                                                         <div class="row  ">
                                                             <div class="col-md-12 text-right">
-                                                                <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
-                                                                <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                                <h6 class="mb-2  font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                                <h6 class=" font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="row  ">
-                                                        <div class="col-md-12 text-left">
-                                                            <h5 class="mb-2 text-gray-900" contenteditable="true" translate="yes" <%#bind_headline() %>>ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
-                                                            <h5 class="text-gray-900" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                        <div class="col-md-12 text-left" style="color:black">
+                                                            <h5 class="mb-2" contenteditable="true" translate="yes" <%#bind_headline() %>>ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                            <h5  <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="card-body " <%#bind_borderbottom() %>>
                                                     <center>
-                                                        <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#bind_headgudayu_text() %></span>
+                                                        <span <%#bind_headgudayu() %> contenteditable="true"><%#bind_headgudayu_text() %></span>
                                                     </center>
-                                                    <p class="text-gray-900" style="text-align: justify;" contenteditable="true">
+                                                    <p  style="text-align: justify;color:black" contenteditable="true">
 
                                                         <span <%#bind_bodyies() %>><%#bind_body1_text() %></span> <span <%#bind_period() %>>ግንቦት እስከ ሐምሌ</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body2_text() %></span>
                                                         <span <%#bind_period() %>>ነሃሴ እስከ ጥቅምት</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()+1%></span> <span <%#bind_bodyies() %>><%#bind_body3_text() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
@@ -1562,8 +1567,8 @@
                                                     </p>
                                                     <div class="row" contenteditable="true">
                                                         <div class="col-md-12 text-right">
-                                                            <h5 class="mb-2 text-gray-900" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
-                                                            <h5 class="text-gray-900" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+                                                            <h5 class="mb-2 " <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                            <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
 
                                                         </div>
                                                     </div>
@@ -1598,7 +1603,7 @@
                                                         <div <%#bind_text_alignment() %>>
 
 
-                                                            <span class="text-gray-900" id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
+                                                            <span id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
                                                         </div>
 
                                                     </div>
@@ -1612,25 +1617,25 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="row  " style="margin-top: 20px">
+                                                    <div class="row  " style="margin-top: 20px;color:black">
                                                         <div class="col-md-12 text-right">
-                                                            <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
-                                                            <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                            <h6 class="mb-2  font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                            <h6 class=" font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
                                                         </div>
                                                     </div>
                                                     <div class="row  ">
-                                                        <div class="col-md-12 text-left">
-                                                            <h5 class="mb-2 text-gray-900" <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
-                                                            <h5 class="text-gray-900 " <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                        <div class="col-md-12 text-left" style="color: black">
+                                                            <h5 class="mb-2 " <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                            <h5 class=" " <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="card-body " <%#bind_borderbottom() %>>
                                                     <center>
-                                                        <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#bind_headgudayu_text() %></span>
+                                                        <span <%#bind_headgudayu() %> contenteditable="true"><%#bind_headgudayu_text() %></span>
                                                     </center>
-                                                    <p class="text-gray-900" style="text-align: justify" contenteditable="true">
+                                                    <p style="text-align: justify;color:black" contenteditable="true">
 
                                                         <span <%#bind_bodyies() %>><%#bind_body1_text() %></span> <span <%#bind_period() %>>ነሃሴ እስከ ጥቅምት</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body2_text() %></span>
                                                         <span <%#bind_period() %>>ህዳር እስከ ጥር </span><span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body3_text() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
@@ -1641,8 +1646,8 @@
                                                     </p>
                                                     <div class="row" contenteditable="true">
                                                         <div class="col-md-12 text-right">
-                                                            <h5 class="mb-2 text-gray-900" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
-                                                            <h5 class="text-gray-900" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+                                                            <h5 class="mb-2 " <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                            <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
 
                                                         </div>
                                                     </div>
@@ -1677,7 +1682,7 @@
                                                         <div <%#bind_text_alignment() %>>
 
 
-                                                            <span class="text-gray-900" id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
+                                                            <span  id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
                                                         </div>
 
                                                     </div>
@@ -1691,25 +1696,25 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="row  " style="margin-top: 20px">
+                                                    <div class="row  " style="margin-top: 20px;color:black">
                                                         <div class="col-md-12 text-right">
-                                                            <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
-                                                            <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                            <h6 class="mb-2 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                            <h6 class=" font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
                                                         </div>
                                                     </div>
                                                     <div class="row  ">
                                                         <div class="col-md-12 text-left">
-                                                            <h5 class="mb-2 text-gray-900" <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
-                                                            <h5 class="text-gray-900" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                            <h5 class="mb-2" <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                            <h5 class="" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="card-body " <%#bind_borderbottom() %>>
                                                     <center>
-                                                        <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#bind_headgudayu_text() %></span>
+                                                        <span <%#bind_headgudayu() %> contenteditable="true" ><%#bind_headgudayu_text() %></span>
                                                     </center>
-                                                    <p class="text-gray-900" style="text-align: justify" contenteditable="true">
+                                                    <p  style="text-align: justify;color:black" contenteditable="true">
 
                                                         <span <%#bind_bodyies() %>><%#bind_body1_text() %></span> <span <%#bind_period() %>>ህዳር እስከ ጥር</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body2_text() %></span>
                                                         <span <%#bind_period() %>>የካቲት እስከ ሚያዚያ</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body3_text() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
@@ -1720,8 +1725,8 @@
                                                     </p>
                                                     <div class="row" contenteditable="true">
                                                         <div class="col-md-12 text-right">
-                                                            <h5 class="mb-2 text-gray-900" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
-                                                            <h5 class="text-gray-900" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+                                                            <h5 class="mb-2" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                            <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
 
                                                         </div>
                                                     </div>
@@ -1773,25 +1778,25 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="row  " style="margin-top: 20px">
+                                                                <div class="row  " style="margin-top: 20px;color:black">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
-                                                                        <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                                        <h6 class="mb-2  font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                                        <h6 class=" font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
                                                                     </div>
                                                                 </div>
                                                                 <div class="row  ">
-                                                                    <div class="col-md-12 text-left">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
-                                                                        <h5 class="text-gray-900" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                                    <div class="col-md-12 text-left" style="color:black">
+                                                                        <h5 class="mb-2 " <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                                        <h5 class="" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
                                                                     </div>
                                                                 </div>
                                                             </div>
 
                                                             <div class="card-body " <%#bind_borderbottom() %>>
                                                                 <center>
-                                                                    <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#bind_headgudayu_text() %></span>
+                                                                    <span <%#bind_headgudayu() %> contenteditable="true"><%#bind_headgudayu_text() %></span>
                                                                 </center>
-                                                                <p class="text-gray-900" style="text-align: justify" contenteditable="true">
+                                                                <p  style="text-align: justify;color:black" contenteditable="true">
 
                                                                     <span <%#bind_bodyies() %>><%#bind_body1_text() %></span> <span <%#bind_period() %>>የካቲት እስከ ሚያዚያ </span><span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body2_text() %></span>
                                                                     <span <%#bind_period() %>>ግንቦት እስከ ሐምሌ</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body3_text() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
@@ -1802,8 +1807,8 @@
                                                                 </p>
                                                                 <div class="row" contenteditable="true">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
-                                                                        <h5 class="text-gray-900" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+                                                                        <h5 class="mb-2 " <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                                        <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
 
                                                                     </div>
                                                                 </div>
@@ -1844,7 +1849,7 @@
                                                                     <div <%#bind_text_alignment() %>>
 
 
-                                                                        <span class="text-gray-900" id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
+                                                                        <span  id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
                                                                     </div>
 
                                                                 </div>
@@ -1858,25 +1863,25 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="row  " style="margin-top: 20px">
+                                                                <div class="row  " style="margin-top: 20px;color:black">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
-                                                                        <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                                        <h6 class="mb-2  font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                                        <h6 class=" font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
                                                                     </div>
                                                                 </div>
                                                                 <div class="row  ">
-                                                                    <div class="col-md-12 text-left">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
-                                                                        <h5 class="text-gray-900" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                                    <div class="col-md-12 text-left" style="color:black">
+                                                                        <h5 class="mb-2 " <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                                        <h5 class="" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
                                                                     </div>
                                                                 </div>
                                                             </div>
 
                                                             <div class="card-body " <%#bind_borderbottom() %>>
                                                                 <center>
-                                                                    <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#bind_heading_Custom() %></span>
+                                                                    <span <%#bind_headgudayu() %> contenteditable="true"><%#bind_heading_Custom() %></span>
                                                                 </center>
-                                                                <p class="text-gray-900" style="text-align: justify" contenteditable="true">
+                                                                <p style="text-align: justify;color:black" contenteditable="true">
 
                                                                     <span <%#bind_bodyies() %>><%#bind_part1_Custom() %></span> <span <%#bind_period() %>>ግንቦት እስከ ሐምሌ</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_part2_Custom() %></span>
                                                                     <span <%#bind_period() %>>ነሃሴ እስከ ጥቅምት</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()+1%></span> <span <%#bind_bodyies() %>><%#bind_part3_Custom() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
@@ -1887,8 +1892,8 @@
                                                                 </p>
                                                                 <div class="row" contenteditable="true">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
-                                                                        <h5 class="text-gray-900" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+                                                                        <h5 class="mb-2 " <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                                        <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
 
                                                                     </div>
                                                                 </div>
@@ -1929,7 +1934,7 @@
                                                                     <div <%#bind_text_alignment() %>>
 
 
-                                                                        <span class="text-gray-900" id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
+                                                                        <span id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
                                                                     </div>
 
                                                                 </div>
@@ -1943,25 +1948,25 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="row  " style="margin-top: 20px">
+                                                                <div class="row  " style="margin-top: 20px;color:black">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
-                                                                        <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                                        <h6 class="mb-2 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                                        <h6 class=" font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
                                                                     </div>
                                                                 </div>
                                                                 <div class="row  ">
-                                                                    <div class="col-md-12 text-left">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
-                                                                        <h5 class="text-gray-900" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                                    <div class="col-md-12 text-left" style="color:black">
+                                                                        <h5 class="mb-2 " <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                                        <h5 class="" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
                                                                     </div>
                                                                 </div>
                                                             </div>
 
                                                             <div class="card-body " <%#bind_borderbottom() %>>
                                                                 <center>
-                                                                    <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#bind_heading_Custom() %></span>
+                                                                    <span <%#bind_headgudayu() %> contenteditable="true"><%#bind_heading_Custom() %></span>
                                                                 </center>
-                                                                <p class="text-gray-900" style="text-align: justify" contenteditable="true">
+                                                                <p  style="text-align: justify;color:black" contenteditable="true">
 
                                                                     <span <%#bind_bodyies() %>><%#bind_part1_Custom() %></span> <span <%#bind_period() %>>ግንቦት እስከ ሐምሌ</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_part2_Custom() %></span>
                                                                     <span <%#bind_period() %>>ነሃሴ እስከ ጥቅምት</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()+1%></span> <span <%#bind_bodyies() %>><%#bind_part3_Custom() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
@@ -1972,8 +1977,8 @@
                                                                 </p>
                                                                 <div class="row" contenteditable="true">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
-                                                                        <h5 class="text-gray-900" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+                                                                        <h5 class="mb-2 " <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                                        <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
 
                                                                     </div>
                                                                 </div>
@@ -2014,7 +2019,7 @@
                                                                     <div <%#bind_text_alignment() %>>
 
 
-                                                                        <span class="text-gray-900" id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
+                                                                        <span  id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
                                                                     </div>
 
                                                                 </div>
@@ -2028,25 +2033,25 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="row  " style="margin-top: 20px">
+                                                                <div class="row  " style="margin-top: 20px;color:black">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
-                                                                        <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                                        <h6 class="mb-2 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                                        <h6 class="font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
                                                                     </div>
                                                                 </div>
                                                                 <div class="row  ">
-                                                                    <div class="col-md-12 text-left">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
-                                                                        <h5 class="text-gray-900" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                                    <div class="col-md-12 text-left" style="color:black">
+                                                                        <h5 class="mb-2 " <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                                        <h5 class="" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
                                                                     </div>
                                                                 </div>
                                                             </div>
 
                                                             <div class="card-body " <%#bind_borderbottom() %>>
                                                                 <center>
-                                                                    <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#bind_heading_Custom() %></span>
+                                                                    <span <%#bind_headgudayu() %> contenteditable="true"><%#bind_heading_Custom() %></span>
                                                                 </center>
-                                                                <p class="text-gray-900" style="text-align: justify" contenteditable="true">
+                                                                <p  style="text-align: justify;color:black" contenteditable="true">
 
                                                                     <span <%#bind_bodyies() %>><%#bind_part1_Custom() %></span> <span <%#bind_period() %>>ግንቦት እስከ ሐምሌ</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_part2_Custom() %></span>
                                                                     <span <%#bind_period() %>>ነሃሴ እስከ ጥቅምት</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()+1%></span> <span <%#bind_bodyies() %>><%#bind_part3_Custom() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
@@ -2057,8 +2062,8 @@
                                                                 </p>
                                                                 <div class="row" contenteditable="true">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
-                                                                        <h5 class="text-gray-900" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+                                                                        <h5 class="mb-2" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                                        <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
 
                                                                     </div>
                                                                 </div>
@@ -2113,25 +2118,25 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="row  " style="margin-top: 20px">
+                                                                <div class="row  " style="margin-top: 20px;color:black">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h6 class="mb-2 text-gray-900 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
-                                                                        <h6 class="text-gray-900 font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                                        <h6 class="mb-2  font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                                        <h6 class=" font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
                                                                     </div>
                                                                 </div>
                                                                 <div class="row  ">
-                                                                    <div class="col-md-12 text-left">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
-                                                                        <h5 class="text-gray-900" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                                    <div class="col-md-12 text-left" style="color:black">
+                                                                        <h5 class="mb-2 " <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                                        <h5 class="" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
                                                                     </div>
                                                                 </div>
                                                             </div>
 
                                                             <div class="card-body " <%#bind_borderbottom() %>>
                                                                 <center>
-                                                                    <span <%#bind_headgudayu() %> contenteditable="true" class="text-gray-900"><%#bind_heading_Custom() %></span>
+                                                                    <span <%#bind_headgudayu() %> contenteditable="true" ><%#bind_heading_Custom() %></span>
                                                                 </center>
-                                                                <p class="text-gray-900" style="text-align: justify" contenteditable="true">
+                                                                <p  style="text-align: justify;color:black" contenteditable="true">
 
                                                                     <span <%#bind_bodyies() %>><%#bind_part1_Custom() %></span> <span <%#bind_period() %>>ግንቦት እስከ ሐምሌ</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_part2_Custom() %></span>
                                                                     <span <%#bind_period() %>>ነሃሴ እስከ ጥቅምት</span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()+1%></span> <span <%#bind_bodyies() %>><%#bind_part3_Custom() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
@@ -2142,8 +2147,8 @@
                                                                 </p>
                                                                 <div class="row" contenteditable="true">
                                                                     <div class="col-md-12 text-right">
-                                                                        <h5 class="mb-2 text-gray-900" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
-                                                                        <h5 class="text-gray-900" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+                                                                        <h5 class="mb-2" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                                        <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
 
                                                                     </div>
                                                                 </div>
@@ -2156,6 +2161,164 @@
                                         </ItemTemplate>
 
                                     </asp:Repeater>
+
+                                </div>
+
+                                <div class="col-1">
+                                </div>
+                            </div>
+
+
+                            <div class="row " id="secondPeriodDiv" runat="server" visible="false">
+                                <div class="col-1">
+                                </div>
+                                <div class="col-10">
+                                    <asp:Repeater ID="rptrSecondPeriod" runat="server">
+                                        <ItemTemplate>
+                                            <div>
+                                                <div class="card-header text-black bg-white font-weight-bold">
+                                                    <div class="row ">
+                                                        <div class="col-4 text-left">
+                                                            <img class="" src="../../asset/Brand/gh.jpg" alt="" width="110" <%#bind_logo_visibility() %>>
+                                                        </div>
+                                                        <div <%#bind_text_alignment() %>>
+
+                                                            <a href="#" class="btn btn-default btn-sm" data-toggle="modal" data-target="#ModalHeader">
+                                                                <span id="headtext" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
+                                                            </a>
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="text-gray-900" <%# bind_border_all()%>>
+                                                        <div class="row  mb-3 text-gray-900" <%#bind_address() %>>
+                                                            <div class="col-md-6 text-left">
+                                                                <span translate="no">Ethiopia:-Addis Abeba</span>
+                                                            </div>
+                                                            <div class="col-md-6 text-right">
+                                                                <span translate="no">Tell: - 0991-12121</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div style="margin-top: 20px;color:black">
+                                                        <div class="row  ">
+                                                            <div class="col-md-12 text-right">
+                                                                <h6 class="mb-2  font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                                <h6 class="font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row  ">
+                                                        <div class="col-md-12 text-left" style="color:black">
+                                                            <h5 class="mb-2 " contenteditable="true" translate="yes" <%#bind_headline() %>>ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                            <h5 class="" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card-body " <%#bind_borderbottom() %>>
+                                                    <center>
+                                                        <span <%#bind_headgudayu() %> contenteditable="true"><%#bind_headgudayu_text() %></span>
+                                                    </center>
+                                                    <p  style="text-align: justify;color:black" contenteditable="true">
+
+                                                        <span <%#bind_bodyies() %>><%#bind_body1_text() %></span> <span <%#bind_period() %>><%#GetPeriods().Item2 %></span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body2_text() %></span>
+                                                        <span <%#bind_period() %>><%#GetPeriods().Item1 %></span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_body3_text() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
+                                                        <span <%#bind_bodyies() %>><%#bind_body4_text() %></span>
+                                                        <center>
+                                                            <h1 class="water h1  font-weight-bolder" style="font-size: 60px">ራክሲም ንግድ ስራ ኃ/የ/የግል/ማ</h1>
+                                                        </center>
+                                                    </p>
+                                                    <div class="row" contenteditable="true">
+                                                        <div class="col-md-12 text-right">
+                                                            <h5 class="mb-2" <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                            <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+
+
+                                </div>
+
+                                <div class="col-1">
+                                </div>
+                            </div>
+                            <div class="row " id="secondPeriodCustom" runat="server" visible="false">
+                                <div class="col-1">
+                                </div>
+                                <div class="col-10">
+                                    <asp:Repeater ID="rptrSecondCustom" runat="server">
+                                        <ItemTemplate>
+                                            <div>
+                                                <div class="card-header text-black bg-white font-weight-bold">
+
+
+
+                                                    <div class="row ">
+                                                        <div class="col-md-4 text-left">
+                                                            <img class="" src="../../asset/Brand/gh.jpg" alt="" width="110" <%#bind_logo_visibility() %>>
+                                                        </div>
+                                                        <div <%#bind_text_alignment() %>>
+
+
+                                                            <span  id="headtext" data-toggle="modal" data-target="#ModalHeader" <%#bind_heading_first()%>><%#bind_heading_first1() %></span>
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="text-gray-900" <%# bind_border_all()%>>
+                                                        <div class="row  mb-3 text-gray-900" <%#bind_address() %>>
+                                                            <div class="col-md-6 text-left">
+                                                                <span translate="no">Ethiopia:-Addis Abeba</span>
+                                                            </div>
+                                                            <div class="col-md-6 text-right">
+                                                                <span translate="no">Tell: - 0991-12121</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row  " style="margin-top: 20px;color:black">
+                                                        <div class="col-md-12 text-right">
+                                                            <h6 class="mb-2 font-weight-bolder">Date/ቀን፡- <%# getethiopianDate() %></h6>
+                                                            <h6 class=" font-weight-bolder" contenteditable="true">Ref No./የደ.ቁ፤- ራክሲ፡- <%# GetActiveClass() %></h6>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row  ">
+                                                        <div class="col-md-12 text-left" style="color:black">
+                                                            <h5 class="mb-2 " <%#bind_headline() %> contenteditable="true" translate="yes">ለ<%# Eval("customer_amharic")%>/<%# Eval("buisnesstype")%></h5>
+                                                            <h5 class="" <%#bind_headline() %>>የሱቅ ቁጥር <%# Eval("shopno")%> </h5>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card-body " <%#bind_borderbottom() %>>
+                                                    <center>
+                                                        <span <%#bind_headgudayu() %> contenteditable="true" ><%#bind_heading_Custom() %></span>
+                                                    </center>
+                                                    <p style="text-align: justify; color: black" contenteditable="true">
+
+                                                        <span <%#bind_bodyies() %>><%#bind_part1_Custom() %></span> <span <%#bind_period() %>><%#GetPeriods().Item2 %></span></span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_part2_Custom() %></span>
+                                                        <span <%#bind_period() %>><%#GetPeriods().Item1 %></span></span> <span class="mx-2" <%#bind_year() %>><%# GetEthYear()%></span> <span <%#bind_bodyies() %>><%#bind_part3_Custom() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>
+                                                        <span <%#bind_bodyies() %>><%#bind_part4_Custom() %></span>
+                                                        <center>
+                                                            <h1 class="water h1  font-weight-bolder" style="font-size: 60px">ራክሲም ንግድ ስራ ኃ/የ/የግል/ማ</h1>
+                                                        </center>
+                                                    </p>
+                                                    <div class="row" contenteditable="true">
+                                                        <div class="col-md-12 text-right">
+                                                            <h5 class="mb-2 " <%#bind_footer() %>>ከሰላምታ ጋር</h5>
+                                                            <h5 class="" <%#bind_footer() %>>አስተዳደር ቢሮ</h5>
+
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+
 
                                 </div>
 

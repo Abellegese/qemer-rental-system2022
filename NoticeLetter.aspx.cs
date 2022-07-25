@@ -38,6 +38,123 @@ namespace advtech.Finance.Accounta
                 Response.Redirect("~/Login/LogIn1.aspx");
             }
         }
+        protected Tuple<string, string> GetPeriods()
+        {
+            string currentPeriod = string.Empty;
+            string prevPeriod = string.Empty;                
+            currentPeriod = DropDownList1.SelectedItem.Text;
+            if (Request.QueryString["o1"] != null)
+            {
+                currentPeriod = "ሚያዚያ እስከ ሰኔ ";
+                prevPeriod = "ጥር እስከ መጋቢት";
+            }
+            if (Request.QueryString["o2"] != null)
+            {
+                currentPeriod = "ሐምሌ እስከ መስከረም";
+                prevPeriod = "ሚያዚያ እስከ ሰኔ";
+            }
+            if (Request.QueryString["o3"] != null)
+            {
+                currentPeriod = "ጥቅምት እስከ ታህሳስ";
+                prevPeriod = "ሐምሌ እስከ መስከረም";
+            }
+            if (Request.QueryString["o4"] != null)
+            {
+                currentPeriod = "ጥር እስከ መጋቢት";
+                prevPeriod = "ጥቅምት እስከ ታህሳስ";
+            }
+            //
+            if (Request.QueryString["oc1"] != null)
+            {
+                currentPeriod = "ሚያዚያ እስከ ሰኔ ";
+                prevPeriod = "ጥር እስከ መጋቢት";
+            }
+            if (Request.QueryString["oc2"] != null)
+            {
+                currentPeriod = "ሐምሌ እስከ መስከረም";
+                prevPeriod = "ሚያዚያ እስከ ሰኔ";
+            }
+            if (Request.QueryString["oc3"] != null)
+            {
+                currentPeriod = "ጥቅምት እስከ ታህሳስ";
+                prevPeriod = "ሐምሌ እስከ መስከረም";
+            }
+            if (Request.QueryString["oc4"] != null)
+            {
+                currentPeriod = "ጥር እስከ መጋቢት";
+                prevPeriod = "ጥቅምት እስከ ታህሳስ";
+            }
+            periodSpan.InnerText = currentPeriod;
+            periodSpan.Visible = true;
+            return Tuple.Create(currentPeriod, prevPeriod);
+        }
+        private Tuple<int, string> GetRefNumber()
+        {
+            string periodGroup = string.Empty;
+            int payCount = 0;
+            if (Request.QueryString["oc1"] != null || Request.QueryString["oc2"] != null || Request.QueryString["oc3"] != null
+                || Request.QueryString["oc4"] != null ||
+                Request.QueryString["o1"] != null || Request.QueryString["o2"] != null || Request.QueryString["o3"] != null
+                || Request.QueryString["o4"] != null
+                || DropDownList1.SelectedIndex > 3)
+            { periodGroup = "02"; }
+            else { periodGroup = "01"; }
+            string reference = string.Empty;
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("select Top 1*from tblLetterRecord where reference_no LIKE '%" + periodGroup + "%' order by id desc ", con);
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    reference = reader["reference_no"].ToString();
+                    reference = reference.Substring(2);
+                    int endIndex = reference.IndexOf("/");
+                    reference = reference.Substring(0, endIndex);
+                    payCount = Convert.ToInt32(reference);
+                    payCount += 1;
+                }
+            }
+            return Tuple.Create(payCount, periodGroup);
+        }
+        private Tuple<int,string> GetRefNumber2()
+        {
+            string periodGroup = string.Empty;
+            int payCount = 0 ;
+            if (Request.QueryString["oc1"] != null || Request.QueryString["oc2"] != null || Request.QueryString["oc3"] != null
+                || Request.QueryString["oc4"] != null ||
+                Request.QueryString["o1"] != null || Request.QueryString["o2"] != null || Request.QueryString["o3"] != null
+                || Request.QueryString["o4"] != null
+                || DropDownList1.SelectedIndex > 3)
+            { periodGroup = "02"; }
+            else { periodGroup = "01"; }
+            string reference = string.Empty;
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("select Top 1*from tblLetterRecord where reference_no LIKE '%"+periodGroup+"%' order by id desc ", con);
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    reference = reader["reference_no"].ToString();
+                    reference = reference.Substring(2);
+                    int endIndex = reference.IndexOf("/");
+                    reference = reference.Substring(0,endIndex);
+                    payCount = Convert.ToInt32(reference);
+                }
+            }
+            return Tuple.Create(payCount,periodGroup);
+        }
+        protected string DispRefNumber()
+        {
+            string reference = string.Empty;
+     
+            return reference;
+        }
         private void bindLetterRecordedDate()
         {
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -77,7 +194,7 @@ namespace advtech.Finance.Accounta
             string prevPeriod = string.Empty;
             int ethiopianYear = GetEthYear();
             string date = getethiopianDate();
-            string refernceNumber = GetActiveClass();
+            string refernceNumber = GetActiveClass2();
             if (currentPeriod== "ነሃሴ እስከ ጥቅምት")
             {
            
@@ -97,26 +214,22 @@ namespace advtech.Finance.Accounta
             }
             return Tuple.Create(date,refernceNumber,prevPeriod);
         }
-        private bool CheckForReferenceExistenceInLetterRecord(string referenceNumner)
+        private int CheckForReferenceExistenceInLetterRecord(string date)
         {
-            bool isFound = false;
+            int i = 0;
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmd = new SqlCommand("select*from tblLetterRecord where reference_no='" + referenceNumner+"'", con);
+                SqlCommand cmd = new SqlCommand("select*from tblLetterRecord where date='" + date+"'", con);
 
                 using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                 {
                     DataTable dt = new DataTable();
-                    sda.Fill(dt); int i = dt.Rows.Count;
-                    if (i != 0)
-                    {
-                        isFound = true;
-                    }
+                    sda.Fill(dt); i = dt.Rows.Count;
                 }
             }
-            return isFound;
+            return i;
         }
         private void insertToLetterRecord()
         {
@@ -128,7 +241,7 @@ namespace advtech.Finance.Accounta
                 if (ddlLettrType.SelectedItem.Text=="Default Letter") { headline = bind_headgudayu_text(); }
                 else{ headline = bind_heading_Custom(); }
 
-                if (CheckForReferenceExistenceInLetterRecord(GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item2) == false)
+                if (CheckForReferenceExistenceInLetterRecord(getethiopianDate())==0)
                 {
                     SqlCommand cmd1974 = new SqlCommand("insert into tblLetterRecord values('" + GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item1 + "','" + GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item2 + "',N'"+ GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item3 + "',N'" + DropDownList1.SelectedItem.Text +" "+GetEthYear()+ "',N'"+headline+"')", con);
                     cmd1974.ExecuteNonQuery();
@@ -233,6 +346,28 @@ namespace advtech.Finance.Accounta
 
             div4.Style.Add("margin-left", left + "px");
             div4.Style.Add("margin-right", right + "px");
+
+
+            div5.Style.Add("margin-left", left + "px");
+            div5.Style.Add("margin-right", right + "px");
+
+            div6.Style.Add("margin-left", left + "px");
+            div6.Style.Add("margin-right", right + "px");
+
+            div7.Style.Add("margin-left", left + "px");
+            div7.Style.Add("margin-right", right + "px");
+
+            div8.Style.Add("margin-left", left + "px");
+            div8.Style.Add("margin-right", right + "px");
+
+            letterRecordedDiv.Style.Add("margin-left", left + "px");
+            letterRecordedDiv.Style.Add("margin-right", right + "px");
+
+            secondPeriodDiv.Style.Add("margin-left", left + "px");
+            secondPeriodDiv.Style.Add("margin-right", right + "px");
+
+            secondPeriodCustom.Style.Add("margin-left", left + "px");
+            secondPeriodCustom.Style.Add("margin-right", right + "px");
         }
         protected string getethiopianDate()
         {
@@ -586,6 +721,24 @@ namespace advtech.Finance.Accounta
                 return ey;
             }
         }
+        protected string GetActiveClass2()
+        {
+            int d = DateTime.Now.Month;
+            int y = DateTime.Now.Year;
+            if (d >= 01 && d <= 08)
+            {
+                int ey = y - 8;
+                string md = GetRefNumber().Item2 + GetRefNumber().Item1 + "/" + ey.ToString();
+
+                return md;
+            }
+            else
+            {
+                int ey = y - 7;
+                string md = GetRefNumber().Item2 + GetRefNumber().Item1 + "/" + ey.ToString();
+                return md;
+            }
+        }
         protected string GetActiveClass()
         {
             int d = DateTime.Now.Month;
@@ -593,14 +746,14 @@ namespace advtech.Finance.Accounta
             if (d >= 01 && d <= 08)
             {
                 int ey = y - 8;
-                string md = DateTime.Now.Date.ToString("MMdd") + "/" + ey.ToString();
+                string md = GetRefNumber2().Item2+GetRefNumber2().Item1 + "/" + ey.ToString();
 
                 return md;
             }
             else
             {
                 int ey = y - 7;
-                string md = DateTime.Now.Date.ToString("MMdd") + "/" + ey.ToString();
+                string md = GetRefNumber2().Item2 + GetRefNumber2().Item1 + "/" + ey.ToString();
                 return md;
             }
         }
@@ -634,6 +787,10 @@ namespace advtech.Finance.Accounta
                 Repeater7.DataBind();
                 Repeater8.DataSource = ds;
                 Repeater8.DataBind();
+                rptrSecondPeriod.DataSource = ds;
+                rptrSecondPeriod.DataBind();
+                rptrSecondCustom.DataSource = ds;
+                rptrSecondCustom.DataBind();
             }
         }
         private void bindstatus()
@@ -679,6 +836,10 @@ namespace advtech.Finance.Accounta
                 Repeater7.DataBind();
                 Repeater8.DataSource = ds;
                 Repeater8.DataBind();
+                rptrSecondPeriod.DataSource = ds;
+                rptrSecondPeriod.DataBind();
+                rptrSecondCustom.DataSource = ds;
+                rptrSecondCustom.DataBind();
             }
         }
         private void binddiv()
@@ -773,6 +934,22 @@ namespace advtech.Finance.Accounta
                 periodSpan.InnerText = "ግንቦት እስከ ሐምሌ";
 
             }
+            if (Request.QueryString["o1"] != null || Request.QueryString["o2"] != null || Request.QueryString["o3"] != null || Request.QueryString["o4"] != null)
+            {
+                periodSpan.InnerText = DropDownList1.SelectedItem.Text;
+                rptrSecondPeriod.DataSource = ds;
+                rptrSecondPeriod.DataBind();
+                secondPeriodDiv.Visible = true;
+                div9.Visible = false;
+            }
+            if (Request.QueryString["oc1"] != null || Request.QueryString["oc2"] != null || Request.QueryString["oc3"] != null || Request.QueryString["oc4"] != null)
+            {
+                periodSpan.InnerText = DropDownList1.SelectedItem.Text;
+                rptrSecondCustom.DataSource = ds;
+                rptrSecondCustom.DataBind();
+                secondPeriodCustom.Visible = true;
+                div9.Visible = false;
+            }
 
         }
         private void bindLetterType()
@@ -846,7 +1023,7 @@ namespace advtech.Finance.Accounta
                             Response.Redirect("NoticeLetter.aspx?p3=true&&all=true");
                         }
                     }
-                    else
+                    else if (DropDownList1.SelectedIndex == 3)
                     {
                         if (Request.QueryString["ref2"] != null)
                         {
@@ -856,6 +1033,54 @@ namespace advtech.Finance.Accounta
                         else
                         {
                             Response.Redirect("NoticeLetter.aspx?p4=true&&all=true");
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 4)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?o1=true&&all=true&&ref2=" + PID);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?o1=true&&all=true");
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 5)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?o2=true&&all=true&&ref2=" + PID);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?o2=true&&all=true");
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 6)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?o3=true&&all=true&&ref2=" + PID);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?o3=true&&all=true");
+                        }
+                    }
+                    else
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?o4=true&&all=true&&ref2=" + PID);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?o4=true&&all=true");
                         }
                     }
                 }
@@ -898,7 +1123,7 @@ namespace advtech.Finance.Accounta
                             Response.Redirect("NoticeLetter.aspx?pCustom3=true&&all=true" + "&&lty=" + letterType);
                         }
                     }
-                    else
+                    else if(DropDownList1.SelectedIndex==3)
                     {
                         if (Request.QueryString["ref2"] != null)
                         {
@@ -908,6 +1133,54 @@ namespace advtech.Finance.Accounta
                         else
                         {
                             Response.Redirect("NoticeLetter.aspx?pCustom4=true&&all=true" + "&&lty=" + letterType);
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 4)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?oc1=true&&all=true&&ref2=" + PID + "&&lty=" + letterType);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?oc1=true&&all=true" + "&&lty=" + letterType);
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 5)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?oc2=true&&all=true&&ref2=" + PID + "&&lty=" + letterType);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?oc2=true&&all=true" + "&&lty=" + letterType);
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 6)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?oc3=true&&all=true&&ref2=" + PID + "&&lty=" + letterType);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?oc3=true&&all=true" + "&&lty=" + letterType);
+                        }
+                    }
+                    else
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?oc4=true&&all=true&&ref2=" + PID + "&&lty=" + letterType);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?oc4=true&&all=true" + "&&lty=" + letterType);
                         }
                     }
                 }
@@ -953,7 +1226,7 @@ namespace advtech.Finance.Accounta
                             Response.Redirect("NoticeLetter.aspx?p3=true");
                         }
                     }
-                    else
+                    else if (DropDownList1.SelectedIndex == 3)
                     {
                         if (Request.QueryString["ref2"] != null)
                         {
@@ -963,6 +1236,54 @@ namespace advtech.Finance.Accounta
                         else
                         {
                             Response.Redirect("NoticeLetter.aspx?p4=true");
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 4)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?o1=true&&ref2=" + PID);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?o1=true");
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 5)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?o2=true&&ref2=" + PID);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?o2=true");
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 6)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?o3=true&&ref2=" + PID);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?o3=true");
+                        }
+                    }
+                    else
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?o4=true&&ref2=" + PID);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?o4=true");
                         }
                     }
                 }
@@ -1005,7 +1326,7 @@ namespace advtech.Finance.Accounta
                             Response.Redirect("NoticeLetter.aspx?pCustom3=true" + "&&lty=" + letterType);
                         }
                     }
-                    else
+                    else if(DropDownList1.SelectedIndex==3)
                     {
                         if (Request.QueryString["ref2"] != null)
                         {
@@ -1015,6 +1336,54 @@ namespace advtech.Finance.Accounta
                         else
                         {
                             Response.Redirect("NoticeLetter.aspx?pCustom4=true" + "&&lty=" + letterType);
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 4)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?oc1=true&&ref2=" + PID + "&&lty=" + letterType);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?oc1=true" + "&&lty=" + letterType);
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 5)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?oc2=true&&ref2=" + PID + "&&lty=" + letterType);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?oc2=true" + "&&lty=" + letterType);
+                        }
+                    }
+                    else if (DropDownList1.SelectedIndex == 6)
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?oc3=true&&ref2=" + PID + "&&lty=" + letterType);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?oc3=true" + "&&lty=" + letterType);
+                        }
+                    }
+                    else
+                    {
+                        if (Request.QueryString["ref2"] != null)
+                        {
+                            String PID = Convert.ToString(Request.QueryString["ref2"]);
+                            Response.Redirect("NoticeLetter.aspx?oc4=true&&ref2=" + PID + "&&lty=" + letterType);
+                        }
+                        else
+                        {
+                            Response.Redirect("NoticeLetter.aspx?oc4=true" + "&&lty=" + letterType);
                         }
                     }
                 }
@@ -1138,7 +1507,7 @@ namespace advtech.Finance.Accounta
             string bold_style = "font-weight:normal";
             string italic_style = "font-style:normal";
             string underline_style = " text-decoration: none";
-
+            string color = "color:black";
             string fs_style = ""; string lh_style = "";
             string style = "style=\"";
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -1162,6 +1531,7 @@ namespace advtech.Finance.Accounta
                     if (underline1 == "True") { underline_style = "text-decoration: underline"; underline.Checked = true; }
                     fs_style += "font-size:" + fs + "px";
                     lh_style += " line-height:" + lh + "px";
+                    color = "color:black";
                     txtFontsize.Text = fs;
                     txtLineHeight.Text = lh;
                     txtHeadingEdit.Text = text;
@@ -1172,7 +1542,7 @@ namespace advtech.Finance.Accounta
                     txtHeadingEdit.Style.Add("font-weight:", bold_style);
                 }
             }
-            style += bold_style + ";" + italic_style + ";" + underline_style + ";" + fs_style + ";" + lh_style + "\"";
+            style += bold_style + ";" + italic_style + ";" + underline_style + ";" + fs_style + ";" + lh_style + ";" + color + "\"";
             return style;
         }
         private Tuple<bool, bool, bool> return_checkbox_heading()
@@ -1200,7 +1570,7 @@ namespace advtech.Finance.Accounta
             string bold_style = "font-weight:normal";
             string italic_style = "font-style:normal";
             string underline_style = " text-decoration: none";
-
+            string color = "color:black";
             string fs_style = ""; string lh_style = "";
             string style = "style=\"";
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -1224,11 +1594,12 @@ namespace advtech.Finance.Accounta
                     if (underline1 == "True") { underline_style = "text-decoration: underline"; fu.Checked = true; }
                     fs_style += "font-size:" + fs + "px";
                     lh_style += " line-height:" + lh + "px";
+                    color = "color:black";
                     txtFooterFontSize.Text = fs;
                     txtFooterLineHeight.Text = lh;
                 }
             }
-            style += bold_style + ";" + italic_style + ";" + underline_style + ";" + fs_style + ";" + lh_style + "\"";
+            style += bold_style + ";" + italic_style + ";" + underline_style + ";" + fs_style + ";" + lh_style + ";" + color + "\"";
             return style;
         }
         private Tuple<bool, bool, bool> return_checkbox_footer()
@@ -1273,7 +1644,7 @@ namespace advtech.Finance.Accounta
             string bold_style = "font-weight:normal";
             string italic_style = "font-style:normal";
             string underline_style = " text-decoration: none";
-
+            string color = "color:black";
             string fs_style = ""; string lh_style = "";
             string style = "style=\"";
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -1306,7 +1677,7 @@ namespace advtech.Finance.Accounta
                     txtpart1.Style.Add("font-weight:", bold_style);
                 }
             }
-            style += bold_style + ";" + italic_style + ";" + underline_style + ";" + fs_style + ";" + lh_style + "\"";
+            style += bold_style + ";" + italic_style + ";" + underline_style + ";" + fs_style + ";" + lh_style+";"+color + "\"";
             return style;
         }
         private Tuple<bool, bool, bool> return_checkbox_headline()
@@ -1352,7 +1723,7 @@ namespace advtech.Finance.Accounta
             string bold_style = "font-weight:normal";
             string italic_style = "font-style:normal";
             string underline_style = " text-decoration: none";
-
+            string color = " color: black";
             string fs_style = ""; string lh_style = "";
             string style = "style=\"";
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
@@ -1376,6 +1747,8 @@ namespace advtech.Finance.Accounta
                     if (underline1 == "True") { underline_style = "text-decoration: underline"; uh.Checked = true; }
                     fs_style += "font-size:" + fs + "px";
                     lh_style += " line-height:" + lh + "px";
+                    lh_style += " line-height:" + lh + "px";
+                    color = " color: black";
                     txtHeadFontSize.Text = fs;
                     txtHeadlineLine.Text = lh;
                     txtHeadlineEdit.Text = text;
@@ -1386,7 +1759,7 @@ namespace advtech.Finance.Accounta
                     txtHeadingEdit.Style.Add("font-weight:", bold_style);
                 }
             }
-            style += bold_style + ";" + italic_style + ";" + underline_style + ";" + fs_style + ";" + lh_style + "\"";
+            style += bold_style + ";" + italic_style + ";" + underline_style + ";" + fs_style + ";" + lh_style +";"+ color + "\"";
             return style;
         }
         private Tuple<bool, bool, bool> return_checkbox_headgudayu()
@@ -1834,7 +2207,7 @@ namespace advtech.Finance.Accounta
         protected string bind_border_all()
         {
 
-            string border_style = "border-bottom:none;border-top:none";
+            string border_style = "border-bottom:none;border-top:none;";
             string style = "style=\"";
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))

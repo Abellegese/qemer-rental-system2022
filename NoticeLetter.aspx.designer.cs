@@ -1077,6 +1077,42 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.Repeater Repeater8;
 
         /// <summary>
+        /// secondPeriodDiv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl secondPeriodDiv;
+
+        /// <summary>
+        /// rptrSecondPeriod control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptrSecondPeriod;
+
+        /// <summary>
+        /// secondPeriodCustom control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl secondPeriodCustom;
+
+        /// <summary>
+        /// rptrSecondCustom control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptrSecondCustom;
+
+        /// <summary>
         /// div9 control.
         /// </summary>
         /// <remarks>
