@@ -14,7 +14,7 @@
         <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-gray-900" id="exampleModalLabel">Type Customer Name</h5>
+                    <h5 class="modal-title text-gray-900" id="exampleModalLabel"><span class="fas fa-user mr-2" style="color:#cc29d8"></span>Customer Name</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -22,12 +22,12 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-7">
-                            <asp:TextBox ID="txtCustomerName1" class="form-control mx-2" runat="server"></asp:TextBox>
+                            <asp:TextBox ID="txtCustomerName1" class="form-control form-control-sm mx-2" runat="server"></asp:TextBox>
 
                         </div>
 
                         <div class="col-md-5">
-                            <asp:Button ID="Button2" runat="server" class="btn btn-primary" Text="search.." OnClick="Button2_Click1" />
+                            <asp:Button ID="Button2" runat="server" class="btn btn-sm btn-primary" Text="search.." OnClick="Button2_Click1" />
 
                         </div>
                     </div>
