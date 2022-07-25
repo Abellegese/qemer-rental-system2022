@@ -185,6 +185,19 @@
                         });
                     });
     </script>
+    <script type="text/javascript">
+                    function Set() {
+                        PageMethods.SetToPrimary(ShopNo.innerHTML, SI1.innerHTML, Success, error);
+                    }
+                    function Success(result) {
+                        alert("Successfully completed.");
+                        window.location.reload();
+                    }
+                    function error(error) {
+                        alert("Error.");
+                        window.location.reload();
+                    }
+    </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="container " id="CCF" runat="server" visible="false">
@@ -199,8 +212,7 @@
 
 
     <div class="container-fluid pl-3 pr-3" id="container" runat="server">
-        <asp:ScriptManager ID="ScriptManager1" runat="server">
-        </asp:ScriptManager>
+        <asp:ScriptManager ID='ScriptManager1' runat='server' EnablePageMethods='true' />
 
         <div class="row">
             <div class="col">
@@ -218,11 +230,15 @@
                                                 <span class="fa fa-arrow-left text-danger"></span>
 
                                             </a>
+                                            <asp:Label ID="ShopNo" ClientIDMode="Static" runat="server" Style="color: #ff00bb" class="badge badge-light mr-2"></asp:Label>
 
-                                            <span class="badge badge-light mr-2" id="ShopNo" runat="server" style="color: #ff00bb"></span></span><span id="lblMsg1" class="font-weight-bold text-danger mx-2 small" runat="server"></span>
+                                            <span id="lblMsg1" class="font-weight-bold text-danger mx-2 small" runat="server"></span>
+                                            </span>
+                                        <span id="SI" runat="server" visible="false" class="fas fa-user text-white btn-circle btn-sm mx-2 mr-2" style="background-color: #ff6a00"></span>
 
-                                        <span id="SI" runat="server" visible="false" class="fas fa-user text-white btn-circle btn-sm mx-2 mr-2" style="background-color: #ff6a00"></span><span id="SI1" runat="server" data-toggle="tooltip" data-placement="top" title="Shop occupied customer" visible="false" class="badge badge-light"></span>
-                                        <a href="#" data-toggle="modal" data-target="#LocModal"><span class="fas fa-location-arrow mx-4  btn-circle btn-sm text-white" data-toggle="tooltip" data-placement="top" title="Location" style="background-color: #6214d3"></span><span id="Location" runat="server" class="badge text-white" style="background-color: #5f27ba"></span></a>
+                                        <asp:Label ID="SI1" ClientIDMode="Static" runat="server" data-toggle="tooltip" data-placement="top" title="Shop occupied customer" Visible="false" class="badge badge-light"></asp:Label>
+
+                                        <a href="#" ><span id="ShopStat" runat="server" class="badge text-white" style="background-color: #5f27ba"></span></a>
                                     </div>
                                     <div class="col-md-2 text-right">
 
@@ -312,10 +328,7 @@
 
                                     </div>
                                     <div class="col-6 text-right">
-                                        <button type="button" class="btn btn-circle btn-danger btn-sm" data-toggle="modal" data-target="#DescriptionShop">
-
-                                            <span class="fas fa-plus text-white"></span>
-                                        </button>
+           
                                     </div>
                                     <table class="table table-sm mt-3" id="descIcon" runat="server">
                                         <tbody>
@@ -380,12 +393,18 @@
                                                 <a href="#" class="dropdown-item  text-gray-700  text-danger" id="A1" runat="server" data-toggle="modal" data-target="#exampleModalShopAreaChange"><span class="fas fa-location-arrow  mr-2" style="color: #ff00bb"></span>Change Area</a>
                                                 <a href="#" class="dropdown-item  text-gray-700  text-danger" id="A4" runat="server" data-toggle="modal" data-target="#exampleModalShopMerge"><span class="fas fa-code-branch  mr-2 " style="color: #ff00bb"></span>Merge shop</a>
                                                 <a href="#" class="dropdown-item  text-gray-700  text-danger" visible="false" id="A2" runat="server" data-toggle="modal" data-target="#exampleModalAssignShop"><span class="fas fa-plus-circle  mr-2 " style="color: #ff00bb"></span>Assign Suspended Shop</a>
+                                                <a href="#" class="dropdown-item  text-gray-700  text-danger" visible="true" id="A9" runat="server" data-toggle="modal" data-target="#DescriptionShop"><span class="fas fa-edit  mr-2 " style="color: #ff00bb"></span>Add description</a>
 
                                                 <a href="#" class="dropdown-item  text-gray-700  text-danger" id="A3" runat="server" data-toggle="modal" data-target="#DeleteShop"><span class="fas fa-trash  mr-2 " style="color: #ff00bb"></span>Remove Shop</a>
                                                 <a href="#" class="dropdown-item  text-gray-700  text-danger" id="A5" runat="server" data-toggle="modal" data-target="#RenameShop"><span class="fas fa-edit  mr-2 " style="color: #ff00bb"></span>Rename</a>
                                                 <a href="#" class="dropdown-item  text-gray-700  text-danger" id="A6" runat="server" data-toggle="modal" data-target="#DelModal"><span class="fas fa-image  mr-2 " style="color: #ff00bb"></span>Remove Image</a>
                                                 <a href="#" class="dropdown-item  text-gray-700  text-danger" id="A7" runat="server" data-toggle="modal" data-target="#RemoveModal"><span class="fas fa-wave-square  mr-2 " style="color: #ff00bb"></span>Remove Comment & Activity</a>
+                                                <a href="#" class="dropdown-item  text-gray-700  text-danger" id="A11" runat="server" data-toggle="modal" data-target="#LocModal"><span class="fas fa-dot-circle  mr-2 " style="color: #ff00bb"></span>Update Location</a>
 
+                                                <div class="dropdown-header text-gray-900">Operation:</div>
+                                                <a href="#" class="dropdown-item  text-gray-700  text-danger" id="A10" runat="server" data-toggle="modal" data-target="#ShopFree"><span class="fas fa-arrow-alt-circle-left  mr-2 " style="color: #ff00bb"></span>Set to Free</a>
+
+                                                <a onclick="Set();" href="#" class="dropdown-item  text-gray-700"><span class="fas fa-check-circle  mr-2 " style="color: #3fa46a"></span>Set to Primary</a>
 
                                             </div>
                                         </div>
@@ -1048,6 +1067,49 @@
                                     Assigning...
                                 </button>
                                 <asp:Button ID="btnDescription" runat="server" class="btn btn-sm btn-danger w-100" Text="Save Description" OnClick="btnDescription_Click" />
+                            </center>
+
+
+                        </div>
+                    </div>
+
+                </div>
+                <center>
+                    <div class="modal-footer">
+                    </div>
+
+                </center>
+            </div>
+
+        </div>
+    </div>
+    <div class="modal fade" id="ShopFree" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel8shopM" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="fas fa-arrow-alt-circle-left mr-2 mt-2" style="color: #ff00bb"></span><span class="h6 modal-title mb-1 text-gray-900 font-weight-bolder" id="exampleModalLabel8shopM">Free This Shop</span>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 mx-4 card-body border-left-primary">
+                            <p class="text-xs">
+                                The customer who occupied this shop will be removed. 
+                                The amount associated with this shop will be deducted from the due amount.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mt-1">
+
+                            <center>
+                                <button class="btn btn-primary btn-sm w-100" type="button" disabled id="Pbutton35" style="display: none">
+                                    <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+                                    Assigning...
+                                </button>
+                                <asp:LinkButton ID="btnSetShopFree" runat="server" class="btn btn-sm btn-danger w-50" OnClick="btnSetShopFree_Click"><span class="fas fa-arrow-alt-circle-right mr-2"></span>Proceed..</asp:LinkButton>
                             </center>
 
 
