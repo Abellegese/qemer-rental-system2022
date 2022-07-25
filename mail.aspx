@@ -5,6 +5,6 @@
   
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-<textarea id="editor"></textarea>
-
+    <asp:Button ID="Button1" runat="server" Text="Button" OnClick="Button1_Click" />
+    <asp:Button ID="Button2" runat="server" Text="Buttonw" OnClick="Button2_Click" />
 </asp:Content>
