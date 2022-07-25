@@ -8,6 +8,7 @@ using System.Net.Mail;
 using System.Web.UI.WebControls;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
+using System.Web.Services;
 
 namespace advtech.Finance.Accounta
 {
@@ -33,7 +34,7 @@ namespace advtech.Finance.Accounta
                     BindBrandsRptrc(); BindBrandsRptra(); BindBrandsRptrb(); agreementdate(); bindgurantor(); bindshop1();
                     BindDueAmount(); BindBrandsRptrd(); BindWriteOff(); BindNotDue(); BindTotalBad();
                     bindoverpayment(); invoiceinfo(); bind_customer_amharic_name_null(); bindExchange_customer();
-
+                    BindShopByCustomer(); bindshops();
                 }
             }
             else
@@ -41,6 +42,57 @@ namespace advtech.Finance.Accounta
                 Response.Redirect("~/Login/LogIn1.aspx");
             }
 
+        }
+        private void bindshops()
+        {
+            ShopOperation bindShop = new ShopOperation();
+            DataTable dt = bindShop.BindShop();
+            if (dt.Rows.Count != 0)
+            {
+                ddlAddShop.DataSource = dt;
+                ddlAddShop.DataTextField = "shopno";
+                ddlAddShop.DataValueField = "ID";
+                ddlAddShop.DataBind();
+                ddlAddShop.Items.Insert(0, new ListItem("-Select shop-", "0"));
+            }
+        }
+        private void BindShopByCustomer()
+        {
+            String PID = Convert.ToString(Request.QueryString["ref2"]);
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("select * from tblShopByCustomer where customer='" + PID + "'", con);
+                SqlDataAdapter sda = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                sda.Fill(dt);
+                if (dt.Rows.Count > 0)
+                {
+                    rptShop.DataSource = dt;
+                    rptShop.DataBind();
+                    ddlShopToBeTransfered.DataSource = dt;
+                    ddlShopToBeTransfered.DataValueField = "id";
+                    ddlShopToBeTransfered.DataTextField = "shopno";
+                    ddlShopToBeTransfered.DataBind();
+                }
+                else
+                {
+                    rptShop.Visible = false;
+                    main2.Visible = true;
+                }
+            }
+        }
+        [WebMethod]
+        public static void InsertShop( string customer,string shop)
+        {
+            ShopOperation insertToShop = new ShopOperation(shop);
+            insertToShop.AddShop(customer, shop, "Secondary");
+            insertToShop.updateShopStatus("Occupied");
+         
+            ShopOperation updateStatus = new ShopOperation(customer);
+            updateStatus.Name = customer;
+            updateStatus.UpdateCustomerPeriodPayment();
         }
         private void bindExchange_customer()
         {
@@ -635,7 +687,7 @@ namespace advtech.Finance.Accounta
                 SqlDataAdapter sdacn = new SqlDataAdapter(cmdcn);
                 DataTable dtcn = new DataTable();
                 sdacn.Fill(dtcn); long nb = dtcn.Rows.Count;
-                if (nb == 0)
+                if (nb == 0 || dtcn.Rows[0][0].ToString()==null || dtcn.Rows[0][0].ToString()=="")
                 {
 
                 }
@@ -828,7 +880,7 @@ namespace advtech.Finance.Accounta
                             Span1.InnerText = kc3; Span2.InnerText = Convert.ToDouble(kc10).ToString("#,##0.00");
                             Credit.InnerText = Convert.ToDouble(kc8).ToString("#,##0.00");
                             email.InnerText = kc4; ; mobile.InnerText = kc6;
-                            Span.InnerText = PID; work.InnerText = kc7;
+                            lblCustomer.Text = PID; work.InnerText = kc7;
                             L.HRef = "http://" + kc5; L.InnerText = kc5;
                             CustLink.HRef = "CustomerStatement.aspx?ref=" + PID;
 
@@ -992,6 +1044,8 @@ namespace advtech.Finance.Accounta
                         cmdcl1.ExecuteNonQuery();
                         SqlCommand cmdcl1c = new SqlCommand("Update tblshop set  status='Free' where shopno='" + shopno.InnerText + "'", con);
                         cmdcl1c.ExecuteNonQuery();
+                        SqlCommand cmdcl1c1 = new SqlCommand("delete tblShopByCustomer where customer='" + PID + "'", con);
+                        cmdcl1c1.ExecuteNonQuery();
                         Response.Redirect("CustomerDetails.aspx?ref2=" + PID);
                     }
                     else
@@ -1005,7 +1059,10 @@ namespace advtech.Finance.Accounta
                             String area = readerAC["area"].ToString();
                             String price = readerAC["monthlyprice"].ToString();
                             String status = readerAC["status"].ToString();
-
+                            SqlCommand cmdcl = new SqlCommand("Update tblCustomers set  status='Active'  where FllName='" + PID + "'", con);
+                            cmdcl.ExecuteNonQuery();
+                            SqlCommand cmdcl1 = new SqlCommand("Update tblrent set  status='Active' where customer='" + PID + "'", con);
+                            cmdcl1.ExecuteNonQuery();
                             readerAC.Close();
                             if (status == "Occupied")
                             {
@@ -1013,12 +1070,10 @@ namespace advtech.Finance.Accounta
                             }
                             else
                             {
-                                SqlCommand cmdcl = new SqlCommand("Update tblCustomers set  status='Active'  where FllName='" + PID + "'", con);
-                                cmdcl.ExecuteNonQuery();
+
                                 SqlCommand cmd1cl = new SqlCommand("Update UsersCust set  status='Active' where Name='" + PID + "'", con);
                                 cmd1cl.ExecuteNonQuery();
-                                SqlCommand cmdcl1 = new SqlCommand("Update tblrent set  status='Active' where customer='" + PID + "'", con);
-                                cmdcl1.ExecuteNonQuery();
+
                                 SqlCommand cmdcl1c = new SqlCommand("Update tblshop set  status='Occupied' where shopno='" + shopno.InnerText + "'", con);
                                 cmdcl1c.ExecuteNonQuery();
                                 Response.Redirect("CustomerDetails.aspx?ref2=" + PID);
@@ -1461,10 +1516,27 @@ namespace advtech.Finance.Accounta
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmdre1 = new SqlCommand("Update tblCustomers set CustomerEmail='" + txtEmail.Text + "',CompanyName='" + txtTenantComoany.Text + "',Website='" + txtTenantWebsites.Text + "',BuissinessType='" + txtBusinessType.Text + "',contigency='" + txtContigency.Text + "',joiningdate='" + txtDateofJoiningUpdate.Text + "',addresscust='" + txtAddress.Text + "',TIN='" + txtTINNumber.Text + "',FllName='" + txtCustomerName.Text + "',vatregnumber='" + txtVatRegNumber.Text+"' where FllName='" + PID + "'", con);
-                cmdre1.ExecuteNonQuery();
-                bind_customer_amharic_name();
-                Response.Redirect("CustomerDetails.aspx?ref2=" + txtCustomerName.Text);
+                if (PID == txtCustomerName.Text) {
+                    SqlCommand cmdre1 = new SqlCommand("Update tblCustomers set CustomerEmail='" + txtEmail.Text + "',CompanyName='" + txtTenantComoany.Text + "',Website='" + txtTenantWebsites.Text + "',BuissinessType='" + txtBusinessType.Text + "',contigency='" + txtContigency.Text + "',joiningdate='" + txtDateofJoiningUpdate.Text + "',addresscust='" + txtAddress.Text + "',TIN='" + txtTINNumber.Text + "',FllName='" + txtCustomerName.Text + "',vatregnumber='" + txtVatRegNumber.Text + "' where FllName='" + PID + "'", con);
+                    cmdre1.ExecuteNonQuery();
+                    bind_customer_amharic_name();
+                }
+                else
+                {
+                    CustomerUtil CustFinder = new CustomerUtil(txtCustomerName.Text);
+                    int cu = CustFinder.CustomerChecker();
+                    if (cu == 0)
+                    {
+                        SqlCommand cmdre1 = new SqlCommand("Update tblCustomers set CustomerEmail='" + txtEmail.Text + "',CompanyName='" + txtTenantComoany.Text + "',Website='" + txtTenantWebsites.Text + "',BuissinessType='" + txtBusinessType.Text + "',contigency='" + txtContigency.Text + "',joiningdate='" + txtDateofJoiningUpdate.Text + "',addresscust='" + txtAddress.Text + "',TIN='" + txtTINNumber.Text + "',FllName='" + txtCustomerName.Text + "',vatregnumber='" + txtVatRegNumber.Text + "' where FllName='" + PID + "'", con);
+                        cmdre1.ExecuteNonQuery();
+                        bind_customer_amharic_name();
+                        Response.Redirect("CustomerDetails.aspx?ref2=" + txtCustomerName.Text);
+                    }
+                    else
+                    {
+                        ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('The customer is already exists')", true);
+                    }
+                }
             }
         }
         protected void btnTransferSHOP_Click(object sender, EventArgs e)
@@ -1500,33 +1572,32 @@ namespace advtech.Finance.Accounta
                             SqlDataReader readerscust = cmdcust.ExecuteReader();
                             if (readerscust.Read())
                             {
-                                double total;
-                                String pp = readerscust["PaymentDuePeriod"].ToString();
-                                String SC = readerscust["servicesharge"].ToString(); readerscust.Close();
                                 //Calculate total due amount of the current shops
-                                if (pp == "Monthly")
+                                ShopOperation shopOP = new ShopOperation(ddlShopToBeTransfered.SelectedItem.Text);
+                                string isPrimary = shopOP.GetPrimaryShop();
+                                if (isPrimary == "" || isPrimary == null)
                                 {
-                                    total = Convert.ToDouble(SC) + Convert.ToDouble(price) + Convert.ToDouble(SC) * 0.15 + Convert.ToDouble(price) * 0.15;
-                                }
-                                else if (pp == "Every Three Month")
-                                {
-                                    total = Convert.ToDouble(SC) * 3 + Convert.ToDouble(price) * 3 + Convert.ToDouble(SC) * 3 * 0.15 + Convert.ToDouble(price) * 3 * 0.15;
+                                 
+         
+                                    shopOP.AddShop(lblCustomer.Text, ddlShops.SelectedItem.Text, "Primary");
+                                    SqlCommand cmdre2 = new SqlCommand("Update tblCustomers set shop='" + ddlShops.SelectedItem.Text + "', location='" + location + "', area='" + area + "', price='" + price + "' where FllName='" + PID + "'", con);
+                                    cmdre2.ExecuteNonQuery();
+                                    SqlCommand cmdre21= new SqlCommand("Update tblrent set shopno='" + ddlShops.SelectedItem.Text + "' where customer='" + PID + "'", con);
+                                    cmdre21.ExecuteNonQuery();
                                 }
                                 else
                                 {
-                                    total = Convert.ToDouble(SC) * 12 + Convert.ToDouble(price) * 12 + Convert.ToDouble(SC) * 12 * 0.15 + Convert.ToDouble(price) * 12 * 0.15;
+                                    shopOP.AddShop(lblCustomer.Text, ddlShops.SelectedItem.Text, "Secondary");
                                 }
-
-                                //Update Customer table and rent table
-                                SqlCommand cmdre = new SqlCommand("Update tblrent set currentperiodue='" + total + "', shopno='" + ddlShops.SelectedItem.Text + "', area='" + area + "', price='" + price + "' where customer='" + PID + "'", con);
-                                cmdre.ExecuteNonQuery();
-                                SqlCommand cmdre2 = new SqlCommand("Update tblCustomers set shop='" + ddlShops.SelectedItem.Text + "', location='" + location + "', area='" + area + "', price='" + price + "' where FllName='" + PID + "'", con);
-                                cmdre2.ExecuteNonQuery();
                                 //Updating the shop table to be occupied
-                                SqlCommand cmd455 = new SqlCommand("Update tblshop set status='Free' where shopno='" + shopno.InnerText + "'", con);
+                                SqlCommand cmd455 = new SqlCommand("Update tblshop set status='Free' where shopno='" + ddlShopToBeTransfered.SelectedItem.Text + "'", con);
                                 cmd455.ExecuteNonQuery();
                                 SqlCommand cmd4551 = new SqlCommand("Update tblshop set status='Occupied' where shopno='" + ddlShops.SelectedItem.Text + "'", con);
                                 cmd4551.ExecuteNonQuery();
+                                shopOP.Name = PID;
+                        
+                                shopOP.DeleteShopByCustomer();        
+                                shopOP.UpdateCustomerPeriodPayment();
                                 Response.Redirect("CustomerDetails.aspx?ref2=" + PID);
                             }
                         }
@@ -1563,15 +1634,8 @@ namespace advtech.Finance.Accounta
                         SqlCommand cmdcrn = new SqlCommand("insert into tblcreditnote values('" + PID + "','" + DateTime.Now + "','" + txtCost.Text + "','" + txtCost.Text + "','" + txtCostRemark.Text + "','" + DateTime.Now.AddDays(30) + "','" + txtCostRemark.Text + "')", con);
                         cmdcrn.ExecuteNonQuery();
                         //
-                        if (bindCustomerStatement() > 0)
-                        {
-
-                        }
-                        else
-                        {
-                            SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtCostRemark.Text + "','','" + total + "','','" + remain + "','" + PID + "')", con);
-                            custcmd.ExecuteNonQuery();
-                        }
+                        SqlCommand custcmd = new SqlCommand("insert into tblCustomerStatement values('" + DateTime.Now + "','" + txtCostRemark.Text + "','','" + total + "','','" + remain + "','" + PID + "')", con);
+                        custcmd.ExecuteNonQuery();
                         //////////////////////////////////////
                         if (Checkbox2.Checked == true)
                         {
@@ -1939,6 +2003,7 @@ namespace advtech.Finance.Accounta
                 Convert.ToDouble(AgedGr90.InnerText);
             TotalBadEstimated.InnerText = total.ToString("#,##0.00");
         }
+        /**
         private double bindCustomerStatement()
         {
             double balance_difference = 0;
@@ -1971,6 +2036,7 @@ namespace advtech.Finance.Accounta
             }
             return balance_difference;
         }
+        **/
         protected void btnBindCashSumary_Click(object sender, EventArgs e)
         {
             if (txtCHDateFromCash.Text == "" || txtCHDateToCash.Text == "")
@@ -2029,7 +2095,6 @@ namespace advtech.Finance.Accounta
                 }
             }
         }
-
         protected void btnRemoveCustomer_Click(object sender, EventArgs e)
         {
             String PID = Convert.ToString(Request.QueryString["ref2"]);
@@ -2111,6 +2176,8 @@ namespace advtech.Finance.Accounta
                                 area2 = reader2["area"].ToString();
                                 price2 = reader2["price"].ToString();
                                 location2 = reader2["location"].ToString(); reader2.Close();
+
+                              
                                 SqlCommand cmd3 = new SqlCommand("select * from tblCustomers where FllName='" + ddlExchangedShop.SelectedItem.Text + "'", con);
                                 SqlDataReader reader3 = cmd3.ExecuteReader();
 
@@ -2122,6 +2189,13 @@ namespace advtech.Finance.Accounta
                                     area3 = reader3["area"].ToString();
                                     price3 = reader3["price"].ToString();
                                     location3 = reader3["location"].ToString(); reader3.Close();
+
+                                    ShopOperation shopOP = new ShopOperation();
+                                    shopOP.Name = PID;
+                                    ShopOperation shopOP2 = new ShopOperation();
+                                    shopOP2.Name = ddlExchangedShop.SelectedItem.Text;
+                                    shopOP.UpdateShopByCustomerNamesExchange(ddlExchangedShop.SelectedItem.Text, shopno12);
+                                    shopOP2.UpdateShopByCustomerNamesExchange2(PID, shopno3);
 
                                     SqlCommand cmdreb1 = new SqlCommand("Update tblCustomers set shop='" + shopno3 + "', area='" + area3 + "', price='" + price3 + "', location='" + location3 + "' where FllName='" + PID + "'", con);
                                     cmdreb1.ExecuteNonQuery();
@@ -2138,15 +2212,43 @@ namespace advtech.Finance.Accounta
                                     SqlCommand cmdreb4 = new SqlCommand("Update tblrent set currentperiodue='" + currentdue + "', shopno='" + shopno.InnerText + "', area='" + area + "', price='" + price + "', monthlyvat='" + monthlyvat + "' where customer='" + ddlExchangedShop.SelectedItem.Text + "'", con);
                                     cmdreb4.ExecuteNonQuery();
 
+                                    shopOP.UpdateCustomerPeriodPayment();
+                                    shopOP2.UpdateCustomerPeriodPayment();
+
                                     string exlanation = "Shop exchanged between " + PID + " and " + ddlExchangedShop.SelectedItem.Text + " from shop# " + shopno.InnerText + " to " + shopno3 + " has been takes place";
                                     SqlCommand cmd197h = new SqlCommand("insert into tblNotification values('" + DateTime.Now + "','" + exlanation + "','" + BindUser() + "','" + BindUser() + "','Unseen','fas fa-exchange-alt text-white','icon-circle bg bg-primary','rentstatus1.aspx','MN')", con);
                                     cmd197h.ExecuteNonQuery();
+
                                 }
                             }
                         }
                     }
                 }
                 Response.Redirect("CustomerDetails.aspx?ref2=" + PID);
+            }
+        }
+        protected string GetShopArea(string shopno)
+        {
+            ShopOperation shopOP = new ShopOperation(shopno);
+
+            return shopOP.GetShopStatus().Item2;
+        }
+        protected void rptShop_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            foreach (RepeaterItem item in rptShop.Items)
+            {
+                if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
+                {
+                    Label lbl = item.FindControl("lblStatus") as Label;
+                    if (lbl.Text == "Primary")
+                    {
+                        lbl.Attributes.Add("class", "badge badge-primary");
+                    }
+                    else
+                    {
+                        lbl.Attributes.Add("class", "badge badge-danger");
+                    }
+                }
             }
         }
     }

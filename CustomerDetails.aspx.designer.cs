@@ -24,6 +24,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.Literal Literal1;
 
         /// <summary>
+        /// ScriptManager2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.ScriptManager ScriptManager2;
+
+        /// <summary>
         /// txtCHDateFromCash control.
         /// </summary>
         /// <remarks>
@@ -114,15 +123,6 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl container;
 
         /// <summary>
-        /// ScriptManager1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.ScriptManager ScriptManager1;
-
-        /// <summary>
         /// buttonback control.
         /// </summary>
         /// <remarks>
@@ -177,13 +177,13 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl defaultprofile;
 
         /// <summary>
-        /// Span control.
+        /// lblCustomer control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Span;
+        protected global::System.Web.UI.WebControls.Label lblCustomer;
 
         /// <summary>
         /// Button11 control.
@@ -501,24 +501,6 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlAnchor A1;
 
         /// <summary>
-        /// A16 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor A16;
-
-        /// <summary>
-        /// A15 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor A15;
-
-        /// <summary>
         /// A11 control.
         /// </summary>
         /// <remarks>
@@ -535,6 +517,15 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlAnchor A22;
+
+        /// <summary>
+        /// A23 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor A23;
 
         /// <summary>
         /// A13 control.
@@ -843,6 +834,33 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl maind;
 
         /// <summary>
+        /// rptShop control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptShop;
+
+        /// <summary>
+        /// main2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl main2;
+
+        /// <summary>
+        /// ddlAddShop control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlAddShop;
+
+        /// <summary>
         /// ddlExchangedShop control.
         /// </summary>
         /// <remarks>
@@ -996,6 +1014,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.Button btnMergeShop;
 
         /// <summary>
+        /// lblSelectedShop control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSelectedShop;
+
+        /// <summary>
         /// ddlShops control.
         /// </summary>
         /// <remarks>
@@ -1012,6 +1039,15 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnTransferSHOP;
+
+        /// <summary>
+        /// ddlShopToBeTransfered control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlShopToBeTransfered;
 
         /// <summary>
         /// btnRemoveCustomer control.

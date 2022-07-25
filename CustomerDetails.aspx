@@ -181,6 +181,7 @@
     </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+    <asp:ScriptManager ID='ScriptManager2' runat='server' EnablePageMethods='true' />
     <div class="modal fade bd-example-modal-lg" id="CashSummary" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-md">
     <div class="modal-content">
@@ -308,8 +309,7 @@
     </div>
 <div class="container-fluid pr-3 pl-3  " id="container" runat="server" >
     
-    <asp:ScriptManager ID="ScriptManager1" runat="server">
-    </asp:ScriptManager>
+
       <div class="row ">
           <div class="col">
               <div class="bg-white rounded-lg">
@@ -368,7 +368,8 @@
                                       <br />
                                   </div>
                                   <div style="padding: 20px 0px 0px 0px">
-                                      <span id="Span" runat="server" class="badge badge-light text-lg font-weight-bold text-gray-700"></span>
+                                      <asp:Label ID="lblCustomer" runat="server" ClientIDMode="Static" class="badge badge-light text-lg font-weight-bold text-gray-700"></asp:Label>
+
                                       <button runat="server" title="Update status" id="Button11" type="button" class="btn btn-sm btn-default btn-circle mb-1" data-toggle="modal" data-target="#exampleModal111">
                                           <div>
                                               <span class=" text-gray-500 fas fa-pencil-alt"></span>
@@ -388,7 +389,7 @@
                               <br />
                               <br />
                               <div>
-                                  <span class="font-weight-bold text-gray-900">BASIC INFO</span>
+                                  <span class="font-weight-bold text-gray-900 h6"><span class="fas fa-info-circle mr-2" style="color: #ff00bb"></span>Basic Info</span>
                                   <hr />
 
 
@@ -476,7 +477,7 @@
                                   </div>
 
                                   <hr />
-                                  <span class="font-weight-bold text-gray-900">SHOP DETAILS</span>
+                                  <span class="font-weight-bold text-gray-900 h6"><span class="fas fa-home mr-2" style="color:#ff00bb"></span>Shop <span class="badge badge-primary">Primary</span></span>
                                   <hr />
                                   <div class="shadow-sm">
                                       <div class="row">
@@ -573,6 +574,7 @@
 
                                               <a class="dropdown-item  text-gray-900  text-danger" id="A2" runat="server"><span class="fas fa-hand-holding-usd mr-2 " style="color: #d46fe8"></span>Create Invoice</a>
                                               <a class="dropdown-item text-gray-500  text-danger" id="A3" runat="server"><span class="fas fa-dollar-sign mr-2" style="color: #d46fe8"></span>Provide Full Credit</a>
+
                                               <div class="dropdown-header text-gray-900">Tenant:</div>
                                               <a class="dropdown-item text-gray-500  text-danger" id="A5" runat="server" href="#" data-toggle="modal" data-target="#exampleModal1111"><span class="fas fa-image mr-2 " style="color: #d46fe8"></span>Attach Image</a>
                                               <a class="dropdown-item text-gray-500  text-danger" id="A6" runat="server" href="#" data-toggle="modal" data-target="#exampleModalG"><span class="fas fa-user-clock mr-2 " style="color: #d46fe8"></span>Bind Gurantor Info</a>
@@ -581,15 +583,12 @@
                                               <a class="dropdown-item   text-danger text-gray-500" id="A14" runat="server" href="#" data-toggle="modal" data-target="#exampleModalSer"><span class="fas fa-recycle mr-2 " style="color: #d46fe8"></span>Update Service charge</a>
                                               <a class="dropdown-item   text-danger text-gray-500   text-danger" target="_blank" id="A9" runat="server"><span class="fas fa-list-ol mr-2 " style="color: #d46fe8"></span>Tenant PIR</a>
                                               <a class="dropdown-item   text-danger text-gray-500" id="A10" runat="server" href="#" data-toggle="modal" data-target="#exampleModalT"><span class="fas fa-info-circle mr-2 " style="color: #d46fe8"></span>Bind Tenant Info.</a>
-                                              <a class="dropdown-item   text-danger text-gray-500" id="A1" runat="server" href="#" data-toggle="modal" data-target="#exampleModalDelete"><span class="fas fa-trash mr-2 " style="color: #d46fe8"></span>Remove Tenant</a>
+                                              <a class="dropdown-item   text-danger text-gray-500" id="A1" runat="server" href="#" data-toggle="modal" data-target="#exampleModalDelete" visible="false"><span class="fas fa-trash mr-2 " style="color: #d46fe8"></span>Remove Tenant</a>
 
                                               <div class="dropdown-header text-gray-900">shop:</div>
-                                              <a class="dropdown-item   text-danger text-gray-500" id="A16" runat="server" href="#" data-toggle="modal" data-target="#exampleModalShopAreaChange"><span class="fas fa-desktop mr-2" style="color: #d46fe8"></span>Change shop area</a>
-                                              <a class="dropdown-item   text-danger text-gray-500" id="A15" runat="server" href="#" data-toggle="modal" data-target="#exampleModalShopMerge"><span class="fas fa-joint mr-2 " style="color: #d46fe8"></span>Merge shop</a>
                                               <a class="dropdown-item   text-danger text-gray-500" id="A11" runat="server" href="#" data-toggle="modal" data-target="#exampleModalShop"><span class="fas fa-location-arrow mr-2" style="color: #d46fe8"></span>Transfer shop</a>
                                               <a class="dropdown-item   text-danger text-gray-500" id="A22" runat="server" href="#" data-toggle="modal" data-target="#ShopTransfer"><span class="fas fa-exchange-alt mr-2" style="color: #d46fe8"></span>Shop Exchange</a>
-
-
+                                              <a class="dropdown-item   text-danger text-gray-500" id="A23" runat="server" href="#" data-toggle="modal" data-target="#ShopByCustomer"><span class="fas fa-code-branch mr-2" style="color: #d46fe8"></span>Manage Shop</a>
                                               <div class="dropdown-header text-gray-900">Letter:</div>
 
                                               <a class="dropdown-item   text-danger text-gray-500" target="_blank" id="A13" runat="server"><span class="fas fa-stamp mr-2 " style="color: #d46fe8"></span>Notice Letter</a>
@@ -600,8 +599,6 @@
                                       </div>
                                   </div>
                               </div>
-
-
                           </div>
                           <!-- Card Body -->
                           <div class="card-body">
@@ -965,6 +962,119 @@
           </div>
           </div>
     </div>
+    
+    <div class="modal fade" id="ShopByCustomer" tabindex="-1" role="dialog" aria-labelledby="ShopByCustomerLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title text-gray-900 font-weight-bolder" id="ShopByCustomerLabel">
+                        <span class="fas fa-home mr-2" style="color: #ff00bb"></span>Shop by Customer 
+                        <a href="#" data-toggle="modal" data-target="#ShopAdd"><span class="fas fa-plus-circle ml-1" style="color:#d46fe8"></span></a>
+                    </h6>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                <div class="col-md-12">
+                    <div class="card-body">
+                        <asp:Repeater ID="rptShop" runat="server" OnItemDataBound="rptShop_ItemDataBound">
+
+                            <HeaderTemplate>
+                                <div class="table-responsive">
+                                    <table class="table align-items-center table-sm ">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" class="small text-gray-900">Shop</th>
+                                                <th scope="col" class="small text-gray-900">Area</th>
+                                                <th scope="col" class="small text-gray-900 text-right">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                            </HeaderTemplate>
+                            <ItemTemplate>
+                                <tr>
+                                    <td class="text-left text-primary">
+                                        <a title="Show the details" target="_blank" href="shop_details.aspx?ref2=<%#Eval("shopno")%>"><%#Eval("shopno")%></a></td>
+                                    <td>
+                                        <span class="small text-gray-900"><%# Convert.ToDouble(GetShopArea(Eval("shopno").ToString())).ToString("#,##0.00") %> m<sup>2</sup></span>
+                                    </td>
+                                    <td class="small text-gray-900 text-right">
+                                        <asp:Label ID="lblStatus" runat="server" Text='<%# Eval("status")%>'></asp:Label>
+                                    </td>
+                                </tr>
+                            </ItemTemplate>
+                            <FooterTemplate>
+                                </tbody>
+                                       </table>
+                                     </div>
+                            </FooterTemplate>
+                        </asp:Repeater>
+                        <main role="main" id="main2" runat="server" visible="false">
+
+                            <div class="starter-template">
+                                <center>
+
+
+                                    <p class="lead">
+
+                                        <i class="fas fa-home text-gray-300  fa-2x"></i>
+
+                                    </p>
+                                    <h6 class="text-gray-300" style="font-weight: bold">No Shop</h6>
+                                </center>
+                            </div>
+                        </main>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <center>
+                    <div class="modal-footer">
+                    </div>
+
+                </center>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ShopAdd" tabindex="-1" role="dialog" aria-labelledby="exampleTransfer" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title text-gray-900 font-weight-bolder" id="Add"><span class="fas fa-plus-circle mr-2" style="color: #ff00bb"></span>Add shop</h6>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <asp:DropDownList ID="ddlAddShop" class="form-control form-control-sm" ClientIDMode="Static" runat="server">
+                            </asp:DropDownList>
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        <div class="col-md-12">
+
+                            <center>
+                                <button class="btn btn-sm w-50 btn-danger" type="button" onclick="InsertToTable();"><span class="mr-2 fas fa-plus"></span>Add to Table</button>
+                            </center>
+
+
+                        </div>
+                    </div>
+                </div>
+                <center>
+                    <div class="modal-footer">
+                    </div>
+
+                </center>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="ShopTransfer" tabindex="-1" role="dialog" aria-labelledby="exampleTransfer" aria-hidden="true">
         <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
@@ -975,7 +1085,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="row mb-3">
+                    <div class="row">
                         <div class="col-md-12">
 
                             <span class="fas fa-arrow-circle-right text-danger mr-2"></span><label class="text-danger small">Select Customer to be Exchanged</label>
@@ -989,7 +1099,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-1">
-                            <div id="myDIV55" class="spinner-border text-danger spinner-border-sm  mr-4 mt-2" role="status">
+                            <div id="myDIV55" class="spinner-border text-danger spinner-border-sm  mr-4" role="status">
                                 <span class="sr-only">Loading.ffrfyyrg..</span>
                             </div>
                         </div>
@@ -1199,17 +1309,25 @@ uncollectible accounts.</span>
         <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title text-gray-900 font-weight-bolder" id="exampleModalLabel8shop">Transfer from current shop to..</h6>
+                    <h6 class="modal-title text-gray-900 font-weight-bolder" id="exampleModalLabel8shop">
+                        
+                        <span class="fas fa-exchange-alt mr-1" style="color:#ff00bb"></span>Transfer Shop
+
+                        <a href="#" data-toggle="modal" data-target="#ShopAdd2"><span class="fas fa-plus-circle mr-2" style="color: #ff00bb"></span></a>
+                    </h6>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-                            <p class="small text-danger">All properties of the seleted shop  will be binded to the current customer. Make sure you select the right shop.</p>
-                            <label class="text-gray-900">Select Shop</label>
-                            <asp:DropDownList ID="ddlShops" class="form-control form-control-sm" runat="server">
+                    <div class="row mb-3 mx-3">
+                        <div class="col-md-12 card-body border-left-primary">
+                            <p class="text-xs text-gray-900">All properties of the seleted shop  will be binded to the current customer. Make sure you select the right shop.</p>
+                            </div>
+                        <div class="col-md-12 ">
+     
+                            <asp:Label ID="lblSelectedShop" class="badge badge-primary mb-2" data-toggle="tooltip" title="your shop to be transfered" ClientIDMode="Static" runat="server"></asp:Label>
+                            <asp:DropDownList ID="ddlShops" class="form-control form-control-sm" style="border-color:#d46fe8" runat="server">
                             </asp:DropDownList>
                         </div>
                     </div>
@@ -1237,7 +1355,48 @@ uncollectible accounts.</span>
             </div>
         </div>
     </div>
-    <script>
+    <div class="modal fade" id="ShopAdd2" tabindex="-1" role="dialog" aria-labelledby="exampleTransfer" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title text-gray-900 font-weight-bolder" id="Add"><span class="fas fa-plus-circle mr-2" style="color: #ff00bb"></span>Select your shop</h6>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <asp:DropDownList ID="ddlShopToBeTransfered" Style="border-color: #d46fe8" class="form-control form-control-sm" ClientIDMode="Static" runat="server">
+                            </asp:DropDownList>
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        <div class="col-md-12">
+
+                            <center>
+                                <button class="btn btn-sm w-50 text-white" style="background-color:#ff2ccd" type="button" onclick="BindShop();"><span class="mr-2 fas fa-plus"></span>Select</button>
+                            </center>
+
+
+                        </div>
+                    </div>
+                </div>
+                <center>
+                    <div class="modal-footer">
+                    </div>
+
+                </center>
+            </div>
+        </div>
+    </div>
+    
+    <script type="text/javascript">
+        function BindShop() {
+            lblSelectedShop.innerHTML = $("#ddlShopToBeTransfered option:selected").text();
+            $('#ShopAdd2').modal('hide');
+        }
         function myFunctionshop() {
             var x = document.getElementById("myDIV5");
             if (x.style.display === "none") {
@@ -1316,8 +1475,9 @@ uncollectible accounts.</span>
                 <div class="modal-body">
 
                     <div class="row mb-3">
-                        <div class="col-md-12 ">
-                            <asp:TextBox ID="txtCustomerName" class="form-control form-control-sm" placeholder="Update Customer Name" runat="server" data-toggle="tooltip" data-placement="top" title="Customer Name"></asp:TextBox>
+                        <div class="col-md-12 border-left-primary mx-2 ">
+                            <span class=" text-xs"><b class="text-danger">warning:</b> Do not replace this customer by other new customer. Terminate this customer and add new customer in CRM.</span>
+                            <asp:TextBox ID="txtCustomerName" class="form-control form-control-sm" style="border-color:#334fd5" placeholder="Update Customer Name" runat="server" data-toggle="tooltip" data-placement="top" title="Customer Name"></asp:TextBox>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -1889,5 +2049,19 @@ uncollectible accounts.</span>
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+        function InsertToTable() {
+            if ($("#ddlAddShop option:selected").val() == 0 || $("#ddlAddShop option:selected").text() == "") {
+                alert("Please select shop to continue.");
+            }
+            else {
+                PageMethods.InsertShop(lblCustomer.innerHTML, $("#ddlAddShop option:selected").text(), Success);
+            }
+        }
+        function Success(result) {
+            alert("The shop has been successsfully added.");
+            window.location.reload();
+        }
+    </script>
 </asp:Content>
 
