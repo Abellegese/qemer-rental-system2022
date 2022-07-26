@@ -231,6 +231,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl PaymensStatus;
 
         /// <summary>
+        /// RightDiv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl RightDiv;
+
+        /// <summary>
         /// Spvb control.
         /// </summary>
         /// <remarks>
@@ -247,15 +256,6 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlButton btnDeleteAll;
-
-        /// <summary>
-        /// RightDiv control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl RightDiv;
 
         /// <summary>
         /// btnEdit control.
@@ -906,6 +906,24 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl DupVendorPIN;
 
         /// <summary>
+        /// VatRegNumberDup control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl VatRegNumberDup;
+
+        /// <summary>
+        /// Span6 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Span6;
+
+        /// <summary>
         /// Ref2 control.
         /// </summary>
         /// <remarks>
@@ -951,6 +969,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl Name1;
 
         /// <summary>
+        /// CompanyNameDup control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl CompanyNameDup;
+
+        /// <summary>
         /// shopno1 control.
         /// </summary>
         /// <remarks>
@@ -958,6 +985,33 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl shopno1;
+
+        /// <summary>
+        /// DupCustomerPIN control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl DupCustomerPIN;
+
+        /// <summary>
+        /// CustomerVatRegNumberDup control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl CustomerVatRegNumberDup;
+
+        /// <summary>
+        /// Span8 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Span8;
 
         /// <summary>
         /// DupAddress control.
@@ -1005,13 +1059,31 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl Span32;
 
         /// <summary>
-        /// DupCustomerPIN control.
+        /// H1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl DupCustomerPIN;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl H1;
+
+        /// <summary>
+        /// Span4 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Span4;
+
+        /// <summary>
+        /// DateDup control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl DateDup;
 
         /// <summary>
         /// PayMode1 control.
@@ -1050,6 +1122,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.Repeater Repeater2;
 
         /// <summary>
+        /// RaksTDiv2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl RaksTDiv2;
+
+        /// <summary>
         /// Div1 control.
         /// </summary>
         /// <remarks>
@@ -1059,13 +1140,22 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl Div1;
 
         /// <summary>
-        /// RaksTDiv2 control.
+        /// Div3 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl RaksTDiv2;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Div3;
+
+        /// <summary>
+        /// AmountInWordsDup control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl AmountInWordsDup;
 
         /// <summary>
         /// DupVatFree control.

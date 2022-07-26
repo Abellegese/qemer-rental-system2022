@@ -92,22 +92,22 @@ namespace advtech.Finance.Accounta
         {
             if (Request.QueryString["cust"] != null)
             {
-                return "style=\"display:none\"";
+                return "style=\"display:none; border-block-color: black; border: solid; border-width: 1px\"";
             }
             else
             {
-                return "style=\"display:normal\"";
+                return "style=\"display:normal;border-block-color: black; border: solid; border-width: 1px\"";
             }
         }
         protected string bindDescriptionColVisibility()
         {
             if (Request.QueryString["cust"] != null)
             {
-                return "style=\"display:normal\"";
+                return "style=\"display:normal; border-block-color: black; border: solid; border-width: 1px\"";
             }
             else
             {
-                return "style=\"display:none\"";
+                return "style=\"display:none;border-block-color: black; border: solid; border-width: 1px\"";
             }
         }
         protected void btnSendEmail_Click(object sender, EventArgs e)
@@ -163,6 +163,7 @@ namespace advtech.Finance.Accounta
                 double total = double.Parse(Total.InnerText);
                 NumberToWords NumToWrd = new NumberToWords();
                 AmountInWords.InnerText = NumToWrd.ConvertAmount(total);
+                AmountInWordsDup.InnerText = NumToWrd.ConvertAmount(total);
             }
         }
         private void bindPM()
@@ -192,6 +193,7 @@ namespace advtech.Finance.Accounta
                     string TIN = readercrd["TIN"].ToString();
                     string vatRegNumber = readercrd["vatregnumber"].ToString();
                     CustomerCompany.InnerText = readercrd["CompanyName"].ToString();
+                    CompanyNameDup.InnerText = readercrd["CompanyName"].ToString();
                     readercrd.Close();
                     if (Address2 == "" || Address2 == null) { Address.InnerText = "-         -"; DupAddress.InnerText = "-         -"; }
                     else { Address.InnerText = Address2; DupAddress.InnerText = Address2; }
@@ -200,6 +202,7 @@ namespace advtech.Finance.Accounta
                     if (vatRegNumber != "")
                     {
                         CustVatRegNumber.InnerText = vatRegNumber;
+                        CustomerVatRegNumberDup.InnerText = vatRegNumber;
                     }
                     //Duplivate binding
                 }
@@ -417,6 +420,7 @@ namespace advtech.Finance.Accounta
                     string TINNumber = reader["TIN"].ToString();
                     VendorTIN.InnerText = TINNumber;
                     VendorVatRegNumber.InnerText = reader["vatregnumber"].ToString();
+                    VendorVatRegNumber.InnerText = reader["vatregnumber"].ToString();
                     DupVendorPIN.InnerText = TINNumber;
                     CompAddress.InnerText = bl;
                     Contact.InnerText = contact1;
@@ -567,6 +571,7 @@ namespace advtech.Finance.Accounta
                 {
                     RefTag.Visible = true;
                     dateSpan.InnerText = Convert.ToDateTime(dt.Rows[0]["date"].ToString()).ToString("MMM dd, yyyy");
+                    DateDup.InnerText = Convert.ToDateTime(dt.Rows[0]["date"].ToString()).ToString("MMM dd, yyyy");
                     RefTag.InnerText = "Ref# " + dt.Rows[0][2].ToString();
                     Repeater1.DataSource = dt;
                     Repeater1.DataBind();
@@ -689,26 +694,7 @@ namespace advtech.Finance.Accounta
             bindstatus();
 
         }
-        protected void Repeater2_ItemDataBound(object sender, RepeaterItemEventArgs e)
-        {
-            foreach (RepeaterItem item in Repeater2.Items)
-            {
-                if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
-                {
-                    Label lblSC = item.FindControl("lblSC") as Label;
-                    Label lblCust = item.FindControl("lblCust") as Label;
-                    Label lbl = item.FindControl("lblvatplus") as Label;
-                    Label lbl2 = item.FindControl("lblcatminus") as Label;
-                    Label lbl3 = item.FindControl("lblVAT") as Label;
 
-                    double VATFREE = (Convert.ToDouble(lbl.Text) - Convert.ToDouble(lblSC.Text)) / 1.15;
-                    lbl2.Text = VATFREE.ToString("#,##0.00");
-                    double VAT = (Convert.ToDouble(lbl.Text) - Convert.ToDouble(lblSC.Text)) - VATFREE;
-                    lbl3.Text = VAT.ToString("#,##0.00");
-                    lbl.Text = (Convert.ToDouble(lbl.Text) - Convert.ToDouble(lblSC.Text)).ToString("#,##0.00");
-                }
-            }
-        }
         protected void Repeater1_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName == ViewState["Column"].ToString())
@@ -1630,7 +1616,6 @@ namespace advtech.Finance.Accounta
                     LogoImage1.Style.Add("width", logosize + "px");
                     LogoImage1.Style.Add("height", logosize + "px");
                     HeaderRaksDup.Style.Add("font-size", fs + "px");
-                    HeaderRaksDup.Style.Add("line-height", lh + "px");
                     DuplicateRow.Style.Add("margin-left", margin + "px");
                     DuplicateRow.Style.Add("margin-right", margin + "px");
 
@@ -1666,8 +1651,16 @@ namespace advtech.Finance.Accounta
                     //WaterMark Div
                     if (water == "True") { RaksTDiv.Visible = true; RaksTDiv2.Visible = true; waterCheck.Checked = true; }
                     else { RaksTDiv.Visible = false; RaksTDiv2.Visible = false; waterCheck.Checked = false; }
-                    if (isComp == "True") { companyCheck.Checked = true; Name.Visible = false;CustomerCompany.Visible = true; }
-                    else { companyCheck.Checked = false; Name.Visible = true; CustomerCompany.Visible = false; }
+                    if (isComp == "True")
+                    {
+                        companyCheck.Checked = true; Name.Visible = false; CustomerCompany.Visible = true;
+                        Name1.Visible = false; CompanyNameDup.Visible = true;
+                    }
+                    else
+                    {
+                        companyCheck.Checked = false; Name.Visible = true; CustomerCompany.Visible = false;
+                        Name1.Visible = true; CompanyNameDup.Visible = false;
+                    }
 
                 }
             }
@@ -1738,6 +1731,7 @@ namespace advtech.Finance.Accounta
                     string opacity = reader["opacity"].ToString();
                     lblOpacity.Text = opacity;
                     RaksTDiv.Style.Add("opacity",opacity);
+                    RaksTDiv2.Style.Add("opacity", opacity);
                 }
             }
         }

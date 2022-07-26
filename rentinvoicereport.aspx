@@ -332,7 +332,7 @@
             <div class="card-header bg-white " id="LeftDiv" runat="server">
 
                 <div class="row align-items-center">
-                    <div class="col-5">
+                    <div class="col-3">
                         <a class="btn btn-light btn-circle mr-2" id="buttonback" href="rentinvoicereport.aspx" runat="server" data-toggle="tooltip" data-placement="bottom" title="Back to Home">
 
                             <span class="fa fa-arrow-left text-danger"></span>
@@ -342,21 +342,21 @@
                         <a id="Link" runat="server">
                             <span class="badge badge-success " id="PaymensStatus" runat="server"></span>
                         </a>
+
+                    </div>
+                    <div class="col-9 text-right" id="RightDiv" runat="server">
                         <button type="button" runat="server" id="Spvb" class="mr-2 btn btn-sm btn-default btn-circle" visible="false" data-toggle="modal" data-target="#ModalHeader">
                             <div>
                                 <i class="fas fa-cog fa-2x font-weight-bold" style="color: #b868bb;" data-toggle="tooltip" title="Customize Invoice"></i>
                                 <span></span>
                             </div>
                         </button>
-                        <button type="button" runat="server" id="btnDeleteAll"  class="mr-2 btn btn-sm btn-danger btn-circle" data-toggle="modal" data-target="#ModalDeleteAll">
+                        <button type="button" runat="server" id="btnDeleteAll" class="mr-2 btn btn-sm btn-danger btn-circle" data-toggle="modal" data-target="#ModalDeleteAll">
                             <div>
                                 <i class="fas fa-trash fa-1x font-weight-bold text-white" data-toggle="tooltip" title="Delete All Invoice"></i>
                                 <span></span>
                             </div>
                         </button>
-                    </div>
-                    <div class="col-7 text-right" id="RightDiv" runat="server">
-
                         <button runat="server" id="btnEdit" type="button" visible="false" class="btn btn-circle mx-1  btn-sm text-xs" style="background-color: #9d469d;" data-toggle="modal" data-target="#exampleModalEdit">
                             <a class="nav-link btn btn-sm" data-toggle="tooltip" data-placement="bottom" title="Edit invoice">
                                 <div>
@@ -477,12 +477,12 @@
 
                                     <div class="col-md-6 text-right">
 
-                                        <span style="color: black" class=" text-uppercase border-bottom border-dark font-weight-bold" id="HeaderInv" runat="server"></span><br />
+                                        <span style="color: black" contenteditable="true" class=" text-uppercase border-bottom border-dark font-weight-bold" id="HeaderInv" runat="server"></span><br />
                                         <span id="invocenumber" runat="server"></span>
                                         <div id="Body2" runat="server">
                                             <span id="BindShop" runat="server" visible="false">
-                                                <span style="height: 100px;color:black" contenteditable="true">To: </span><span style="height: 100px" contenteditable="true" class=" mx-2 font-weight-bold font-italic" id="Name" runat="server"></span>
-                                                <span style="height: 100px" contenteditable="true" class=" mx-2 font-weight-bold font-italic" id="CustomerCompany" runat="server"></span>
+                                                <span style="height: 100px;color:black" contenteditable="true">To: </span><span style="height: 100px;color:black" contenteditable="true" class=" mx-2 font-weight-bold font-italic" id="Name" runat="server"></span>
+                                                <span style="height: 100px;color:black" contenteditable="true"  class=" mx-2 font-weight-bold font-italic" id="CustomerCompany" runat="server"></span>
                                                 [<span style="color:black" class="text-uppercase font-weight-bold mt-3">Shop No: </span><span class="text-uppercase mx-1 font-weight-bold mt-3" id="ShopNo" runat="server"></span>]
                                                 <br />
                                                 <span id="CustomerTIN" style="color: black" visible="false" runat="server" width="200px">CUSTOMER TIN<span class="fas fa-hashtag  ml-1"></span><span id="TINNUMBER" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
@@ -492,12 +492,12 @@
                                             </span>
                                             <br />
                                             <span id="Addressbar" visible="false" class="border-bottom border-dark" runat="server">ADDRESS: <span id="Address" class="  text-uppercase" contenteditable="true" runat="server"></span></span>
-                                            <h4 class=""><span class="text-uppercase text-gray-900 font-weight-bold " id="InvNoBinding" runat="server"></span><span id="Span2" runat="server"></span></h4>
-                                            <h4><span class="text-uppercase text-gray-900 font-weight-bold " id="FSno" contenteditable="true" runat="server"></span><span id="Span3" runat="server"></span></h4>
+                                            <h4 class=""><span class="text-uppercase font-weight-bold " style="color: black" id="InvNoBinding" runat="server"></span><span id="Span2" runat="server"></span></h4>
+                                            <h4><span class="text-uppercase  font-weight-bold " id="FSno" style="color:black" contenteditable="true" runat="server"></span><span id="Span3" runat="server"></span></h4>
                                             <h6 id="dateDiv" runat="server" visible="false"><span class="text-uppercase text-gray-900 font-weight-bold mr-1" id="Span1"  runat="server">Date:</span><span id="dateSpan" runat="server"></span></h6>
-                                            <span id="PayMode" visible="true" runat="server" class="mt-2 border-top border-bottom border-dark"><i class=" fas fa-dollar-sign text-dark "></i><span class="mx-1"><span class="font-weight-bold   text-uppercase">Payment Mode:</span> <span id="PaymentMode" class="  text-uppercase" runat="server"></span></span></span>
+                                            <span id="PayMode" visible="true" style="color: black" runat="server" class="mt-2 border-top border-bottom border-dark"><i class=" fas fa-dollar-sign text-dark "></i><span class="mx-1"><span class="font-weight-bold   text-uppercase">Payment Mode:</span> <span id="PaymentMode" class="  text-uppercase" runat="server"></span></span></span>
                                             <br />
-                                            <span title="print date" id="printdate" class="h5" runat="server"></span>
+                                            <span title="print date" style="color: black" id="printdate" class="h5" runat="server"></span>
                                             <span id="datFrom1" runat="server" class=" border-bottom border-top text-gray-900 font-weight-bold"></span><span id="tomiddle" class=" mr-2 ml-2 border-bottom border-top text-gray-900 font-weight-bold" runat="server">To</span><span id="datTo" class="mb-1 text-gray-900 border-bottom border-top font-weight-bold" runat="server"></span>
 
                                             <br />
@@ -511,21 +511,21 @@
 
                                             <HeaderTemplate>
 
-                                                <table class="table align-items-center table-sm table-bordered border-dark" style="color: black">
+                                                <table class="table align-items-center table-sm " style="color: black;">
                                                     <thead class="thead-dark ">
-                                                        <tr>
-                                                            <th scope="col" class="">Item #</th>                      
+                                                        <tr >
+                                                            <th scope="col" class="" style="border-block-color: black; border: solid; border-width: 1px">Item #</th>                      
                                                             <th scope="col" class="" <%#bindDescriptionColVisibility() %>>Decription</th>
-                                                            <th scope="col" class="" <%#bindInvoiceDateVisibility() %>>Customer</th>
-                                                            <th scope="col" class=" text-center" <%#bindInvoiceDateVisibility() %>>FS#</th>
-                                                            <th scope="col" class="text-center" <%#bindInvoiceDateVisibility() %>>TIN#</th>
-                                                            <th scope="col" class="text-left text-white " <%#bindInvoiceDateVisibility() %>>
-                                                                <asp:LinkButton ID="LinkButton3" CssClass="text-white" runat="server" CommandName="date">Invoice Date</asp:LinkButton></th>
-                                                            <th scope="col" class=" text-center">Quantity</th>
-                                                            <th scope="col" class="text-center">Unit Price</th>
+                                                            <th scope="col" class=""  <%#bindInvoiceDateVisibility() %>>Customer</th>
+                                                            <th scope="col" class=" text-center "  <%#bindInvoiceDateVisibility() %>>FS#</th>
+                                                            <th scope="col" class="text-center"  <%#bindInvoiceDateVisibility() %>>TIN#</th>
+                                                            <th scope="col" class="text-left " <%#bindInvoiceDateVisibility() %>>
+                                                                <asp:LinkButton ID="LinkButton3" class="text-white" runat="server" CommandName="date">Invoice Date</asp:LinkButton></th>
+                                                            <th scope="col" class=" text-center" style="border-block-color: black; border: solid; border-width: 1px">Quantity</th>
+                                                            <th scope="col" class="text-center" style="border-block-color: black; border: solid; border-width: 1px">Unit Price</th>
                                 
 
-                                                            <th scope="col" class=" text-right">Total Price</th>
+                                                            <th scope="col" class=" text-right" style="border-block-color: black; border: solid; border-width: 1px">Total Price</th>
 
                                                         </tr>
                                                     </thead>
@@ -534,39 +534,39 @@
                                             <ItemTemplate>
                                                 <tr>
 
-                                                    <td class="text-primary text-left">
+                                                    <td class="text-left" style="color: black; border-block-color: black; border: solid; border-width: 1px">
                                                         0000<%# Eval("id")%>
                                                         <asp:Label ID="lblSC" runat="server" Visible="false" Text='<%# Eval("vatfree")%>'></asp:Label>
 
                                                     </td>
-                                                    <td scope="col"  contenteditable="true" <%#bindDescriptionColVisibility() %>>Rent Service</td>
-                                                    <td class="text-primary text-left" <%#bindInvoiceDateVisibility() %>>
+                                                    <td scope="col" contenteditable="true"  <%#bindDescriptionColVisibility() %>>Rent Service Payment</td>
+                                                    <td class="text-primary text-left"  <%#bindInvoiceDateVisibility() %>>
                                                         <a href="rentinvoicereport.aspx?id= <%# Eval("id2")%>&&cust=<%# Eval("customer")%>&&paymentmode=<%# Eval("payment_mode")%>" data-toggle="tooltip" data-placement="top" title="<%# Eval("customer")%> details">
                                                            <asp:Label ID="lblCust" runat="server" Text='<%# Eval("customer") %>'></asp:Label></a>
 
                                                     </td>                                                    
-                                                    <td class="text-center" contenteditable="true" <%#bindInvoiceDateVisibility() %>>
+                                                    <td class="text-center"  contenteditable="true" <%#bindInvoiceDateVisibility() %>>
                                                         <span><%# Eval("fsno") %></span>
                                                     </td>
-                                                    <td class="text-center" contenteditable="true" <%#bindInvoiceDateVisibility() %>>
+                                                    <td class="text-center"  contenteditable="true" <%#bindInvoiceDateVisibility() %>>
                                                         <span><%# GetTinNumberandCompany(Eval("customer").ToString()).Item1 %></span>
                                                     </td>
-                                                    <td class="text-left" <%#bindInvoiceDateVisibility() %>>
+                                                    <td class="text-left"  <%#bindInvoiceDateVisibility() %>>
                                                         <%# Eval("date", "{0: MMMM dd,yyyy}")%>
                        
                     
                                                     </td>                                                    
 
-                                                    <td class="text-center" contenteditable="true">
+                                                    <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-center" contenteditable="true">
                                                       <span>1</span>
                                                     </td>
 
-                                                    <td class=" text-center" contenteditable="true">
+                                                    <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class=" text-center" contenteditable="true">
                                                         <asp:Label ID="lblcatminus" Visible="true" runat="server" Text='<%# ((Convert.ToDouble(Eval("paid"))-Convert.ToDouble(Eval("vatfree")))/1.15).ToString("#,##0.00") %>'></asp:Label>
 
                                                     </td>
                   
-                                                    <td class="text-right" contenteditable="true">
+                                                    <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-right" contenteditable="true">
                                                         <asp:Label ID="Label2" Visible="true" runat="server" Text='<%# ((Convert.ToDouble(Eval("paid"))-Convert.ToDouble(Eval("vatfree")))/1.15).ToString("#,##0.00") %>'></asp:Label>
 
                                                     </td>
@@ -598,20 +598,20 @@
 
                                             <div class="col-md-4 mt-1" style="z-index: 2;color:black" >
                                                 <div class="form-group">
-                                                    <table class="table table-sm table-bordered  " style="color:black">
+                                                    <table class="table table-sm " style="color:black">
                                                         <tbody>
                                                             <tr>
-                                                                <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right">Sub-Total:</span></td>
-                                                                <td class="text-right"><span id="VATfree" class=" font-weight-bold " runat="server"></span></td>
+                                                                <td style="color: black; border-block-color: black; border: solid; border-width: 1px"><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right">Sub-Total:</span></td>
+                                                                <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-right"><span id="VATfree" class=" font-weight-bold " runat="server"></span></td>
                                                             </tr>
                                                             <tr>
-                                                                <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right">VAT(15%):</span></td>
-                                                                <td class="text-right"><span id="VAT" class=" font-weight-bold" runat="server"></span></td>
+                                                                <td style="color: black; border-block-color: black; border: solid; border-width: 1px"><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right">VAT(15%):</span></td>
+                                                                <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-right"><span id="VAT" class=" font-weight-bold" runat="server"></span></td>
                                                             </tr>
 
                                                             <tr>
-                                                                <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold border border-bottom text-right">Grand Total:</span></td>
-                                                                <td class="text-right"><span id="Total" class="font-weight-bold" runat="server">0.00</span></td>
+                                                                <td style="color: black; border-block-color: black; border: solid; border-width: 1px"><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right">Grand Total:</span></td>
+                                                                <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-right"><span id="Total" class="font-weight-bold" runat="server">0.00</span></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -624,12 +624,12 @@
                                         <div class="row " id="NotesDiv" runat="server" visible="false">
  
                                             <div class="col-md-7 text-left font-italic font-weight-bold">
-                                                <span class="border-bottom mb-2">Prepared By:_________________________</span><br />
+                                                <span class="mb-2">Prepared By:_________________________</span><br />
                                                 <br />
                                                 <span>Signature_________________________</span>
                                             </div>
                                             <div class="col-md-5 text-right font-italic font-weight-bold">
-                                                <span class="border-bottom mb-2 text-right">Authorized By:_________________________</span><br />
+                                                <span class=" mb-2 text-right">Authorized By:_________________________</span><br />
                                                 <br />
                                                 <span class=" text-right">Signature_________________________</span>
                                             </div>
@@ -679,10 +679,13 @@
                         </div>
                         <div class="col-1" id="right">
                         </div>
+
                         <div class="mt-2 mb-2 border-top border-dark">
                         </div>
                     </div>
-
+                  
+<div class="border-top border-dark"></div>
+                    <br />  <br />
                     <div class="row " id="DuplicateRow" runat="server">
                         <div class="col-1">
                         </div>
@@ -693,18 +696,19 @@
                                     <img class="" src="../../asset/Brand/gh.jpg" alt="" id="LogoImage1" runat="server">
 
                                     <div class="row">
-                                        <div class="col-md-12 border-top border-dark">
-                                            <h5 class="text-gray-900  text-uppercase font-weight-bold" id="HeaderRaksDup" runat="server">Raksym trading plc</h5>
+                                        <div class="col-md-12 " style="color:black">
+                                            <h5 class="  text-uppercase font-weight-bold border-top border-bottom  border-dark" id="HeaderRaksDup" runat="server">Raksym trading plc</h5>
                                             <div id="body1dup" runat="server">
-                                                <span class="fas fa-address-book text-gray-500 mr-1"></span><span class="  text-uppercase  font-weight-bold text-gray-900 mt-1" id="Ad2" runat="server"></span>
+                                                <span class="fas fa-address-book  mr-1"></span><span class="  text-uppercase  font-weight-bold mt-1" id="Ad2" runat="server"></span>
                                                 <br />
-                                                <span class="fas fa-phone text-gray-500 mr-1"></span><span class="  text-uppercase   font-weight-bold text-gray-900 mt-1" id="Ct2" runat="server"></span>
+                                                <span class="fas fa-phone  mr-1"></span><span class="  text-uppercase   font-weight-boldmt-1" id="Ct2" runat="server"></span>
                                                 <br />
-                                                <span class="border-top mt-1 mb-1">VENDOR TIN<span class="fas border-top m-1 fa-hashtag text-gray-300 ml-1"></span><span id="DupVendorPIN" runat="server"></span></span>
+                                                <span class="border-top mt-1 mb-1">VENDOR TIN<span class="fas border-top m-1 fa-hashtag  ml-1"></span><span id="DupVendorPIN" runat="server"></span></span>
                                                 <br />
-
-                                                <h6><span class="  text-gray-900 font-weight-bold" id="Ref2" runat="server"></span></h6>
-
+                                                <span style="color: black" id="VatRegNumberDup" contenteditable="true" runat="server" width="200px">Vat Reg. Number<span class="fas fa-hashtag  ml-1"></span><span id="Span6" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
+                                                <br />
+                                                <h6><span class=" font-weight-bold border-bottom border-top border-dark" id="Ref2" runat="server"></span></h6>
+                                                <span class="small  border-bottom border-top border-dark">CUSTOMER COPY</span>
 
                                             </div>
                                         </div>
@@ -712,46 +716,55 @@
 
                                 </div>
 
-                                <div class="col-md-6 text-right">
-                                    <h2><span class="h1 text-uppercase text-gray-900 font-weight-bold" id="HeaderInvDup" runat="server">INVOICE</span><span id="Span5" runat="server"></span></h2>
+                                <div class="col-md-6 text-right" style="color:black">
+                                    <h2><span class="h1 text-uppercase   font-weight-bold border-bottom border-dark" id="HeaderInvDup" runat="server"></span><span id="Span5" runat="server"></span></h2>
                                     <div id="body2dup" runat="server">
-                                        <div class="row mt-3  ">
+                                        <div class="row  ">
                                             <div class="col-md-12 text-right">
-                                                <span class=" text-uppercase text-gray-900 " style="height: 100px">To: </span><span style="height: 100px" class="text-uppercase mx-2 text-gray-900 font-weight-bold font-italic" id="Name1" runat="server"></span>
-                                                [<span class="text-gray-900 text-uppercase font-weight-bold mt-3">Shop No: </span><span class="text-gray-900 text-uppercase mx-1 font-weight-bold mt-3" id="shopno1" runat="server"></span>]
+                                                <span class=" text-uppercase " style="height: 100px">To: </span>
+                                                <span style="height: 100px" class="text-uppercase mx-2   font-weight-bold font-italic" id="Name1" runat="server"></span>
+                                                <span style="height: 100px; color: black" contenteditable="true" class=" mx-2 font-weight-bold font-italic" id="CompanyNameDup" runat="server"></span>
+                                                [<span class="  text-uppercase font-weight-bold mt-3">Shop No: </span><span class="  text-uppercase mx-1 font-weight-bold mt-3" id="shopno1" runat="server"></span>]
                                             <br />
-                                                <span>ADDRESS: <span id="DupAddress" class="  text-uppercase" contenteditable="true" runat="server"></span></span>
+                                                
+                                                <span>CUSTOMER TIN<span class="fas fa-hashtag   ml-1"></span><span id="DupCustomerPIN" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
+                                                <br />
+                                                <span id="CustomerVatRegNumberDup" style="color: black" contenteditable="true" runat="server" width="200px">Vat Reg. Number<span class="fas fa-hashtag ml-1"></span><span id="Span8" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
+
+                                                <br />
+                                                <span class="border-bottom border-dark ">ADDRESS: <span id="DupAddress" class=" text-uppercase" contenteditable="true" runat="server"></span></span>
+                                                <br />
                                             </div>
 
 
                                         </div>
-                                        <h4><span class="h5 text-uppercase text-gray-900 font-weight-bold" id="InVNo" runat="server"></span><span id="Span7" runat="server"></span></h4>
-                                        <h4><span class="h5 text-uppercase text-gray-900 font-weight-bold" id="FSno1" contenteditable="true" runat="server"></span><span id="Span32" runat="server"></span></h4>
-                                        <h6 title="print date"></h6>
-                                        <span>CUSTOMER TIN<span class="fas fa-hashtag text-gray-300 ml-1"></span><span id="DupCustomerPIN" width="200px" contenteditable="true" runat="server" class="ml-1"></span></span>
-                                        <br />
-                                        <span id="PayMode1" visible="false" runat="server" class="mt-2 "><i class=" fas fa-dollar-sign text-dark "></i><span class="mx-1"><span class="font-weight-bold">Payment Mode:</span> <span id="PaymentMode1" runat="server"></span></span></span>
+                                        <h4><span class="h4 text-uppercase   font-weight-bold" id="InVNo" style="color: black" runat="server"></span><span id="Span7" runat="server"></span></h4>
+                                        <h4><span class="h4 text-uppercase   font-weight-bold" id="FSno1" style="color: black" contenteditable="true" runat="server"></span><span id="Span32" runat="server"></span></h4>
+                             
+                                        <h6 id="H1" runat="server" ><span class="text-uppercase text-gray-900 font-weight-bold mr-1" id="Span4" runat="server">Date:</span> <span title="print date" style="color: black" id="DateDup" class="h5" runat="server"></span></h6>
+
+                                        <span id="PayMode1" visible="false" runat="server" class="mt-2 border-top border-bottom border-dark"><i class=" fas fa-dollar-sign text-dark "></i><span class="mx-1"><span class="font-weight-bold">Payment Mode:</span> <span id="PaymentMode1" runat="server"></span></span></span>
 
                                     </div>
                                 </div>
                             </div>
 
                             <div class="card-body " id="conx" runat="server">
-                                <asp:Repeater ID="Repeater2" runat="server" OnItemDataBound="Repeater2_ItemDataBound" OnItemCommand="Repeater1_ItemCommand">
+                                <asp:Repeater ID="Repeater2" runat="server">
 
                                     <HeaderTemplate>
 
-                                        <table class="table align-items-center table-bordered table-sm">
+                                        <table class="table align-items-center table-sm" style="color:black">
                                             <thead class="thead-dark ">
                                                 <tr>
-                                                    <th scope="col" class="">#</th>
-                                                    <th scope="col" class="">Customer</th>
-                                                    <th scope="col" class="text-left text-white ">
-                                                        <asp:LinkButton ID="LinkButton3" CssClass="text-white" runat="server" CommandName="date">Invoice Date</asp:LinkButton></th>
-                                                    <th scope="col" class="">Pre-Tax</th>
-                                                    <th scope="col" class="">VAT(15%)</th>
-
-                                                    <th scope="col" class=" text-right">Amount</th>
+                                                    <th scope="col" class="" style="border-block-color: black; border: solid; border-width: 1px">Item#</th>
+                                                    <th scope="col" class="" style="border-block-color: black; border: solid; border-width: 1px">Description</th>
+                                                    <th scope="col" class="text-left " style="border-block-color: black; border: solid; border-width: 1px">
+                                                               Invoice Date</th>
+                                                 
+                                                    <th scope="col" class="text-center" style="border-block-color: black; border: solid; border-width: 1px">Quantity</th>
+                                                    <th scope="col" class="" style="border-block-color: black; border: solid; border-width: 1px">Unit Price</th>
+                                                    <th scope="col" style="border-block-color: black; border: solid; border-width: 1px" class=" text-right">Total</th>
 
                                                 </tr>
                                             </thead>
@@ -760,34 +773,30 @@
                                     <ItemTemplate>
                                         <tr>
 
-                                            <td class="text-primary text-left">
-                                                <%# Eval("id")%>
+                                            <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class=" text-left">
+                                                0000<%# Eval("id")%>
                     
                                             </td>
 
-                                            <td class="text-primary text-left">
-                                                <a href="rentinvoicereport.aspx?id= <%# Eval("id2")%>&&cust=<%# Eval("customer")%>" data-toggle="tooltip" data-placement="top" title="<%# Eval("customer")%> details">
-                                                    <asp:Label ID="lblCust" runat="server" Text='<%# Eval("customer")%>'></asp:Label></a>
+                                            <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class=" text-left">
+                                                <span contenteditable="true">Rent Service Payment</span>
 
                                             </td>
-                                            <td class="text-gray-900 text-left">
+                                            <td style="color: black; border-block-color: black; border: solid; border-width: 1px"  class=" text-left">
                                                 <%# Eval("date", "{0: MMMM dd,yyyy}")%>
                        
                     
                                             </td>
-                                            <td class="text-gray-900">
-                                                <asp:Label ID="lblcatminus" Visible="true" runat="server"></asp:Label>
+                                            <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-center">
+                                                <span>1</span>
+                                            </td>
+                                            <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class=" text-center" contenteditable="true">
+                                                <asp:Label ID="lblcatminus" Visible="true" runat="server" Text='<%# ((Convert.ToDouble(Eval("paid"))-Convert.ToDouble(Eval("vatfree")))/1.15).ToString("#,##0.00") %>'></asp:Label>
 
                                             </td>
-                                            <td class="text-gray-900">
-                                                <asp:Label ID="lblVAT" runat="server" Text="Label"></asp:Label>
-                                                <asp:Label ID="lblSC" runat="server" Visible="false" Text='<%# Eval("vatfree")%>'></asp:Label>
-                                            </td>
 
-
-
-                                            <td class="text-gray-900 text-right">
-                                                <asp:Label ID="lblvatplus" Visible="true" runat="server" Text='<%# Eval("paid")%>'></asp:Label>
+                                            <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-right" contenteditable="true">
+                                                <asp:Label ID="Label2" Visible="true" runat="server" Text='<%# ((Convert.ToDouble(Eval("paid"))-Convert.ToDouble(Eval("vatfree")))/1.15).ToString("#,##0.00") %>'></asp:Label>
 
                                             </td>
                                         </tr>
@@ -798,32 +807,35 @@
               </table>
                                     </FooterTemplate>
                                 </asp:Repeater>
-
+                                <center>
+                                    <h5 id="RaksTDiv2" runat="server" class="water   font-weight-bolder mx-lg-5" style="padding-right: 0px; padding-left: 300px; font-size: 70px;">ATTACHMENT</h5>
+                                </center>
 
                                 <div class="row" id="Div1" runat="server">
                                     <div class="col-md-8 text-left">
-                                        <p class="small text-danger">* If you have any disagreement with the invoice please contact us</p>
-                                        <center>
-                                            <h5 id="RaksTDiv2" runat="server" class="water   font-weight-bolder mx-lg-5" style="padding-right: 0px; padding-left: 300px; font-size: 70px;">ATTACHMENT</h5>
-                                        </center>
+                                        <div id="Div3" runat="server"><span class="text-gray-900 h6 text-uppercase mr-1 border-bottom border-dark">Amount in words: </span>
+                                            <h6 class="text-uppercase font-weight-bold text-gray-900" id="AmountInWordsDup" runat="server"></h6>
+                                        </div>
+                                        <p class="small text-gray-900 font-weight-bold border-top">* Invalid without Fiscal or Refund Receipt</p>
+
                                     </div>
 
                                     <div class="col-md-4 ">
                                         <div class="form-group">
-                                            <table class="table table-sm table-bordered  ">
+                                            <table class="table table-sm   ">
                                                 <tbody>
                                                     <tr>
-                                                        <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right text-gray-900">Sub-Total:</span></td>
-                                                        <td class="text-right"><span id="DupVatFree" class="text-gray-900 font-weight-bold text-gray-900" runat="server"></span></td>
+                                                        <td style="color: black; border-block-color: black; border: solid; border-width: 1px"><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right  ">Sub-Total:</span></td>
+                                                        <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-right"><span id="DupVatFree" class="  font-weight-bold  " runat="server"></span></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right text-gray-900 ">VAT(15%):</span></td>
-                                                        <td class="text-right"><span id="DupVAT" class="text-gray-900 font-weight-bold text-gray-900" runat="server"></span></td>
+                                                        <td style="color: black; border-block-color: black; border: solid; border-width: 1px"><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right   ">VAT(15%):</span></td>
+                                                        <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-right"><span id="DupVAT" class="  font-weight-bold  " runat="server"></span></td>
                                                     </tr>
 
                                                     <tr>
-                                                        <td><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right text-gray-900 ">Grand Total:</span></td>
-                                                        <td class="text-right"><span id="DupGrandTotal" class="text-gray-900 font-weight-bold text-gray-900" runat="server"></span></td>
+                                                        <td style="color: black; border-block-color: black; border: solid; border-width: 1px"><span style="margin: 7px 5px 5px 5px; padding: 5px" class="m-0 font-weight-bold text-right   ">Grand Total:</span></td>
+                                                        <td style="color: black; border-block-color: black; border: solid; border-width: 1px" class="text-right"><span id="DupGrandTotal" class="  font-weight-bold  " runat="server"></span></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -832,14 +844,14 @@
 
                                     </div>
                                 </div>
-                                <div class="row border-top" id="Div2" runat="server" visible="true">
+                                <div class="row" style="color:black" id="Div2" runat="server" visible="true">
                                     <div class="col-md-7 text-left font-italic font-weight-bold">
-                                        <span class="border-bottom mb-2">Approved By:_________________________</span><br />
+                                        <span class=" mb-2">Approved By:_________________________</span><br />
                                         <br />
                                         <span>Signature_________________________</span>
                                     </div>
                                     <div class="col-md-5 text-right font-italic font-weight-bold">
-                                        <span class="border-bottom mb-2 text-right">Prepared By:_________________________</span><br />
+                                        <span class=" mb-2 text-right">Prepared By:_________________________</span><br />
                                         <br />
                                         <span class=" text-right">Signature_________________________</span>
                                     </div>
