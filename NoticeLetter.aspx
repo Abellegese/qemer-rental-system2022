@@ -1325,7 +1325,7 @@
             <div class="modal-dialog modal-xl" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h6 class="modal-title text-gray-900" id="exampleModalLabel4"><span class="fas fa-file mr-2 " style="color: #d46fe8"></span>Create Special Letter</h6>
+                        <h6 class="modal-title text-gray-900" id="exampleModalLabel4"><span class="fas fa-file mr-2 " style="color: #d46fe8"></span>Create Special Letter <span class="badge badge-success mx-2 text-uppercase">Feature for future</span></h6>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -1350,7 +1350,45 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="ModalAdjustReference" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel4" aria-hidden="true">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title text-gray-900" id="exampleModalLabel4"><span class="fas fa-file mr-2 " style="color: #d46fe8"></span>Adjust Reference</h6>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
 
+                            <div class="col-md-12">
+                                <label class="text-gray-900 small text-uppercase">Reference for G1</label>
+                                <asp:TextBox ID="txtReferenceG1" Style="border-color: #ff00bb" CssClass="form-control form-control-sm" runat="server"></asp:TextBox>
+
+                            </div>
+                        </div>
+                        <div class="row mb-1">
+
+                            <div class="col-md-12">
+                                <label class="text-gray-900 small text-uppercase">Reference for G2</label>
+                                <asp:TextBox ID="txtReferenceG2" Style="border-color: #ff00bb" CssClass="form-control form-control-sm" runat="server"></asp:TextBox>
+
+                            </div>
+                        </div>
+ 
+
+
+                    </div>
+                    <center>
+                        <div class="modal-footer">
+                            <asp:LinkButton ID="btnAdjustReference" OnClick="btnAdjustReference_Click" class="btn btn-sm btn-success" runat="server"><span class="fas fa-upload mr-2"></span>Adjust</asp:LinkButton>
+                        </div>
+
+                    </center>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-12">
                 <div class="bg-white rounded-lg mb-2 ">
@@ -1412,10 +1450,11 @@
                                                <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalReference" id="LR" runat="server"><span class="fas fa-filter mr-2 " style="color: #d46fe8"></span>Filter Letter Record</a>
                                                <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalBody" id="LR1" runat="server"><span class="fas fa-edit mr-2 " style="color: #d46fe8"></span>Customize Body</a>
                                                <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalHeader" id="LR2" runat="server"><span class="fas fa-edit mr-2 " style="color: #d46fe8"></span>Customize Header and Footer</a>
-                                               <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalReset" id="LR3" runat="server"><span class="fas fa-reply mr-2 " style="color: #d46fe8"></span>Reset Content</a>
+                                              <a href="#" class="dropdown-item  text-gray-900  text-danger" data-toggle="modal" data-target="#ModalAdjustReference" id="A3" runat="server"><span class="fas fa-hashtag mr-2 " style="color: #d46fe8"></span>Adjust Reference#</a>
+
+                                              <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalReset" id="LR3" runat="server"><span class="fas fa-reply mr-2 " style="color: #d46fe8"></span>Reset Content</a>
                                                                                               <hr/>
                                                <a href="#" class="dropdown-item  text-gray-900  text-danger" data-toggle="modal" data-target="#ModalCreateSpecialLetter" id="LR4" runat="server"><span class="fas fa-file mr-2 " style="color: #d46fe8"></span>Create Special Letter</a>
-                                               <a  href="#" class="dropdown-item  text-gray-900  text-danger"  data-toggle="modal" data-target="#ModalReset" id="LR5" runat="server"><span class="fas fa-spinner mr-2 " style="color: #d46fe8"></span>Generate Special Letter</a>
                                           </div>
                                       </div>
 
@@ -1475,7 +1514,7 @@
                                                     <center>
                                                         <span <%#bind_headgudayu() %> contenteditable="true" ><%#GetLetterRecordedData().Item5 %></span>
                                                     </center>
-                                                    <p class="text-gray-900" style="text-align: justify;" contenteditable="true">
+                                                    <p style="text-align: justify;" contenteditable="true">
 
                                                         <span <%#bind_bodyies() %>><%#bind_body1_text() %></span> <span <%#bind_period() %>><%#GetLetterRecordedData().Item3 %></span></span> <span <%#bind_bodyies() %>><%#bind_body2_text() %></span>
                                                         <span <%#bind_period() %>><%#GetLetterRecordedData().Item4 %></span>  <span <%#bind_bodyies() %>><%#bind_body3_text() %></span> <span <%#bind_money() %>><%# Eval("currentperiodue", "{0:N2}")%></span>

@@ -30,7 +30,7 @@ namespace advtech.Finance.Accounta
                     binddiv(); bindstatuscustomer(); bindstatusall(); bind_page_marigin(); bind_text_alignment1(); bind_border_all_precedence();
                     bindLetter(); bindLetterType(); bindLetterRecordedDate();
                     bindLetterRecordedReference(); bindLetterRecordedToRepeater();
-                    showRecordedLetter();
+                    showRecordedLetter(); BindReferenceContentG2(); BindReferenceContentG1();
                 }
             }
             else
@@ -214,14 +214,14 @@ namespace advtech.Finance.Accounta
             }
             return Tuple.Create(date,refernceNumber,prevPeriod);
         }
-        private int CheckForReferenceExistenceInLetterRecord(string date)
+        private int CheckForReferenceExistenceInLetterRecord()
         {
             int i = 0;
             String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
             using (SqlConnection con = new SqlConnection(CS))
             {
                 con.Open();
-                SqlCommand cmd = new SqlCommand("select*from tblLetterRecord where date='" + date+"'", con);
+                SqlCommand cmd = new SqlCommand("select*from tblLetterRecord where DATEDIFF(day, dateGC,'" + DateTime.Now.Date + "') > 30", con);
 
                 using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                 {
@@ -241,9 +241,9 @@ namespace advtech.Finance.Accounta
                 if (ddlLettrType.SelectedItem.Text=="Default Letter") { headline = bind_headgudayu_text(); }
                 else{ headline = bind_heading_Custom(); }
 
-                if (CheckForReferenceExistenceInLetterRecord(getethiopianDate())==0)
+                if (CheckForReferenceExistenceInLetterRecord() !=0 )
                 {
-                    SqlCommand cmd1974 = new SqlCommand("insert into tblLetterRecord values('" + GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item1 + "','" + GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item2 + "',N'"+ GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item3 + "',N'" + DropDownList1.SelectedItem.Text +" "+GetEthYear()+ "',N'"+headline+"')", con);
+                    SqlCommand cmd1974 = new SqlCommand("insert into tblLetterRecord values('" + GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item1 + "','" + GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item2 + "',N'"+ GetPrevPeriodandDateReferenceNumber(DropDownList1.SelectedItem.Text).Item3 + "',N'" + DropDownList1.SelectedItem.Text +" "+GetEthYear()+ "',N'"+headline+"','"+DateTime.Now+"')", con);
                     cmd1974.ExecuteNonQuery();
                 }
             }
@@ -1747,7 +1747,6 @@ namespace advtech.Finance.Accounta
                     if (underline1 == "True") { underline_style = "text-decoration: underline"; uh.Checked = true; }
                     fs_style += "font-size:" + fs + "px";
                     lh_style += " line-height:" + lh + "px";
-                    lh_style += " line-height:" + lh + "px";
                     color = " color: black";
                     txtHeadFontSize.Text = fs;
                     txtHeadlineLine.Text = lh;
@@ -2577,6 +2576,54 @@ namespace advtech.Finance.Accounta
                 SqlCommand cvb = new SqlCommand("insert into tblSpecialLetter values(N'" + letterContent + "')", con);
                 cvb.ExecuteNonQuery();
                 
+            }
+        }
+        private string BindReferenceContentG1()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                using(SqlCommand cmd = new SqlCommand("select top 1*from tblLetterRecord where reference_no LIKE '%01%' order by id desc", con))
+                {
+                    using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                    {
+                        DataTable dt = new DataTable();
+                        sda.Fill(dt);
+                        txtReferenceG1.Text = dt.Rows[0]["reference_no"].ToString();  
+                        return dt.Rows[0][0].ToString();
+                    }
+                }
+            }
+        }
+        private string BindReferenceContentG2()
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                using (SqlCommand cmd = new SqlCommand("select top 1*from tblLetterRecord where reference_no LIKE '%02%' order by id desc", con))
+                {
+                    using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                    {
+                        DataTable dt = new DataTable();
+                        sda.Fill(dt);
+                        txtReferenceG2.Text = dt.Rows[0]["reference_no"].ToString();
+                        return dt.Rows[0][0].ToString();
+                    }
+                }
+            }
+        }
+        protected void btnAdjustReference_Click(object sender, EventArgs e)
+        {
+            String CS = ConfigurationManager.ConnectionStrings["MyDatabaseConnectionString1"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(CS))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("update tblLetterRecord set reference_no='"+txtReferenceG1.Text+"' where id='"+ BindReferenceContentG1() + "'", con);
+                cmd.ExecuteNonQuery();
+                //
+                SqlCommand cmd2 = new SqlCommand("update tblLetterRecord set reference_no='" + txtReferenceG2.Text + "' where id='" + BindReferenceContentG2() + "'", con);
+                cmd2.ExecuteNonQuery();
+                Response.Redirect(Request.RawUrl);
             }
         }
     }

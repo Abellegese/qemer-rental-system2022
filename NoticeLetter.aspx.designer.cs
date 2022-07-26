@@ -789,6 +789,33 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.WebControls.Button btnBindReferencedLetterRecord;
 
         /// <summary>
+        /// txtReferenceG1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtReferenceG1;
+
+        /// <summary>
+        /// txtReferenceG2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtReferenceG2;
+
+        /// <summary>
+        /// btnAdjustReference control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnAdjustReference;
+
+        /// <summary>
         /// buttonback control.
         /// </summary>
         /// <remarks>
@@ -879,6 +906,15 @@ namespace advtech.Finance.Accounta
         protected global::System.Web.UI.HtmlControls.HtmlAnchor LR2;
 
         /// <summary>
+        /// A3 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor A3;
+
+        /// <summary>
         /// LR3 control.
         /// </summary>
         /// <remarks>
@@ -895,15 +931,6 @@ namespace advtech.Finance.Accounta
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlAnchor LR4;
-
-        /// <summary>
-        /// LR5 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor LR5;
 
         /// <summary>
         /// con control.
