@@ -8,4 +8,4 @@ QemerRent is the a cloud software used to manage tenants in mall, realestate, an
 
 
 ## 🚀 About Me
-I'm a full stack developer...
+I'm a full stack developer specialized in cloud application development. I develop software that can run in distributed system using the technology such as Docker and Kubernetes.
