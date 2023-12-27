@@ -1,5 +1,5 @@
 
-![Logo]([(https://www.rentmanager.com/wp-content/uploads/2014/11/rent-manager-logo.png)])
+![Logo]((https://www.rentmanager.com/wp-content/uploads/2014/11/rent-manager-logo.png))
 
 
 
